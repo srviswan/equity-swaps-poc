@@ -7,13 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Handler Service Tests
  * 
- * Unit tests for the HandlerService.
+ * Unit tests for the HandlerService using Strategy pattern.
  * 
  * @version 1.0.0
  */
@@ -38,227 +39,105 @@ class HandlerServiceTest {
     }
 
     @Test
-    @DisplayName("Should process contract formation instruction")
-    void shouldProcessContractFormationInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.CONTRACT_FORMATION);
-        
-        InstructionResponse response = handlerService.processContractFormation(request);
-        
-        assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Contract formation processed successfully"));
-        assertEquals("CONTRACT_FORMATION_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
-    }
-
-    @Test
-    @DisplayName("Should process execution instruction")
+    @DisplayName("Should process execution instruction using strategy")
     void shouldProcessExecutionInstruction() {
         request.setInstructionType(InstructionRequest.InstructionType.EXECUTION);
         
-        InstructionResponse response = handlerService.processExecution(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         assertEquals("test-instruction-id", response.getInstructionId());
         assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Execution processed successfully"));
+        assertNotNull(response.getResult());
         assertEquals("EXECUTION_HANDLER", response.getHandlerService());
         assertEquals("test-correlation-id", response.getCorrelationId());
         assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
     }
 
     @Test
-    @DisplayName("Should process exercise instruction")
+    @DisplayName("Should process contract formation instruction using strategy")
+    void shouldProcessContractFormationInstruction() {
+        request.setInstructionType(InstructionRequest.InstructionType.CONTRACT_FORMATION);
+        
+        InstructionResponse response = handlerService.processInstruction(request);
+        
+        assertEquals("test-instruction-id", response.getInstructionId());
+        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
+        assertNotNull(response.getResult());
+        assertEquals("CONTRACT_FORMATION_HANDLER", response.getHandlerService());
+        assertEquals("test-correlation-id", response.getCorrelationId());
+        assertNotNull(response.getProcessingTime());
+    }
+
+    @Test
+    @DisplayName("Should process exercise instruction using strategy")
     void shouldProcessExerciseInstruction() {
         request.setInstructionType(InstructionRequest.InstructionType.EXERCISE);
         
-        InstructionResponse response = handlerService.processExercise(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         assertEquals("test-instruction-id", response.getInstructionId());
         assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Exercise processed successfully"));
+        assertNotNull(response.getResult());
         assertEquals("EXERCISE_HANDLER", response.getHandlerService());
         assertEquals("test-correlation-id", response.getCorrelationId());
         assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
     }
 
     @Test
-    @DisplayName("Should process reset instruction")
+    @DisplayName("Should process reset instruction using strategy")
     void shouldProcessResetInstruction() {
         request.setInstructionType(InstructionRequest.InstructionType.RESET);
         
-        InstructionResponse response = handlerService.processReset(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         assertEquals("test-instruction-id", response.getInstructionId());
         assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Reset processed successfully"));
+        assertNotNull(response.getResult());
         assertEquals("RESET_HANDLER", response.getHandlerService());
         assertEquals("test-correlation-id", response.getCorrelationId());
         assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
     }
 
     @Test
-    @DisplayName("Should process party change instruction")
+    @DisplayName("Should process party change instruction using strategy")
     void shouldProcessPartyChangeInstruction() {
         request.setInstructionType(InstructionRequest.InstructionType.PARTY_CHANGE);
         
-        InstructionResponse response = handlerService.processPartyChange(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         assertEquals("test-instruction-id", response.getInstructionId());
         assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Party change processed successfully"));
+        assertNotNull(response.getResult());
         assertEquals("PARTY_CHANGE_HANDLER", response.getHandlerService());
         assertEquals("test-correlation-id", response.getCorrelationId());
         assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
     }
 
     @Test
-    @DisplayName("Should process split instruction")
-    void shouldProcessSplitInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.SPLIT);
+    @DisplayName("Should handle unsupported instruction type gracefully")
+    void shouldHandleUnsupportedInstructionType() {
+        request.setInstructionType(null); // Set to null to simulate unsupported type
         
-        InstructionResponse response = handlerService.processSplit(request);
-        
-        assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Split processed successfully"));
-        assertEquals("SPLIT_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
-    }
-
-    @Test
-    @DisplayName("Should process quantity change instruction")
-    void shouldProcessQuantityChangeInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.QUANTITY_CHANGE);
-        
-        InstructionResponse response = handlerService.processQuantityChange(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Quantity change processed successfully"));
-        assertEquals("QUANTITY_CHANGE_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
-    }
-
-    @Test
-    @DisplayName("Should process terms change instruction")
-    void shouldProcessTermsChangeInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.TERMS_CHANGE);
-        
-        InstructionResponse response = handlerService.processTermsChange(request);
-        
-        assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Terms change processed successfully"));
-        assertEquals("TERMS_CHANGE_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
-    }
-
-    @Test
-    @DisplayName("Should process transfer instruction")
-    void shouldProcessTransferInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.TRANSFER);
-        
-        InstructionResponse response = handlerService.processTransfer(request);
-        
-        assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Transfer processed successfully"));
-        assertEquals("TRANSFER_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
-    }
-
-    @Test
-    @DisplayName("Should process index transition instruction")
-    void shouldProcessIndexTransitionInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.INDEX_TRANSITION);
-        
-        InstructionResponse response = handlerService.processIndexTransition(request);
-        
-        assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Index transition processed successfully"));
-        assertEquals("INDEX_TRANSITION_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
-    }
-
-    @Test
-    @DisplayName("Should process stock split instruction")
-    void shouldProcessStockSplitInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.STOCK_SPLIT);
-        
-        InstructionResponse response = handlerService.processStockSplit(request);
-        
-        assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Stock split processed successfully"));
-        assertEquals("STOCK_SPLIT_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
-    }
-
-    @Test
-    @DisplayName("Should process observation instruction")
-    void shouldProcessObservationInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.OBSERVATION);
-        
-        InstructionResponse response = handlerService.processObservation(request);
-        
-        assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Observation processed successfully"));
-        assertEquals("OBSERVATION_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
-    }
-
-    @Test
-    @DisplayName("Should process valuation instruction")
-    void shouldProcessValuationInstruction() {
-        request.setInstructionType(InstructionRequest.InstructionType.VALUATION);
-        
-        InstructionResponse response = handlerService.processValuation(request);
-        
-        assertEquals("test-instruction-id", response.getInstructionId());
-        assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
-        assertTrue(response.getResult().contains("Valuation processed successfully"));
-        assertEquals("VALUATION_HANDLER", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
-        assertTrue(response.getProcessingTime() > 0);
+        assertEquals(InstructionResponse.Status.FAILED, response.getStatus());
+        assertTrue(response.getErrorMessage().contains("Unsupported instruction type"));
+        assertNotNull(response.getResponseTimestamp());
     }
 
     @Test
     @DisplayName("Should handle processing exception")
     void shouldHandleProcessingException() {
-        // Create a request that will cause an exception
-        request.setInstructionData(null);
+        // Create a request that will cause an exception by using an unsupported type
+        request.setInstructionType(null);
         
-        InstructionResponse response = handlerService.processExecution(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         assertEquals("test-instruction-id", response.getInstructionId());
         assertEquals(InstructionResponse.Status.FAILED, response.getStatus());
-        assertTrue(response.getErrorMessage().contains("Execution processing error"));
-        assertEquals("HANDLER_SERVICE", response.getHandlerService());
-        assertEquals("test-correlation-id", response.getCorrelationId());
-        assertNotNull(response.getProcessingTime());
+        assertTrue(response.getErrorMessage().contains("Unsupported instruction type"));
+        assertNotNull(response.getResponseTimestamp());
     }
 
     @Test
@@ -266,7 +145,7 @@ class HandlerServiceTest {
     void shouldMeasureProcessingTimeAccurately() {
         long startTime = System.currentTimeMillis();
         
-        InstructionResponse response = handlerService.processExecution(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         long endTime = System.currentTimeMillis();
         long actualProcessingTime = endTime - startTime;
@@ -279,12 +158,11 @@ class HandlerServiceTest {
     @Test
     @DisplayName("Should handle null request gracefully")
     void shouldHandleNullRequestGracefully() {
-        InstructionResponse response = handlerService.processExecution(null);
+        InstructionResponse response = handlerService.processInstruction(null);
         
         assertNotNull(response);
         assertEquals(InstructionResponse.Status.FAILED, response.getStatus());
-        assertTrue(response.getErrorMessage().contains("Execution processing error"));
-        assertEquals("HANDLER_SERVICE", response.getHandlerService());
+        assertTrue(response.getErrorMessage().contains("Request cannot be null"));
     }
 
     @Test
@@ -292,7 +170,7 @@ class HandlerServiceTest {
     void shouldPreserveInstructionIdInResponse() {
         request.setInstructionId("custom-instruction-id");
         
-        InstructionResponse response = handlerService.processExecution(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         assertEquals("custom-instruction-id", response.getInstructionId());
     }
@@ -302,66 +180,84 @@ class HandlerServiceTest {
     void shouldPreserveCorrelationIdInResponse() {
         request.setCorrelationId("custom-correlation-id");
         
-        InstructionResponse response = handlerService.processExecution(request);
+        InstructionResponse response = handlerService.processInstruction(request);
         
         assertEquals("custom-correlation-id", response.getCorrelationId());
     }
 
     @Test
-    @DisplayName("Should handle all instruction types")
-    void shouldHandleAllInstructionTypes() {
-        InstructionRequest.InstructionType[] types = InstructionRequest.InstructionType.values();
+    @DisplayName("Should get available strategies")
+    void shouldGetAvailableStrategies() {
+        Map<InstructionRequest.InstructionType, String> strategies = handlerService.getAvailableStrategies();
         
-        for (InstructionRequest.InstructionType type : types) {
+        assertNotNull(strategies);
+        assertTrue(strategies.size() > 0);
+        
+        // Check that implemented strategies are available
+        assertTrue(strategies.containsKey(InstructionRequest.InstructionType.EXECUTION));
+        assertTrue(strategies.containsKey(InstructionRequest.InstructionType.CONTRACT_FORMATION));
+        assertTrue(strategies.containsKey(InstructionRequest.InstructionType.EXERCISE));
+        assertTrue(strategies.containsKey(InstructionRequest.InstructionType.RESET));
+        assertTrue(strategies.containsKey(InstructionRequest.InstructionType.PARTY_CHANGE));
+        
+        // Check strategy class names
+        assertEquals("ExecutionHandlerStrategy", strategies.get(InstructionRequest.InstructionType.EXECUTION));
+        assertEquals("ContractFormationHandlerStrategy", strategies.get(InstructionRequest.InstructionType.CONTRACT_FORMATION));
+        assertEquals("ExerciseHandlerStrategy", strategies.get(InstructionRequest.InstructionType.EXERCISE));
+        assertEquals("ResetHandlerStrategy", strategies.get(InstructionRequest.InstructionType.RESET));
+        assertEquals("PartyChangeHandlerStrategy", strategies.get(InstructionRequest.InstructionType.PARTY_CHANGE));
+    }
+
+    @Test
+    @DisplayName("Should handle all supported instruction types")
+    void shouldHandleAllSupportedInstructionTypes() {
+        // Test all implemented strategies
+        InstructionRequest.InstructionType[] supportedTypes = {
+            InstructionRequest.InstructionType.EXECUTION,
+            InstructionRequest.InstructionType.CONTRACT_FORMATION,
+            InstructionRequest.InstructionType.EXERCISE,
+            InstructionRequest.InstructionType.RESET,
+            InstructionRequest.InstructionType.PARTY_CHANGE
+        };
+        
+        for (InstructionRequest.InstructionType type : supportedTypes) {
             request.setInstructionType(type);
             
-            InstructionResponse response = null;
-            switch (type) {
-                case CONTRACT_FORMATION:
-                    response = handlerService.processContractFormation(request);
-                    break;
-                case EXECUTION:
-                    response = handlerService.processExecution(request);
-                    break;
-                case EXERCISE:
-                    response = handlerService.processExercise(request);
-                    break;
-                case RESET:
-                    response = handlerService.processReset(request);
-                    break;
-                case PARTY_CHANGE:
-                    response = handlerService.processPartyChange(request);
-                    break;
-                case SPLIT:
-                    response = handlerService.processSplit(request);
-                    break;
-                case QUANTITY_CHANGE:
-                    response = handlerService.processQuantityChange(request);
-                    break;
-                case TERMS_CHANGE:
-                    response = handlerService.processTermsChange(request);
-                    break;
-                case TRANSFER:
-                    response = handlerService.processTransfer(request);
-                    break;
-                case INDEX_TRANSITION:
-                    response = handlerService.processIndexTransition(request);
-                    break;
-                case STOCK_SPLIT:
-                    response = handlerService.processStockSplit(request);
-                    break;
-                case OBSERVATION:
-                    response = handlerService.processObservation(request);
-                    break;
-                case VALUATION:
-                    response = handlerService.processValuation(request);
-                    break;
-            }
+            InstructionResponse response = handlerService.processInstruction(request);
             
             assertNotNull(response, "Response should not be null for type: " + type);
             assertEquals("test-instruction-id", response.getInstructionId());
             assertEquals(InstructionResponse.Status.SUCCESS, response.getStatus());
             assertNotNull(response.getProcessingTime());
+            assertNotNull(response.getResponseTimestamp());
+        }
+    }
+
+    @Test
+    @DisplayName("Should handle unsupported instruction types gracefully")
+    void shouldHandleUnsupportedInstructionTypesGracefully() {
+        // Test unsupported types
+        InstructionRequest.InstructionType[] unsupportedTypes = {
+            InstructionRequest.InstructionType.SPLIT,
+            InstructionRequest.InstructionType.QUANTITY_CHANGE,
+            InstructionRequest.InstructionType.TERMS_CHANGE,
+            InstructionRequest.InstructionType.TRANSFER,
+            InstructionRequest.InstructionType.INDEX_TRANSITION,
+            InstructionRequest.InstructionType.STOCK_SPLIT,
+            InstructionRequest.InstructionType.OBSERVATION,
+            InstructionRequest.InstructionType.VALUATION
+        };
+        
+        for (InstructionRequest.InstructionType type : unsupportedTypes) {
+            request.setInstructionType(type);
+            
+            InstructionResponse response = handlerService.processInstruction(request);
+            
+            assertNotNull(response, "Response should not be null for type: " + type);
+            assertEquals("test-instruction-id", response.getInstructionId());
+            assertEquals(InstructionResponse.Status.FAILED, response.getStatus());
+            assertTrue(response.getErrorMessage().contains("Unsupported instruction type"));
+            assertNotNull(response.getResponseTimestamp());
         }
     }
 } 

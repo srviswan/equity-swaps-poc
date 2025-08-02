@@ -1,13 +1,59 @@
 server:
   port: 8082
   servlet:
-    context-path: /
+    context-path: /handler-service
 
 spring:
   application:
     name: synthetics-handler-service
+  cloud:
+    discovery:
+      enabled: true
 
-# Eureka client configuration
+# Fault Tolerance Configuration
+handler:
+  fault-tolerance:
+    # Circuit Breaker Configuration
+    circuit-breaker-threshold: 5
+    circuit-breaker-timeout-ms: 30000  # 30 seconds
+    circuit-breaker-half-open-timeout-ms: 60000  # 1 minute
+    
+    # Retry Configuration
+    max-retry-attempts: 3
+    retry-delay-ms: 1000  # 1 second
+    max-retry-delay-ms: 10000  # 10 seconds
+    
+    # Timeout Configuration
+    processing-timeout-ms: 30000  # 30 seconds
+    
+    # Thread Pool Configuration
+    thread-pool-size: 10
+    thread-pool-shutdown-timeout-ms: 60000  # 1 minute
+
+# Logging Configuration
+logging:
+  level:
+    com.finos.synthetics.handler: INFO
+    com.finos.synthetics.handler.service.HandlerService: DEBUG
+    com.finos.synthetics.handler.strategy: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Eureka Client Configuration
 eureka:
   client:
     service-url:
@@ -16,29 +62,7 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
-
-# Logging configuration
-logging:
-  level:
-    com.finos.synthetics.handler: DEBUG
-    org.springframework.web: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
-# Management endpoints
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-  metrics:
-    export:
-      prometheus:
-        enabled: true
+    health-check-url-path: /handler-service/actuator/health
 
 # Custom application properties
 app:
