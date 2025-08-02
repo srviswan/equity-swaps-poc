@@ -1,0 +1,28 @@
+{
+    "java.project.sourcePaths": [
+        "synthetics-common/src/main/java",
+        "synthetics-position-service/src/main/java",
+        "cdm-sources"
+    ],
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "~/.m2/repository/org/finos/cdm/cdm-java/7.0.0-dev.14/cdm-java-7.0.0-dev.14.jar"
+    ],
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.import.maven.enabled": true,
+    "java.maven.downloadSources": true,
+    "java.maven.downloadJavadoc": true,
+    "files.exclude": {
+        "**/target": true,
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true
+    },
+    "search.exclude": {
+        "**/target": true,
+        "**/node_modules": true,
+        "**/bower_components": true
+    }
+}

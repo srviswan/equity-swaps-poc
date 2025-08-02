@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=62.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-cdm"
+version = "6.0.0"
+requires-python = ">= 3.10"
+dependencies = [
+   "pydantic>=2.6.1",
+   "rosetta.runtime==2.1.0"
+]
+[tool.setuptools.packages.find]
+where = ["src"]

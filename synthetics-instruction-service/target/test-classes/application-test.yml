@@ -1,0 +1,54 @@
+server:
+  port: 0  # Use random port for testing
+
+spring:
+  application:
+    name: synthetics-instruction-service-test
+  
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 1000
+            readTimeout: 2000
+            loggerLevel: BASIC
+
+# Disable Eureka for testing
+eureka:
+  client:
+    enabled: false
+  server:
+    enabled: false
+
+# Logging configuration for tests
+logging:
+  level:
+    com.finos.synthetics.instruction: DEBUG
+    org.springframework.cloud.openfeign: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management endpoints for testing
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Custom application properties for testing
+app:
+  instruction:
+    timeout:
+      default: 5
+      max: 10
+    validation:
+      enabled: true
+    handler:
+      service:
+        name: synthetics-handler-service-test
+        url: http://localhost:8082 

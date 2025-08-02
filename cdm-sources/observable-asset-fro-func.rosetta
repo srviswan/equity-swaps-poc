@@ -1,0 +1,20 @@
+namespace cdm.observable.asset.fro : <"Support for floating rate option definitions.">
+version "${project.version}"
+
+import cdm.base.staticdata.asset.rates.*
+
+import cdm.observable.asset.*
+
+// =====================================================================
+//
+// Floating Rate Index reference data and validation functions
+//
+// these functions allow retrieval of the reference data for a floating rate index,
+// and validation that it is a valid floating rate index name
+//
+// ======================================================================
+func FloatingRateIndexMetadata: <"Retrieve all available metadata for the floating rate index.">
+    inputs:
+        floatingRateIndexName FloatingRateIndexEnum (1..1) <"The name of the floating rate index.">
+    output:
+        floatingRateIndexDescription FloatingRateIndexDefinition (0..1) <"The detailed description of the index if available, null otherwise.">

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.finos.synthetics</groupId>
+    <artifactId>equity-swaps-poc</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Equity Swaps POC</name>
+    <description>Equity Swaps Proof of Concept using CDM</description>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cdm.version>7.0.0-dev.14</cdm.version>
+        <cdm.sources.path>${project.basedir}/cdm-sources</cdm.sources.path>
+    </properties>
+
+    <modules>
+        <module>synthetics-common</module>
+        <module>synthetics-position-service</module>
+        <module>synthetics-instruction-service</module>
+        <module>synthetics-handler-service</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Latest CDM Java dependency -->
+            <dependency>
+                <groupId>org.finos.cdm</groupId>
+                <artifactId>cdm-java</artifactId>
+                <version>${cdm.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <configuration>
+                        <source>8</source>
+                        <target>8</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project> 

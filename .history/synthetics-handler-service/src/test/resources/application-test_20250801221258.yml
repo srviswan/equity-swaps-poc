@@ -1,0 +1,40 @@
+server:
+  port: 0  # Use random port for testing
+
+spring:
+  application:
+    name: synthetics-handler-service-test
+
+# Disable Eureka for testing
+eureka:
+  client:
+    enabled: false
+  server:
+    enabled: false
+
+# Logging configuration for tests
+logging:
+  level:
+    com.finos.synthetics.handler: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management endpoints for testing
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Custom application properties for testing
+app:
+  handler:
+    timeout:
+      default: 5
+      max: 10
+    validation:
+      enabled: true 

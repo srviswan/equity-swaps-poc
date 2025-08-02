@@ -1,0 +1,7 @@
+com/finos/synthetics/instruction/model/InstructionResponseTest.class
+com/finos/synthetics/instruction/controller/InstructionControllerTest.class
+com/finos/synthetics/instruction/service/InstructionProcessorServiceTest.class
+com/finos/synthetics/instruction/model/InstructionRequestTest.class
+com/finos/synthetics/instruction/service/InstructionValidationServiceTest.class
+com/finos/synthetics/instruction/InstructionServiceApplicationTests.class
+com/finos/synthetics/instruction/integration/InstructionServiceIntegrationTest.class

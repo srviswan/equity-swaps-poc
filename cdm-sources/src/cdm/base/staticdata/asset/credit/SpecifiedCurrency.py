@@ -1,0 +1,30 @@
+# pylint: disable=line-too-long, invalid-name, missing-function-docstring
+# pylint: disable=bad-indentation, trailing-whitespace, superfluous-parens
+# pylint: disable=wrong-import-position, unused-import, unused-wildcard-import
+# pylint: disable=wildcard-import, wrong-import-order, missing-class-docstring
+# pylint: disable=missing-module-docstring
+from __future__ import annotations
+from typing import List, Optional
+import datetime
+import inspect
+from decimal import Decimal
+from pydantic import Field
+from rosetta.runtime.utils import (
+    BaseDataClass, rosetta_condition, rosetta_resolve_attr
+)
+from rosetta.runtime.utils import *
+
+__all__ = ['SpecifiedCurrency']
+
+
+class SpecifiedCurrency(BaseDataClass):
+    applicable: bool = Field(..., description="Indicates whether the specified currency provision is applicable.")
+    """
+    Indicates whether the specified currency provision is applicable.
+    """
+    currency: Optional[AttributeWithMeta[str] | str] = Field(None, description="The currency in which the specified currency is denominated. The list of valid currencies is not presently positioned as an enumeration as part of the CDM because that scope is limited to the values specified by ISDA and FpML. As a result, implementers have to make reference to the relevant standard, such as the ISO 4217 standard for currency codes.")
+    """
+    The currency in which the specified currency is denominated. The list of valid currencies is not presently positioned as an enumeration as part of the CDM because that scope is limited to the values specified by ISDA and FpML. As a result, implementers have to make reference to the relevant standard, such as the ISO 4217 standard for currency codes.
+    """
+
+import cdm 

@@ -1,0 +1,60 @@
+/**
+ * This file is auto-generated from the ISDA Common Domain Model, do not edit.
+ * Version: 6.0.0
+ */
+  package ScheduledTransferEnum
+  import . "org_isda_cdm"
+  /**
+   * The qualification of the type of cash flows associated with OTC derivatives contracts and their lifecycle events.
+   */
+  
+  const (
+  /**
+   * A cash flow corresponding to a corporate action event.
+   */
+  CORPORATE_ACTION ScheduledTransferEnum = iota + 1
+  /**
+   * A cash flow corresponding to the periodic accrued interests.
+   */
+  COUPON ScheduledTransferEnum = iota + 1
+  /**
+   * A cashflow resulting from a credit event.
+   */
+  CREDIT_EVENT ScheduledTransferEnum = iota + 1
+  /**
+   * A cash flow corresponding to the synthetic dividend of an equity underlier asset traded through a derivative instrument.
+   */
+  DIVIDEND_RETURN ScheduledTransferEnum = iota + 1
+  /**
+   * A cash flow associated with an exercise lifecycle event.
+   */
+  EXERCISE ScheduledTransferEnum = iota + 1
+  /**
+   * A cash flow corresponding to the return of the fixed interest rate portion of a derivative instrument that has different types of underlying assets, such as a total return swap.
+   */
+  FIXED_RATE_RETURN ScheduledTransferEnum = iota + 1
+  /**
+   * A cash flow corresponding to the return of the floating interest rate portion of a derivative instrument that has different types of underlying assets, such as a total return swap.
+   */
+  FLOATING_RATE_RETURN ScheduledTransferEnum = iota + 1
+  /**
+   * A cash flow corresponding to the compensation for missing assets due to the rounding of digits in the original number of assets to be delivered as per payout calculation.
+   */
+  FRACTIONAL_AMOUNT ScheduledTransferEnum = iota + 1
+  /**
+   * A cash flow corresponding to the return of the interest rate portion of a derivative instrument that has different types of underlying assets, such as a total return swap.
+   */
+  INTEREST_RETURN ScheduledTransferEnum = iota + 1
+  /**
+   * Net interest across payout components. Applicable to products such as interest rate swaps.
+   */
+  NET_INTEREST ScheduledTransferEnum = iota + 1
+  /**
+   * A cash flow corresponding to a performance return.  The settlementOrigin attribute on the Transfer should point to the relevant Payout defining the performance calculation.
+   */
+  PERFORMANCE ScheduledTransferEnum = iota + 1
+  /**
+   * A cashflow which amount typically corresponds to the notional amount of the contract for various business reasons e.g. PhysicalSettlement, PrincipalExchange etc. else to a portion of the notional amount interim payments e.g. for the purpose of resetting the Notional Amount of a Cross Currency Swap variying leg, as part of a final Principal Exchange related to a Non-Deliverable currency leg, etc.
+   */
+  PRINCIPAL_PAYMENT ScheduledTransferEnum = iota + 1
+  )    
