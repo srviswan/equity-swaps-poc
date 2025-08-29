@@ -1,0 +1,4 @@
+com/finos/cashflow/controller/CashflowControllerTest.class
+com/finos/cashflow/CashflowGenerationServiceApplicationTests.class
+com/finos/cashflow/service/CashflowGenerationServiceTest.class
+com/finos/cashflow/service/ActorBasedCashflowServiceTest.class

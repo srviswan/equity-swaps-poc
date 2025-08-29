@@ -1,0 +1,157 @@
+-------------------------------------------------------------------------------
+Test set: com.finos.cashflow.controller.CashflowControllerTest
+-------------------------------------------------------------------------------
+Tests run: 11, Failures: 6, Errors: 3, Skipped: 0, Time elapsed: 2.337 s <<< FAILURE! -- in com.finos.cashflow.controller.CashflowControllerTest
+com.finos.cashflow.controller.CashflowControllerTest.detailedHealth_ShouldReturnComponentStatus -- Time elapsed: 0.096 s <<< ERROR!
+org.springframework.web.reactive.function.UnsupportedMediaTypeException: Content type 'text/plain;charset=UTF-8' not supported for bodyType=java.util.Map<?, ?>
+	at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+	Suppressed: The stacktrace has been enhanced by Reactor, refer to additional information below: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ Body from GET /health/detailed [DefaultClientResponse]
+Original Stack Trace:
+		at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+		at org.springframework.web.reactive.function.BodyExtractors.lambda$toMono$2(BodyExtractors.java:84)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.body(DefaultClientResponse.java:135)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.bodyToMono(DefaultClientResponse.java:150)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.detailedHealth_ShouldReturnComponentStatus(CashflowControllerTest.java:291)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:146)
+		at reactor.core.publisher.Mono.block(Mono.java:1807)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.detailedHealth_ShouldReturnComponentStatus(CashflowControllerTest.java:291)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+com.finos.cashflow.controller.CashflowControllerTest.generatePerformanceCashflows_ShouldReturnAcceptedResponse -- Time elapsed: 0.023 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<202 ACCEPTED> but was:<500 INTERNAL_SERVER_ERROR>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isAccepted(StatusAssertions.java:82)
+	at com.finos.cashflow.controller.CashflowControllerTest.generatePerformanceCashflows_ShouldReturnAcceptedResponse(CashflowControllerTest.java:212)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+com.finos.cashflow.controller.CashflowControllerTest.generateInterestCashflows_WithNonInterestTypes_ShouldReturnBadRequest -- Time elapsed: 0.009 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<400 BAD_REQUEST> but was:<500 INTERNAL_SERVER_ERROR>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isBadRequest(StatusAssertions.java:131)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateInterestCashflows_WithNonInterestTypes_ShouldReturnBadRequest(CashflowControllerTest.java:164)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+com.finos.cashflow.controller.CashflowControllerTest.generateDividendCashflows_ShouldReturnAcceptedResponse -- Time elapsed: 0.007 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<202 ACCEPTED> but was:<500 INTERNAL_SERVER_ERROR>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isAccepted(StatusAssertions.java:82)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateDividendCashflows_ShouldReturnAcceptedResponse(CashflowControllerTest.java:185)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+com.finos.cashflow.controller.CashflowControllerTest.generateCashflowsReactive_ShouldReturnStreamOfCashflows -- Time elapsed: 0.008 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200 OK> but was:<202 ACCEPTED>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isOk(StatusAssertions.java:68)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateCashflowsReactive_ShouldReturnStreamOfCashflows(CashflowControllerTest.java:100)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+com.finos.cashflow.controller.CashflowControllerTest.generateInterestCashflows_ShouldReturnAcceptedResponse -- Time elapsed: 0.006 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<202 ACCEPTED> but was:<500 INTERNAL_SERVER_ERROR>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isAccepted(StatusAssertions.java:82)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateInterestCashflows_ShouldReturnAcceptedResponse(CashflowControllerTest.java:143)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+com.finos.cashflow.controller.CashflowControllerTest.health_ShouldReturnUpStatus -- Time elapsed: 0.004 s <<< ERROR!
+org.springframework.web.reactive.function.UnsupportedMediaTypeException: Content type 'text/plain;charset=UTF-8' not supported for bodyType=java.util.Map<?, ?>
+	at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+	Suppressed: The stacktrace has been enhanced by Reactor, refer to additional information below: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ Body from GET /health [DefaultClientResponse]
+Original Stack Trace:
+		at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+		at org.springframework.web.reactive.function.BodyExtractors.lambda$toMono$2(BodyExtractors.java:84)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.body(DefaultClientResponse.java:135)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.bodyToMono(DefaultClientResponse.java:150)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.health_ShouldReturnUpStatus(CashflowControllerTest.java:277)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:146)
+		at reactor.core.publisher.Mono.block(Mono.java:1807)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.health_ShouldReturnUpStatus(CashflowControllerTest.java:277)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+com.finos.cashflow.controller.CashflowControllerTest.generateDailyAccruals_ShouldReturnStreamOfCashflows -- Time elapsed: 0.008 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200 OK> but was:<404 NOT_FOUND>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isOk(StatusAssertions.java:68)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateDailyAccruals_ShouldReturnStreamOfCashflows(CashflowControllerTest.java:241)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+com.finos.cashflow.controller.CashflowControllerTest.getThreadPartitionStatus_ShouldReturnPartitionStatistics -- Time elapsed: 0.004 s <<< ERROR!
+org.springframework.web.reactive.function.UnsupportedMediaTypeException: Content type 'text/plain;charset=UTF-8' not supported for bodyType=java.util.Map<?, ?>
+	at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+	Suppressed: The stacktrace has been enhanced by Reactor, refer to additional information below: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ Body from GET /threads/partitions [DefaultClientResponse]
+Original Stack Trace:
+		at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+		at org.springframework.web.reactive.function.BodyExtractors.lambda$toMono$2(BodyExtractors.java:84)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.body(DefaultClientResponse.java:135)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.bodyToMono(DefaultClientResponse.java:150)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.getThreadPartitionStatus_ShouldReturnPartitionStatistics(CashflowControllerTest.java:263)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:146)
+		at reactor.core.publisher.Mono.block(Mono.java:1807)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.getThreadPartitionStatus_ShouldReturnPartitionStatistics(CashflowControllerTest.java:263)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+

@@ -1,0 +1,939 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.finos.cashflow.controller.CashflowControllerTest" time="2.337" tests="11" errors="3" skipped="0" failures="6">
+  <properties>
+    <property name="java.specification.version" value="23"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/target/test-classes:/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/target/classes:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-webflux/3.3.0/spring-boot-starter-webflux-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter/3.3.0/spring-boot-starter-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot/3.3.0/spring-boot-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.3.0/spring-boot-autoconfigure-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.3.0/spring-boot-starter-logging-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/ch/qos/logback/logback-classic/1.5.6/logback-classic-1.5.6.jar:/Users/sreekumarviswanathan/.m2/repository/ch/qos/logback/logback-core/1.5.6/logback-core-1.5.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.23.1/log4j-to-slf4j-2.23.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/logging/log4j/log4j-api/2.23.1/log4j-api-2.23.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/slf4j/jul-to-slf4j/2.0.13/jul-to-slf4j-2.0.13.jar:/Users/sreekumarviswanathan/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.3.0/spring-boot-starter-json-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.17.1/jackson-datatype-jdk8-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.17.1/jackson-module-parameter-names-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-reactor-netty/3.3.0/spring-boot-starter-reactor-netty-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/netty/reactor-netty-http/1.1.19/reactor-netty-http-1.1.19.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec-http/4.1.110.Final/netty-codec-http-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec-http2/4.1.110.Final/netty-codec-http2-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-web/6.1.8/spring-web-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-beans/6.1.8/spring-beans-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-webflux/6.1.8/spring-webflux-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-data-r2dbc/3.3.0/spring-boot-starter-data-r2dbc-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-r2dbc/3.3.0/spring-data-r2dbc-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-relational/3.3.0/spring-data-relational-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/jsqlparser/jsqlparser/4.6/jsqlparser-4.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-commons/3.3.0/spring-data-commons-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-jdbc/6.1.8/spring-jdbc-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-r2dbc/6.1.8/spring-r2dbc-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/Users/sreekumarviswanathan/.m2/repository/io/r2dbc/r2dbc-spi/1.0.0.RELEASE/r2dbc-spi-1.0.0.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/Users/sreekumarviswanathan/.m2/repository/io/r2dbc/r2dbc-pool/1.0.1.RELEASE/r2dbc-pool-1.0.1.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/addons/reactor-pool/1.0.5/reactor-pool-1.0.5.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.3.0/spring-boot-starter-validation-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.24/tomcat-embed-el-10.1.24.jar:/Users/sreekumarviswanathan/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/Users/sreekumarviswanathan/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/classmate/1.7.0/classmate-1.7.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.3.0/spring-boot-starter-actuator-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.3.0/spring-boot-actuator-autoconfigure-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-actuator/3.3.0/spring-boot-actuator-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-observation/1.13.0/micrometer-observation-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-commons/1.13.0/micrometer-commons-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-jakarta9/1.13.0/micrometer-jakarta9-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-cache/3.3.0/spring-boot-starter-cache-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-context-support/6.1.8/spring-context-support-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-starter-circuitbreaker-reactor-resilience4j/3.1.3/spring-cloud-starter-circuitbreaker-reactor-resilience4j-3.1.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-starter/4.1.5/spring-cloud-starter-4.1.5.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-context/4.1.5/spring-cloud-context-4.1.5.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/security/spring-security-crypto/6.3.0/spring-security-crypto-6.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-commons/4.1.5/spring-cloud-commons-4.1.5.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/security/spring-security-rsa/1.1.3/spring-security-rsa-1.1.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/bouncycastle/bcprov-jdk18on/1.78/bcprov-jdk18on-1.78.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-circuitbreaker-resilience4j/3.1.3/spring-cloud-circuitbreaker-resilience4j-3.1.3.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-spring-boot3/2.2.0/resilience4j-spring-boot3-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-spring6/2.2.0/resilience4j-spring6-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-annotations/2.2.0/resilience4j-annotations-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-consumer/2.2.0/resilience4j-consumer-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-circularbuffer/2.2.0/resilience4j-circularbuffer-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-framework-common/2.2.0/resilience4j-framework-common-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-configuration-processor/3.3.0/spring-boot-configuration-processor-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-circuitbreaker/2.2.0/resilience4j-circuitbreaker-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-core/2.2.0/resilience4j-core-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-timelimiter/2.2.0/resilience4j-timelimiter-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-reactor/2.2.0/resilience4j-reactor-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-ratelimiter/2.2.0/resilience4j-ratelimiter-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-bulkhead/2.2.0/resilience4j-bulkhead-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-retry/2.2.0/resilience4j-retry-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-micrometer/2.2.0/resilience4j-micrometer-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/postgresql/r2dbc-postgresql/1.0.5.RELEASE/r2dbc-postgresql-1.0.5.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/com/ongres/scram/client/2.1/client-2.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/ongres/scram/common/2.1/common-2.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/ongres/stringprep/saslprep/1.1/saslprep-1.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/ongres/stringprep/stringprep/1.1/stringprep-1.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/reactor-core/3.6.6/reactor-core-3.6.6.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/netty/reactor-netty-core/1.1.19/reactor-netty-core-1.1.19.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-handler/4.1.110.Final/netty-handler-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-resolver/4.1.110.Final/netty-resolver-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-buffer/4.1.110.Final/netty-buffer-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.110.Final/netty-transport-native-unix-common-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec/4.1.110.Final/netty-codec-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-handler-proxy/4.1.110.Final/netty-handler-proxy-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec-socks/4.1.110.Final/netty-codec-socks-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-resolver-dns/4.1.110.Final/netty-resolver-dns-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec-dns/4.1.110.Final/netty-codec-dns-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.110.Final/netty-resolver-dns-native-macos-4.1.110.Final-osx-x86_64.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-resolver-dns-classes-macos/4.1.110.Final/netty-resolver-dns-classes-macos-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-transport-native-epoll/4.1.110.Final/netty-transport-native-epoll-4.1.110.Final-linux-x86_64.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.110.Final/netty-transport-classes-epoll-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/r2dbc/r2dbc-h2/1.0.0.RELEASE/r2dbc-h2-1.0.0.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-data-redis-reactive/3.3.0/spring-boot-starter-data-redis-reactive-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/lettuce/lettuce-core/6.3.2.RELEASE/lettuce-core-6.3.2.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-common/4.1.110.Final/netty-common-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-transport/4.1.110.Final/netty-transport-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-redis/3.3.0/spring-data-redis-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-keyvalue/3.3.0/spring-data-keyvalue-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-oxm/6.1.8/spring-oxm-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-aop/6.1.8/spring-aop-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/kafka/spring-kafka/3.2.0/spring-kafka-3.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-context/6.1.8/spring-context-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-expression/6.1.8/spring-expression-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-messaging/6.1.8/spring-messaging-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-tx/6.1.8/spring-tx-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/retry/spring-retry/2.0.6/spring-retry-2.0.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/kafka/kafka-clients/3.7.0/kafka-clients-3.7.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/luben/zstd-jni/1.5.5-6/zstd-jni-1.5.5-6.jar:/Users/sreekumarviswanathan/.m2/repository/org/lz4/lz4-java/1.8.0/lz4-java-1.8.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-registry-prometheus/1.13.0/micrometer-registry-prometheus-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-core/1.13.0/micrometer-core-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/hdrhistogram/HdrHistogram/2.2.1/HdrHistogram-2.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-core/1.2.1/prometheus-metrics-core-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-model/1.2.1/prometheus-metrics-model-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-config/1.2.1/prometheus-metrics-config-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-tracer-common/1.2.1/prometheus-metrics-tracer-common-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-exposition-formats/1.2.1/prometheus-metrics-exposition-formats-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-shaded-protobuf/1.2.1/prometheus-metrics-shaded-protobuf-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/commons/commons-lang3/3.14.0/commons-lang3-3.14.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.1/jackson-databind-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.1/jackson-annotations-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.1/jackson-core-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.1/jackson-datatype-jsr310-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.3.0/spring-boot-starter-test-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-test/3.3.0/spring-boot-test-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.3.0/spring-boot-test-autoconfigure-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/jayway/jsonpath/json-path/2.9.0/json-path-2.9.0.jar:/Users/sreekumarviswanathan/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.2/jakarta.xml.bind-api-4.0.2.jar:/Users/sreekumarviswanathan/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.3/jakarta.activation-api-2.1.3.jar:/Users/sreekumarviswanathan/.m2/repository/net/minidev/json-smart/2.5.1/json-smart-2.5.1.jar:/Users/sreekumarviswanathan/.m2/repository/net/minidev/accessors-smart/2.5.1/accessors-smart-2.5.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/ow2/asm/asm/9.6/asm-9.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/assertj/assertj-core/3.25.3/assertj-core-3.25.3.jar:/Users/sreekumarviswanathan/.m2/repository/net/bytebuddy/byte-buddy/1.14.16/byte-buddy-1.14.16.jar:/Users/sreekumarviswanathan/.m2/repository/org/awaitility/awaitility/4.2.1/awaitility-4.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.2/junit-jupiter-5.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.2/junit-jupiter-params-5.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/Users/sreekumarviswanathan/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.16/byte-buddy-agent-1.14.16.jar:/Users/sreekumarviswanathan/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-core/6.1.8/spring-core-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-jcl/6.1.8/spring-jcl-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-test/6.1.8/spring-test-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/reactor-test/3.6.6/reactor-test-3.6.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/junit-jupiter/1.19.3/junit-jupiter-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/testcontainers/1.19.3/testcontainers-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/docker-java/docker-java-api/3.3.4/docker-java-api-3.3.4.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.3.4/docker-java-transport-zerodep-3.3.4.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/docker-java/docker-java-transport/3.3.4/docker-java-transport-3.3.4.jar:/Users/sreekumarviswanathan/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/postgresql/1.19.3/postgresql-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/jdbc/1.19.3/jdbc-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/database-commons/1.19.3/database-commons-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/kafka/1.19.3/kafka-1.19.3.jar:"/>
+    <property name="java.vm.vendor" value="Amazon.com Inc."/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://aws.amazon.com/corretto/"/>
+    <property name="user.timezone" value="America/New_York"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="23"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.boot.library.path" value="/Users/sreekumarviswanathan/.sdkman/candidates/java/23.0.2-amzn/lib"/>
+    <property name="sun.java.command" value="/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/target/surefire/surefirebooter-20250828194827752_3.jar /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/target/surefire 2025-08-28T19-48-27_701-jvmRun1 surefire-20250828194827752_1tmp surefire_0-20250828194827752_2tmp"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/target/test-classes:/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/target/classes:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-webflux/3.3.0/spring-boot-starter-webflux-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter/3.3.0/spring-boot-starter-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot/3.3.0/spring-boot-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.3.0/spring-boot-autoconfigure-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.3.0/spring-boot-starter-logging-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/ch/qos/logback/logback-classic/1.5.6/logback-classic-1.5.6.jar:/Users/sreekumarviswanathan/.m2/repository/ch/qos/logback/logback-core/1.5.6/logback-core-1.5.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.23.1/log4j-to-slf4j-2.23.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/logging/log4j/log4j-api/2.23.1/log4j-api-2.23.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/slf4j/jul-to-slf4j/2.0.13/jul-to-slf4j-2.0.13.jar:/Users/sreekumarviswanathan/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.3.0/spring-boot-starter-json-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.17.1/jackson-datatype-jdk8-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.17.1/jackson-module-parameter-names-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-reactor-netty/3.3.0/spring-boot-starter-reactor-netty-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/netty/reactor-netty-http/1.1.19/reactor-netty-http-1.1.19.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec-http/4.1.110.Final/netty-codec-http-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec-http2/4.1.110.Final/netty-codec-http2-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-web/6.1.8/spring-web-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-beans/6.1.8/spring-beans-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-webflux/6.1.8/spring-webflux-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-data-r2dbc/3.3.0/spring-boot-starter-data-r2dbc-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-r2dbc/3.3.0/spring-data-r2dbc-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-relational/3.3.0/spring-data-relational-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/jsqlparser/jsqlparser/4.6/jsqlparser-4.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-commons/3.3.0/spring-data-commons-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-jdbc/6.1.8/spring-jdbc-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-r2dbc/6.1.8/spring-r2dbc-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/Users/sreekumarviswanathan/.m2/repository/io/r2dbc/r2dbc-spi/1.0.0.RELEASE/r2dbc-spi-1.0.0.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/Users/sreekumarviswanathan/.m2/repository/io/r2dbc/r2dbc-pool/1.0.1.RELEASE/r2dbc-pool-1.0.1.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/addons/reactor-pool/1.0.5/reactor-pool-1.0.5.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.3.0/spring-boot-starter-validation-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.24/tomcat-embed-el-10.1.24.jar:/Users/sreekumarviswanathan/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/Users/sreekumarviswanathan/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/classmate/1.7.0/classmate-1.7.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.3.0/spring-boot-starter-actuator-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.3.0/spring-boot-actuator-autoconfigure-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-actuator/3.3.0/spring-boot-actuator-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-observation/1.13.0/micrometer-observation-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-commons/1.13.0/micrometer-commons-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-jakarta9/1.13.0/micrometer-jakarta9-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-cache/3.3.0/spring-boot-starter-cache-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-context-support/6.1.8/spring-context-support-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-starter-circuitbreaker-reactor-resilience4j/3.1.3/spring-cloud-starter-circuitbreaker-reactor-resilience4j-3.1.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-starter/4.1.5/spring-cloud-starter-4.1.5.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-context/4.1.5/spring-cloud-context-4.1.5.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/security/spring-security-crypto/6.3.0/spring-security-crypto-6.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-commons/4.1.5/spring-cloud-commons-4.1.5.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/security/spring-security-rsa/1.1.3/spring-security-rsa-1.1.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/bouncycastle/bcprov-jdk18on/1.78/bcprov-jdk18on-1.78.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/cloud/spring-cloud-circuitbreaker-resilience4j/3.1.3/spring-cloud-circuitbreaker-resilience4j-3.1.3.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-spring-boot3/2.2.0/resilience4j-spring-boot3-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-spring6/2.2.0/resilience4j-spring6-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-annotations/2.2.0/resilience4j-annotations-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-consumer/2.2.0/resilience4j-consumer-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-circularbuffer/2.2.0/resilience4j-circularbuffer-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-framework-common/2.2.0/resilience4j-framework-common-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-configuration-processor/3.3.0/spring-boot-configuration-processor-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-circuitbreaker/2.2.0/resilience4j-circuitbreaker-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-core/2.2.0/resilience4j-core-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-timelimiter/2.2.0/resilience4j-timelimiter-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-reactor/2.2.0/resilience4j-reactor-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-ratelimiter/2.2.0/resilience4j-ratelimiter-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-bulkhead/2.2.0/resilience4j-bulkhead-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-retry/2.2.0/resilience4j-retry-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/github/resilience4j/resilience4j-micrometer/2.2.0/resilience4j-micrometer-2.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/postgresql/r2dbc-postgresql/1.0.5.RELEASE/r2dbc-postgresql-1.0.5.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/com/ongres/scram/client/2.1/client-2.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/ongres/scram/common/2.1/common-2.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/ongres/stringprep/saslprep/1.1/saslprep-1.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/ongres/stringprep/stringprep/1.1/stringprep-1.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/reactor-core/3.6.6/reactor-core-3.6.6.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/netty/reactor-netty-core/1.1.19/reactor-netty-core-1.1.19.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-handler/4.1.110.Final/netty-handler-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-resolver/4.1.110.Final/netty-resolver-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-buffer/4.1.110.Final/netty-buffer-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.110.Final/netty-transport-native-unix-common-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec/4.1.110.Final/netty-codec-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-handler-proxy/4.1.110.Final/netty-handler-proxy-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec-socks/4.1.110.Final/netty-codec-socks-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-resolver-dns/4.1.110.Final/netty-resolver-dns-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-codec-dns/4.1.110.Final/netty-codec-dns-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.110.Final/netty-resolver-dns-native-macos-4.1.110.Final-osx-x86_64.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-resolver-dns-classes-macos/4.1.110.Final/netty-resolver-dns-classes-macos-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-transport-native-epoll/4.1.110.Final/netty-transport-native-epoll-4.1.110.Final-linux-x86_64.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.110.Final/netty-transport-classes-epoll-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/r2dbc/r2dbc-h2/1.0.0.RELEASE/r2dbc-h2-1.0.0.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-data-redis-reactive/3.3.0/spring-boot-starter-data-redis-reactive-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/lettuce/lettuce-core/6.3.2.RELEASE/lettuce-core-6.3.2.RELEASE.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-common/4.1.110.Final/netty-common-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/io/netty/netty-transport/4.1.110.Final/netty-transport-4.1.110.Final.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-redis/3.3.0/spring-data-redis-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/data/spring-data-keyvalue/3.3.0/spring-data-keyvalue-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-oxm/6.1.8/spring-oxm-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-aop/6.1.8/spring-aop-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/kafka/spring-kafka/3.2.0/spring-kafka-3.2.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-context/6.1.8/spring-context-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-expression/6.1.8/spring-expression-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-messaging/6.1.8/spring-messaging-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-tx/6.1.8/spring-tx-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/retry/spring-retry/2.0.6/spring-retry-2.0.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/kafka/kafka-clients/3.7.0/kafka-clients-3.7.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/luben/zstd-jni/1.5.5-6/zstd-jni-1.5.5-6.jar:/Users/sreekumarviswanathan/.m2/repository/org/lz4/lz4-java/1.8.0/lz4-java-1.8.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-registry-prometheus/1.13.0/micrometer-registry-prometheus-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/io/micrometer/micrometer-core/1.13.0/micrometer-core-1.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/hdrhistogram/HdrHistogram/2.2.1/HdrHistogram-2.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-core/1.2.1/prometheus-metrics-core-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-model/1.2.1/prometheus-metrics-model-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-config/1.2.1/prometheus-metrics-config-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-tracer-common/1.2.1/prometheus-metrics-tracer-common-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-exposition-formats/1.2.1/prometheus-metrics-exposition-formats-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/prometheus/prometheus-metrics-shaded-protobuf/1.2.1/prometheus-metrics-shaded-protobuf-1.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/commons/commons-lang3/3.14.0/commons-lang3-3.14.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.1/jackson-databind-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.1/jackson-annotations-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.1/jackson-core-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.1/jackson-datatype-jsr310-2.17.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.3.0/spring-boot-starter-test-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-test/3.3.0/spring-boot-test-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.3.0/spring-boot-test-autoconfigure-3.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/jayway/jsonpath/json-path/2.9.0/json-path-2.9.0.jar:/Users/sreekumarviswanathan/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.2/jakarta.xml.bind-api-4.0.2.jar:/Users/sreekumarviswanathan/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.3/jakarta.activation-api-2.1.3.jar:/Users/sreekumarviswanathan/.m2/repository/net/minidev/json-smart/2.5.1/json-smart-2.5.1.jar:/Users/sreekumarviswanathan/.m2/repository/net/minidev/accessors-smart/2.5.1/accessors-smart-2.5.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/ow2/asm/asm/9.6/asm-9.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/assertj/assertj-core/3.25.3/assertj-core-3.25.3.jar:/Users/sreekumarviswanathan/.m2/repository/net/bytebuddy/byte-buddy/1.14.16/byte-buddy-1.14.16.jar:/Users/sreekumarviswanathan/.m2/repository/org/awaitility/awaitility/4.2.1/awaitility-4.2.1.jar:/Users/sreekumarviswanathan/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.2/junit-jupiter-5.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.2/junit-jupiter-params-5.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/Users/sreekumarviswanathan/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.16/byte-buddy-agent-1.14.16.jar:/Users/sreekumarviswanathan/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/Users/sreekumarviswanathan/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-core/6.1.8/spring-core-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-jcl/6.1.8/spring-jcl-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/springframework/spring-test/6.1.8/spring-test-6.1.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/Users/sreekumarviswanathan/.m2/repository/io/projectreactor/reactor-test/3.6.6/reactor-test-3.6.6.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/junit-jupiter/1.19.3/junit-jupiter-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/testcontainers/1.19.3/testcontainers-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/Users/sreekumarviswanathan/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/sreekumarviswanathan/.m2/repository/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/docker-java/docker-java-api/3.3.4/docker-java-api-3.3.4.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.3.4/docker-java-transport-zerodep-3.3.4.jar:/Users/sreekumarviswanathan/.m2/repository/com/github/docker-java/docker-java-transport/3.3.4/docker-java-transport-3.3.4.jar:/Users/sreekumarviswanathan/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/postgresql/1.19.3/postgresql-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/jdbc/1.19.3/jdbc-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/database-commons/1.19.3/database-commons-1.19.3.jar:/Users/sreekumarviswanathan/.m2/repository/org/testcontainers/kafka/1.19.3/kafka-1.19.3.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/sreekumarviswanathan"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-01-21"/>
+    <property name="java.home" value="/Users/sreekumarviswanathan/.sdkman/candidates/java/23.0.2-amzn"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
+    <property name="apple.awt.application.name" value="ForkedBooter"/>
+    <property name="surefire.real.class.path" value="/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/target/surefire/surefirebooter-20250828194827752_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.runtime.version" value="23.0.2+7-FR"/>
+    <property name="user.name" value="sreekumarviswanathan"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="15.6.1"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Corretto-23.0.2.7.1"/>
+    <property name="localRepository" value="/Users/sreekumarviswanathan/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/corretto/corretto-23/issues/"/>
+    <property name="java.io.tmpdir" value="/var/folders/nx/7xh1s5w90yn33khjrw5ckrh40000gn/T/"/>
+    <property name="java.version" value="23.0.2"/>
+    <property name="user.dir" value="/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="13801"/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/sreekumarviswanathan/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vendor" value="Amazon.com Inc."/>
+    <property name="java.vm.version" value="23.0.2+7-FR"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.class.version" value="67.0"/>
+    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="LOGGED_APPLICATION_NAME" value="[cashflow-generation-service] "/>
+  </properties>
+  <testcase name="detailedHealth_ShouldReturnComponentStatus" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.096">
+    <error message="Content type &apos;text/plain;charset=UTF-8&apos; not supported for bodyType=java.util.Map&lt;?, ?&gt;" type="org.springframework.web.reactive.function.UnsupportedMediaTypeException"><![CDATA[org.springframework.web.reactive.function.UnsupportedMediaTypeException: Content type 'text/plain;charset=UTF-8' not supported for bodyType=java.util.Map<?, ?>
+	at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+	Suppressed: The stacktrace has been enhanced by Reactor, refer to additional information below: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ Body from GET /health/detailed [DefaultClientResponse]
+Original Stack Trace:
+		at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+		at org.springframework.web.reactive.function.BodyExtractors.lambda$toMono$2(BodyExtractors.java:84)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.body(DefaultClientResponse.java:135)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.bodyToMono(DefaultClientResponse.java:150)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.detailedHealth_ShouldReturnComponentStatus(CashflowControllerTest.java:291)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:146)
+		at reactor.core.publisher.Mono.block(Mono.java:1807)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.detailedHealth_ShouldReturnComponentStatus(CashflowControllerTest.java:291)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></error>
+    <system-out><![CDATA[19:48:28.422 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.finos.cashflow.controller.CashflowControllerTest]: CashflowControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:48:28.527 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.finos.cashflow.CashflowGenerationServiceApplication for test class com.finos.cashflow.controller.CashflowControllerTest
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.0)
+
+2025-08-28 19:48:28 [main] INFO  c.f.c.c.CashflowControllerTest - Starting CashflowControllerTest using Java 23.0.2 with PID 13801 (started by sreekumarviswanathan in /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service)
+2025-08-28 19:48:28 [main] DEBUG c.f.c.c.CashflowControllerTest - Running with Spring Boot v3.3.0, Spring v6.1.8
+2025-08-28 19:48:28 [main] INFO  c.f.c.c.CashflowControllerTest - No active profile set, falling back to 1 default profile: "default"
+2025-08-28 19:48:29 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-28 19:48:29 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data R2DBC repositories in DEFAULT mode.
+2025-08-28 19:48:29 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 7 ms. Found 0 R2DBC repository interfaces.
+2025-08-28 19:48:30 [main] INFO  c.f.c.c.CashflowControllerTest - Started CashflowControllerTest in 1.75 seconds (process running for 2.511)
+]]></system-out>
+    <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (/Users/sreekumarviswanathan/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.16/byte-buddy-agent-1.14.16.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+  </testcase>
+  <testcase name="generateCashflows_ShouldReturnAcceptedResponse" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.101">
+    <system-out><![CDATA[2025-08-28 19:48:30 [parallel-2] INFO  c.f.c.controller.CashflowController - Received cashflow generation request for 1 contracts
+]]></system-out>
+  </testcase>
+  <testcase name="generatePerformanceCashflows_ShouldReturnAcceptedResponse" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.023">
+    <failure message="Status expected:&lt;202 ACCEPTED&gt; but was:&lt;500 INTERNAL_SERVER_ERROR&gt;" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: Status expected:<202 ACCEPTED> but was:<500 INTERNAL_SERVER_ERROR>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isAccepted(StatusAssertions.java:82)
+	at com.finos.cashflow.controller.CashflowControllerTest.generatePerformanceCashflows_ShouldReturnAcceptedResponse(CashflowControllerTest.java:212)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></failure>
+    <system-out><![CDATA[2025-08-28 19:48:30 [parallel-3] INFO  c.f.c.controller.CashflowController - Received performance cashflow generation request for 1 contracts
+2025-08-28 19:48:30 [parallel-3] ERROR o.s.b.a.w.r.e.AbstractErrorWebExceptionHandler - [1862ae85]  500 Server Error for HTTP POST "/cashflows/generate/performance"
+java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.map(java.util.function.Function)" because the return value of "com.finos.cashflow.service.CashflowGenerationService.generatePerformanceCashflows(com.finos.cashflow.model.CashflowGenerationRequest)" is null
+	at com.finos.cashflow.controller.CashflowController.generatePerformanceCashflows(CashflowController.java:87)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ HTTP POST "/cashflows/generate/performance" [ExceptionHandlingWebHandler]
+Original Stack Trace:
+		at com.finos.cashflow.controller.CashflowController.generatePerformanceCashflows(CashflowController.java:87)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.springframework.web.reactive.result.method.InvocableHandlerMethod.lambda$invoke$0(InvocableHandlerMethod.java:198)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:132)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.signal(MonoZip.java:297)
+		at reactor.core.publisher.MonoZip$ZipInner.onNext(MonoZip.java:478)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.FluxDefaultIfEmpty$DefaultIfEmptySubscriber.onNext(FluxDefaultIfEmpty.java:122)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:158)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onNext(FluxMapFuseable.java:299)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onNext(FluxFilterFuseable.java:337)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.completePossiblyEmpty(Operators.java:2097)
+		at reactor.core.publisher.MonoCollect$CollectSubscriber.onComplete(MonoCollect.java:145)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onComplete(FluxContextWrite.java:126)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2573)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.request(Operators.java:2067)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.request(FluxFilterFuseable.java:411)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.request(FluxMapFuseable.java:360)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.request(MonoFlatMap.java:194)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe(FluxOnErrorResume.java:74)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onSubscribe(MonoFlatMap.java:117)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onSubscribe(FluxContextWrite.java:101)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onSubscribe(FluxMapFuseable.java:265)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onSubscribe(FluxFilterFuseable.java:305)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.onSubscribe(Operators.java:2051)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onSubscribe(FluxContextWrite.java:101)
+		at reactor.core.publisher.MonoJust.subscribe(MonoJust.java:55)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDeferContextual.subscribe(MonoDeferContextual.java:55)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.request(MonoZip.java:220)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.request(MonoFlatMap.java:194)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onSubscribe(MonoIgnoreThen.java:135)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onSubscribe(MonoFlatMap.java:117)
+		at reactor.core.publisher.MonoZip.subscribe(MonoZip.java:129)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:53)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:241)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onComplete(MonoIgnoreThen.java:204)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onComplete(MonoFlatMap.java:189)
+		at reactor.core.publisher.Operators.complete(Operators.java:137)
+		at reactor.core.publisher.MonoZip.subscribe(MonoZip.java:121)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:265)
+		at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onNext(MonoNext.java:82)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.innerNext(FluxConcatMapNoPrefetch.java:259)
+		at reactor.core.publisher.FluxConcatMap$ConcatMapInner.onNext(FluxConcatMap.java:865)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onNext(FluxMapFuseable.java:129)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2571)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.request(MonoPeekTerminal.java:139)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request(FluxMapFuseable.java:171)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.request(Operators.java:2331)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.request(FluxConcatMapNoPrefetch.java:339)
+		at reactor.core.publisher.MonoNext$NextSubscriber.request(MonoNext.java:108)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onSubscribe(MonoNext.java:70)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.onSubscribe(FluxConcatMapNoPrefetch.java:164)
+		at reactor.core.publisher.FluxIterable.subscribe(FluxIterable.java:201)
+		at reactor.core.publisher.FluxIterable.subscribe(FluxIterable.java:83)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:53)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:265)
+		at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.Mono.subscribeWith(Mono.java:4634)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4534)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4470)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.lambda$doConnect$2(HttpHandlerConnector.java:100)
+		at org.springframework.mock.http.client.reactive.MockClientHttpRequest.lambda$writeWith$2(MockClientHttpRequest.java:124)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:45)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.FluxConcatIterable$ConcatIterableSubscriber.onComplete(FluxConcatIterable.java:148)
+		at reactor.core.publisher.FluxConcatIterable.subscribe(FluxConcatIterable.java:60)
+		at reactor.core.publisher.MonoFromFluxOperator.subscribe(MonoFromFluxOperator.java:83)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.Operators$MonoInnerProducerBase.complete(Operators.java:2864)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.onComplete(MonoSingle.java:180)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onComplete(FluxMapFuseable.java:152)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2573)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request(FluxMapFuseable.java:171)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.doOnRequest(MonoSingle.java:103)
+		at reactor.core.publisher.Operators$MonoInnerProducerBase.request(Operators.java:2931)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.onSubscribe(MonoSingle.java:115)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe(FluxMapFuseable.java:96)
+		at reactor.core.publisher.MonoJust.subscribe(MonoJust.java:55)
+		at reactor.core.publisher.FluxFromMonoOperator.subscribe(FluxFromMonoOperator.java:85)
+		at reactor.core.publisher.FluxDeferContextual.subscribe(FluxDeferContextual.java:57)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.Mono.subscribeWith(Mono.java:4634)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4534)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4470)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.doConnect(HttpHandlerConnector.java:114)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.lambda$connect$0(HttpHandlerConnector.java:81)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:45)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoSubscribeOn$SubscribeOnSubscriber.run(MonoSubscribeOn.java:126)
+		at reactor.core.scheduler.WorkerTask.call(WorkerTask.java:84)
+		at reactor.core.scheduler.WorkerTask.call(WorkerTask.java:37)
+		at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+		at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+		at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+		at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+		at java.base/java.lang.Thread.run(Thread.java:1575)
+2025-08-28 19:48:30 [main] ERROR o.s.t.w.r.server.ExchangeResult - Request details for assertion failure:
+
+> POST /cashflows/generate/performance
+> WebTestClient-Request-Id: [3]
+> Content-Type: [application/json]
+> Content-Length: [250]
+
+{"contractIds":["aa836b68-ed0b-4116-9b64-c87991b49c30"],"legIds":null,"calculationDate":"2025-08-28","cashflowTypes":["PERFORMANCE"],"businessRules":null,"createdBy":null,"equityRequest":true,"interestRequest":false,"primaryCalculationType":"EQUITY"}
+
+< 500 INTERNAL_SERVER_ERROR Internal Server Error
+< Vary: [Origin, Access-Control-Request-Method, Access-Control-Request-Headers]
+< Content-Type: [application/json]
+< Content-Length: [419]
+
+{"timestamp":"2025-08-28T23:48:30.539+00:00","path":"/cashflows/generate/performance","status":500,"error":"Internal Server Error","requestId":"1862ae85","message":"Cannot invoke \"reactor.core.publisher.Mono.map(java.util.function.Function)\" because the return value of \"com.finos.cashflow.service.CashflowGenerationService.generatePerformanceCashflows(com.finos.cashflow.model.CashflowGenerationRequest)\" is null"}
+
+]]></system-out>
+  </testcase>
+  <testcase name="generateInterestCashflows_WithNonInterestTypes_ShouldReturnBadRequest" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.009">
+    <failure message="Status expected:&lt;400 BAD_REQUEST&gt; but was:&lt;500 INTERNAL_SERVER_ERROR&gt;" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: Status expected:<400 BAD_REQUEST> but was:<500 INTERNAL_SERVER_ERROR>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isBadRequest(StatusAssertions.java:131)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateInterestCashflows_WithNonInterestTypes_ShouldReturnBadRequest(CashflowControllerTest.java:164)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></failure>
+    <system-out><![CDATA[2025-08-28 19:48:30 [parallel-4] INFO  c.f.c.controller.CashflowController - Received interest cashflow generation request for 1 contracts
+2025-08-28 19:48:30 [parallel-4] ERROR o.s.b.a.w.r.e.AbstractErrorWebExceptionHandler - [4ddb62e5]  500 Server Error for HTTP POST "/cashflows/generate/interest"
+java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.map(java.util.function.Function)" because the return value of "com.finos.cashflow.service.CashflowGenerationService.generateInterestCashflows(com.finos.cashflow.model.CashflowGenerationRequest)" is null
+	at com.finos.cashflow.controller.CashflowController.generateInterestCashflows(CashflowController.java:63)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ HTTP POST "/cashflows/generate/interest" [ExceptionHandlingWebHandler]
+Original Stack Trace:
+		at com.finos.cashflow.controller.CashflowController.generateInterestCashflows(CashflowController.java:63)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.springframework.web.reactive.result.method.InvocableHandlerMethod.lambda$invoke$0(InvocableHandlerMethod.java:198)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:132)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.signal(MonoZip.java:297)
+		at reactor.core.publisher.MonoZip$ZipInner.onNext(MonoZip.java:478)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.FluxDefaultIfEmpty$DefaultIfEmptySubscriber.onNext(FluxDefaultIfEmpty.java:122)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:158)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onNext(FluxMapFuseable.java:299)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onNext(FluxFilterFuseable.java:337)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.completePossiblyEmpty(Operators.java:2097)
+		at reactor.core.publisher.MonoCollect$CollectSubscriber.onComplete(MonoCollect.java:145)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onComplete(FluxContextWrite.java:126)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2573)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.request(Operators.java:2067)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.request(FluxFilterFuseable.java:411)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.request(FluxMapFuseable.java:360)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.request(MonoFlatMap.java:194)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe(FluxOnErrorResume.java:74)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onSubscribe(MonoFlatMap.java:117)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onSubscribe(FluxContextWrite.java:101)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onSubscribe(FluxMapFuseable.java:265)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onSubscribe(FluxFilterFuseable.java:305)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.onSubscribe(Operators.java:2051)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onSubscribe(FluxContextWrite.java:101)
+		at reactor.core.publisher.MonoJust.subscribe(MonoJust.java:55)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDeferContextual.subscribe(MonoDeferContextual.java:55)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.request(MonoZip.java:220)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.request(MonoFlatMap.java:194)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onSubscribe(MonoIgnoreThen.java:135)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onSubscribe(MonoFlatMap.java:117)
+		at reactor.core.publisher.MonoZip.subscribe(MonoZip.java:129)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:53)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:241)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onComplete(MonoIgnoreThen.java:204)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onComplete(MonoFlatMap.java:189)
+		at reactor.core.publisher.Operators.complete(Operators.java:137)
+		at reactor.core.publisher.MonoZip.subscribe(MonoZip.java:121)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:265)
+		at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onNext(MonoNext.java:82)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.innerNext(FluxConcatMapNoPrefetch.java:259)
+		at reactor.core.publisher.FluxConcatMap$ConcatMapInner.onNext(FluxConcatMap.java:865)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onNext(FluxMapFuseable.java:129)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2571)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.request(MonoPeekTerminal.java:139)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request(FluxMapFuseable.java:171)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.request(Operators.java:2331)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.request(FluxConcatMapNoPrefetch.java:339)
+		at reactor.core.publisher.MonoNext$NextSubscriber.request(MonoNext.java:108)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onSubscribe(MonoNext.java:70)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.onSubscribe(FluxConcatMapNoPrefetch.java:164)
+		at reactor.core.publisher.FluxIterable.subscribe(FluxIterable.java:201)
+		at reactor.core.publisher.FluxIterable.subscribe(FluxIterable.java:83)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:53)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:265)
+		at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.Mono.subscribeWith(Mono.java:4634)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4534)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4470)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.lambda$doConnect$2(HttpHandlerConnector.java:100)
+		at org.springframework.mock.http.client.reactive.MockClientHttpRequest.lambda$writeWith$2(MockClientHttpRequest.java:124)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:45)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.FluxConcatIterable$ConcatIterableSubscriber.onComplete(FluxConcatIterable.java:148)
+		at reactor.core.publisher.FluxConcatIterable.subscribe(FluxConcatIterable.java:60)
+		at reactor.core.publisher.MonoFromFluxOperator.subscribe(MonoFromFluxOperator.java:83)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.Operators$MonoInnerProducerBase.complete(Operators.java:2864)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.onComplete(MonoSingle.java:180)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onComplete(FluxMapFuseable.java:152)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2573)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request(FluxMapFuseable.java:171)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.doOnRequest(MonoSingle.java:103)
+		at reactor.core.publisher.Operators$MonoInnerProducerBase.request(Operators.java:2931)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.onSubscribe(MonoSingle.java:115)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe(FluxMapFuseable.java:96)
+		at reactor.core.publisher.MonoJust.subscribe(MonoJust.java:55)
+		at reactor.core.publisher.FluxFromMonoOperator.subscribe(FluxFromMonoOperator.java:85)
+		at reactor.core.publisher.FluxDeferContextual.subscribe(FluxDeferContextual.java:57)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.Mono.subscribeWith(Mono.java:4634)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4534)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4470)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.doConnect(HttpHandlerConnector.java:114)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.lambda$connect$0(HttpHandlerConnector.java:81)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:45)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoSubscribeOn$SubscribeOnSubscriber.run(MonoSubscribeOn.java:126)
+		at reactor.core.scheduler.WorkerTask.call(WorkerTask.java:84)
+		at reactor.core.scheduler.WorkerTask.call(WorkerTask.java:37)
+		at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+		at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+		at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+		at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+		at java.base/java.lang.Thread.run(Thread.java:1575)
+2025-08-28 19:48:30 [main] ERROR o.s.t.w.r.server.ExchangeResult - Request details for assertion failure:
+
+> POST /cashflows/generate/interest
+> WebTestClient-Request-Id: [4]
+> Content-Type: [application/json]
+> Content-Length: [250]
+
+{"contractIds":["0d089194-a53d-4d0d-921e-5f6f817fd1e6"],"legIds":null,"calculationDate":"2025-08-28","cashflowTypes":["PERFORMANCE"],"businessRules":null,"createdBy":null,"equityRequest":true,"interestRequest":false,"primaryCalculationType":"EQUITY"}
+
+< 500 INTERNAL_SERVER_ERROR Internal Server Error
+< Vary: [Origin, Access-Control-Request-Method, Access-Control-Request-Headers]
+< Content-Type: [application/json]
+< Content-Length: [413]
+
+{"timestamp":"2025-08-28T23:48:30.558+00:00","path":"/cashflows/generate/interest","status":500,"error":"Internal Server Error","requestId":"4ddb62e5","message":"Cannot invoke \"reactor.core.publisher.Mono.map(java.util.function.Function)\" because the return value of \"com.finos.cashflow.service.CashflowGenerationService.generateInterestCashflows(com.finos.cashflow.model.CashflowGenerationRequest)\" is null"}
+
+]]></system-out>
+  </testcase>
+  <testcase name="generateDividendCashflows_ShouldReturnAcceptedResponse" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.007">
+    <failure message="Status expected:&lt;202 ACCEPTED&gt; but was:&lt;500 INTERNAL_SERVER_ERROR&gt;" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: Status expected:<202 ACCEPTED> but was:<500 INTERNAL_SERVER_ERROR>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isAccepted(StatusAssertions.java:82)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateDividendCashflows_ShouldReturnAcceptedResponse(CashflowControllerTest.java:185)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></failure>
+    <system-out><![CDATA[2025-08-28 19:48:30 [parallel-5] INFO  c.f.c.controller.CashflowController - Received dividend cashflow generation request for 1 contracts
+2025-08-28 19:48:30 [parallel-5] ERROR o.s.b.a.w.r.e.AbstractErrorWebExceptionHandler - [2b2ca597]  500 Server Error for HTTP POST "/cashflows/generate/dividend"
+java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.map(java.util.function.Function)" because the return value of "com.finos.cashflow.service.CashflowGenerationService.generateDividendCashflows(com.finos.cashflow.model.CashflowGenerationRequest)" is null
+	at com.finos.cashflow.controller.CashflowController.generateDividendCashflows(CashflowController.java:75)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ HTTP POST "/cashflows/generate/dividend" [ExceptionHandlingWebHandler]
+Original Stack Trace:
+		at com.finos.cashflow.controller.CashflowController.generateDividendCashflows(CashflowController.java:75)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.springframework.web.reactive.result.method.InvocableHandlerMethod.lambda$invoke$0(InvocableHandlerMethod.java:198)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:132)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.signal(MonoZip.java:297)
+		at reactor.core.publisher.MonoZip$ZipInner.onNext(MonoZip.java:478)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.FluxDefaultIfEmpty$DefaultIfEmptySubscriber.onNext(FluxDefaultIfEmpty.java:122)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:158)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onNext(FluxMapFuseable.java:299)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onNext(FluxFilterFuseable.java:337)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.completePossiblyEmpty(Operators.java:2097)
+		at reactor.core.publisher.MonoCollect$CollectSubscriber.onComplete(MonoCollect.java:145)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onComplete(FluxContextWrite.java:126)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2573)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.request(Operators.java:2067)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.request(FluxFilterFuseable.java:411)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.request(FluxMapFuseable.java:360)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.request(MonoFlatMap.java:194)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe(FluxOnErrorResume.java:74)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onSubscribe(MonoFlatMap.java:117)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onSubscribe(FluxContextWrite.java:101)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onSubscribe(FluxMapFuseable.java:265)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onSubscribe(FluxFilterFuseable.java:305)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.onSubscribe(Operators.java:2051)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onSubscribe(FluxContextWrite.java:101)
+		at reactor.core.publisher.MonoJust.subscribe(MonoJust.java:55)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDeferContextual.subscribe(MonoDeferContextual.java:55)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.request(MonoZip.java:220)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.request(MonoFlatMap.java:194)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onSubscribe(MonoIgnoreThen.java:135)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onSubscribe(MonoFlatMap.java:117)
+		at reactor.core.publisher.MonoZip.subscribe(MonoZip.java:129)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:53)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:241)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onComplete(MonoIgnoreThen.java:204)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onComplete(MonoFlatMap.java:189)
+		at reactor.core.publisher.Operators.complete(Operators.java:137)
+		at reactor.core.publisher.MonoZip.subscribe(MonoZip.java:121)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:265)
+		at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onNext(MonoNext.java:82)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.innerNext(FluxConcatMapNoPrefetch.java:259)
+		at reactor.core.publisher.FluxConcatMap$ConcatMapInner.onNext(FluxConcatMap.java:865)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onNext(FluxMapFuseable.java:129)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2571)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.request(MonoPeekTerminal.java:139)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request(FluxMapFuseable.java:171)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.request(Operators.java:2331)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.request(FluxConcatMapNoPrefetch.java:339)
+		at reactor.core.publisher.MonoNext$NextSubscriber.request(MonoNext.java:108)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onSubscribe(MonoNext.java:70)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.onSubscribe(FluxConcatMapNoPrefetch.java:164)
+		at reactor.core.publisher.FluxIterable.subscribe(FluxIterable.java:201)
+		at reactor.core.publisher.FluxIterable.subscribe(FluxIterable.java:83)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:53)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:265)
+		at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.Mono.subscribeWith(Mono.java:4634)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4534)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4470)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.lambda$doConnect$2(HttpHandlerConnector.java:100)
+		at org.springframework.mock.http.client.reactive.MockClientHttpRequest.lambda$writeWith$2(MockClientHttpRequest.java:124)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:45)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.FluxConcatIterable$ConcatIterableSubscriber.onComplete(FluxConcatIterable.java:148)
+		at reactor.core.publisher.FluxConcatIterable.subscribe(FluxConcatIterable.java:60)
+		at reactor.core.publisher.MonoFromFluxOperator.subscribe(MonoFromFluxOperator.java:83)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.Operators$MonoInnerProducerBase.complete(Operators.java:2864)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.onComplete(MonoSingle.java:180)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onComplete(FluxMapFuseable.java:152)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2573)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request(FluxMapFuseable.java:171)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.doOnRequest(MonoSingle.java:103)
+		at reactor.core.publisher.Operators$MonoInnerProducerBase.request(Operators.java:2931)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.onSubscribe(MonoSingle.java:115)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe(FluxMapFuseable.java:96)
+		at reactor.core.publisher.MonoJust.subscribe(MonoJust.java:55)
+		at reactor.core.publisher.FluxFromMonoOperator.subscribe(FluxFromMonoOperator.java:85)
+		at reactor.core.publisher.FluxDeferContextual.subscribe(FluxDeferContextual.java:57)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.Mono.subscribeWith(Mono.java:4634)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4534)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4470)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.doConnect(HttpHandlerConnector.java:114)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.lambda$connect$0(HttpHandlerConnector.java:81)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:45)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoSubscribeOn$SubscribeOnSubscriber.run(MonoSubscribeOn.java:126)
+		at reactor.core.scheduler.WorkerTask.call(WorkerTask.java:84)
+		at reactor.core.scheduler.WorkerTask.call(WorkerTask.java:37)
+		at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+		at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+		at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+		at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+		at java.base/java.lang.Thread.run(Thread.java:1575)
+2025-08-28 19:48:30 [main] ERROR o.s.t.w.r.server.ExchangeResult - Request details for assertion failure:
+
+> POST /cashflows/generate/dividend
+> WebTestClient-Request-Id: [5]
+> Content-Type: [application/json]
+> Content-Length: [247]
+
+{"contractIds":["24d1720a-d5f0-4943-b69e-30514020b9be"],"legIds":null,"calculationDate":"2025-08-28","cashflowTypes":["DIVIDEND"],"businessRules":null,"createdBy":null,"equityRequest":true,"interestRequest":false,"primaryCalculationType":"EQUITY"}
+
+< 500 INTERNAL_SERVER_ERROR Internal Server Error
+< Vary: [Origin, Access-Control-Request-Method, Access-Control-Request-Headers]
+< Content-Type: [application/json]
+< Content-Length: [413]
+
+{"timestamp":"2025-08-28T23:48:30.568+00:00","path":"/cashflows/generate/dividend","status":500,"error":"Internal Server Error","requestId":"2b2ca597","message":"Cannot invoke \"reactor.core.publisher.Mono.map(java.util.function.Function)\" because the return value of \"com.finos.cashflow.service.CashflowGenerationService.generateDividendCashflows(com.finos.cashflow.model.CashflowGenerationRequest)\" is null"}
+
+]]></system-out>
+  </testcase>
+  <testcase name="generateCashflowsReactive_ShouldReturnStreamOfCashflows" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.008">
+    <failure message="Status expected:&lt;200 OK&gt; but was:&lt;202 ACCEPTED&gt;" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: Status expected:<200 OK> but was:<202 ACCEPTED>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isOk(StatusAssertions.java:68)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateCashflowsReactive_ShouldReturnStreamOfCashflows(CashflowControllerTest.java:100)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></failure>
+    <system-out><![CDATA[2025-08-28 19:48:30 [parallel-6] INFO  c.f.c.controller.CashflowController - Received reactive Actor-based cashflow generation request for 1 contracts
+2025-08-28 19:48:30 [main] ERROR o.s.t.w.r.server.ExchangeResult - Request details for assertion failure:
+
+> POST /cashflows/generate/reactive
+> WebTestClient-Request-Id: [6]
+> Content-Type: [application/json]
+> Content-Length: [249]
+
+{"contractIds":["a9589dc5-6ba8-42fc-b672-7b2fdb728e62"],"legIds":null,"calculationDate":"2025-08-28","cashflowTypes":["INTEREST"],"businessRules":null,"createdBy":null,"equityRequest":false,"interestRequest":true,"primaryCalculationType":"INTEREST"}
+
+< 202 ACCEPTED Accepted
+< Vary: [Origin, Access-Control-Request-Method, Access-Control-Request-Headers]
+< Content-Type: [application/json]
+< Content-Length: [295]
+
+{"jobId":"5b201a0e-2268-472a-b70b-53ae64a5edfb","estimatedCompletionTime":null,"contractsProcessed":1,"message":"Reactive cashflow generation completed using Actor pattern","status":"ACCEPTED","createdAt":"2025-08-28T19:48:30","accepted":true,"processing":false,"failed":false,"completed":false}
+
+]]></system-out>
+  </testcase>
+  <testcase name="generateInterestCashflows_ShouldReturnAcceptedResponse" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.006">
+    <failure message="Status expected:&lt;202 ACCEPTED&gt; but was:&lt;500 INTERNAL_SERVER_ERROR&gt;" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: Status expected:<202 ACCEPTED> but was:<500 INTERNAL_SERVER_ERROR>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isAccepted(StatusAssertions.java:82)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateInterestCashflows_ShouldReturnAcceptedResponse(CashflowControllerTest.java:143)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></failure>
+    <system-out><![CDATA[2025-08-28 19:48:30 [parallel-7] INFO  c.f.c.controller.CashflowController - Received interest cashflow generation request for 1 contracts
+2025-08-28 19:48:30 [parallel-7] ERROR o.s.b.a.w.r.e.AbstractErrorWebExceptionHandler - [1474cb94]  500 Server Error for HTTP POST "/cashflows/generate/interest"
+java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.map(java.util.function.Function)" because the return value of "com.finos.cashflow.service.CashflowGenerationService.generateInterestCashflows(com.finos.cashflow.model.CashflowGenerationRequest)" is null
+	at com.finos.cashflow.controller.CashflowController.generateInterestCashflows(CashflowController.java:63)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ HTTP POST "/cashflows/generate/interest" [ExceptionHandlingWebHandler]
+Original Stack Trace:
+		at com.finos.cashflow.controller.CashflowController.generateInterestCashflows(CashflowController.java:63)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.springframework.web.reactive.result.method.InvocableHandlerMethod.lambda$invoke$0(InvocableHandlerMethod.java:198)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:132)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.signal(MonoZip.java:297)
+		at reactor.core.publisher.MonoZip$ZipInner.onNext(MonoZip.java:478)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.FluxDefaultIfEmpty$DefaultIfEmptySubscriber.onNext(FluxDefaultIfEmpty.java:122)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:158)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onNext(FluxMapFuseable.java:299)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onNext(FluxFilterFuseable.java:337)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.completePossiblyEmpty(Operators.java:2097)
+		at reactor.core.publisher.MonoCollect$CollectSubscriber.onComplete(MonoCollect.java:145)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onComplete(FluxPeekFuseable.java:277)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onComplete(FluxContextWrite.java:126)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2573)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.request(FluxPeekFuseable.java:144)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.request(Operators.java:2067)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.request(FluxFilterFuseable.java:411)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.request(FluxMapFuseable.java:360)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.request(MonoFlatMap.java:194)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe(FluxOnErrorResume.java:74)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onSubscribe(MonoFlatMap.java:117)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onSubscribe(FluxContextWrite.java:101)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onSubscribe(FluxMapFuseable.java:265)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onSubscribe(FluxFilterFuseable.java:305)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.onSubscribe(Operators.java:2051)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxPeekFuseable$PeekFuseableSubscriber.onSubscribe(FluxPeekFuseable.java:178)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onSubscribe(FluxContextWrite.java:101)
+		at reactor.core.publisher.MonoJust.subscribe(MonoJust.java:55)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDeferContextual.subscribe(MonoDeferContextual.java:55)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoZip$ZipCoordinator.request(MonoZip.java:220)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.request(MonoFlatMap.java:194)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onSubscribe(MonoIgnoreThen.java:135)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onSubscribe(MonoFlatMap.java:117)
+		at reactor.core.publisher.MonoZip.subscribe(MonoZip.java:129)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:53)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:241)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onComplete(MonoIgnoreThen.java:204)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onComplete(MonoFlatMap.java:189)
+		at reactor.core.publisher.Operators.complete(Operators.java:137)
+		at reactor.core.publisher.MonoZip.subscribe(MonoZip.java:121)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:265)
+		at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onNext(MonoNext.java:82)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.innerNext(FluxConcatMapNoPrefetch.java:259)
+		at reactor.core.publisher.FluxConcatMap$ConcatMapInner.onNext(FluxConcatMap.java:865)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onNext(FluxMapFuseable.java:129)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2571)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.request(MonoPeekTerminal.java:139)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request(FluxMapFuseable.java:171)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.request(Operators.java:2331)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.request(FluxConcatMapNoPrefetch.java:339)
+		at reactor.core.publisher.MonoNext$NextSubscriber.request(MonoNext.java:108)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onSubscribe(MonoNext.java:70)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.onSubscribe(FluxConcatMapNoPrefetch.java:164)
+		at reactor.core.publisher.FluxIterable.subscribe(FluxIterable.java:201)
+		at reactor.core.publisher.FluxIterable.subscribe(FluxIterable.java:83)
+		at reactor.core.publisher.InternalMonoOperator.subscribe(InternalMonoOperator.java:76)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:53)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:265)
+		at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.Mono.subscribeWith(Mono.java:4634)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4534)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4470)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.lambda$doConnect$2(HttpHandlerConnector.java:100)
+		at org.springframework.mock.http.client.reactive.MockClientHttpRequest.lambda$writeWith$2(MockClientHttpRequest.java:124)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:45)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.FluxConcatIterable$ConcatIterableSubscriber.onComplete(FluxConcatIterable.java:148)
+		at reactor.core.publisher.FluxConcatIterable.subscribe(FluxConcatIterable.java:60)
+		at reactor.core.publisher.MonoFromFluxOperator.subscribe(MonoFromFluxOperator.java:83)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.Operators$MonoInnerProducerBase.complete(Operators.java:2864)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.onComplete(MonoSingle.java:180)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onComplete(FluxMapFuseable.java:152)
+		at reactor.core.publisher.Operators$ScalarSubscription.request(Operators.java:2573)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request(FluxMapFuseable.java:171)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.doOnRequest(MonoSingle.java:103)
+		at reactor.core.publisher.Operators$MonoInnerProducerBase.request(Operators.java:2931)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+		at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+		at reactor.core.publisher.MonoSingle$SingleSubscriber.onSubscribe(MonoSingle.java:115)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe(FluxMapFuseable.java:96)
+		at reactor.core.publisher.MonoJust.subscribe(MonoJust.java:55)
+		at reactor.core.publisher.FluxFromMonoOperator.subscribe(FluxFromMonoOperator.java:85)
+		at reactor.core.publisher.FluxDeferContextual.subscribe(FluxDeferContextual.java:57)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.Mono.subscribeWith(Mono.java:4634)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4534)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4470)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.doConnect(HttpHandlerConnector.java:114)
+		at org.springframework.test.web.reactive.server.HttpHandlerConnector.lambda$connect$0(HttpHandlerConnector.java:81)
+		at reactor.core.publisher.MonoDefer.subscribe(MonoDefer.java:45)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4568)
+		at reactor.core.publisher.MonoSubscribeOn$SubscribeOnSubscriber.run(MonoSubscribeOn.java:126)
+		at reactor.core.scheduler.WorkerTask.call(WorkerTask.java:84)
+		at reactor.core.scheduler.WorkerTask.call(WorkerTask.java:37)
+		at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+		at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+		at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+		at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+		at java.base/java.lang.Thread.run(Thread.java:1575)
+2025-08-28 19:48:30 [main] ERROR o.s.t.w.r.server.ExchangeResult - Request details for assertion failure:
+
+> POST /cashflows/generate/interest
+> WebTestClient-Request-Id: [7]
+> Content-Type: [application/json]
+> Content-Length: [249]
+
+{"contractIds":["0c541a53-ab6e-414b-843b-a6dc976723c7"],"legIds":null,"calculationDate":"2025-08-28","cashflowTypes":["INTEREST"],"businessRules":null,"createdBy":null,"equityRequest":false,"interestRequest":true,"primaryCalculationType":"INTEREST"}
+
+< 500 INTERNAL_SERVER_ERROR Internal Server Error
+< Vary: [Origin, Access-Control-Request-Method, Access-Control-Request-Headers]
+< Content-Type: [application/json]
+< Content-Length: [413]
+
+{"timestamp":"2025-08-28T23:48:30.584+00:00","path":"/cashflows/generate/interest","status":500,"error":"Internal Server Error","requestId":"1474cb94","message":"Cannot invoke \"reactor.core.publisher.Mono.map(java.util.function.Function)\" because the return value of \"com.finos.cashflow.service.CashflowGenerationService.generateInterestCashflows(com.finos.cashflow.model.CashflowGenerationRequest)\" is null"}
+
+]]></system-out>
+  </testcase>
+  <testcase name="health_ShouldReturnUpStatus" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.004">
+    <error message="Content type &apos;text/plain;charset=UTF-8&apos; not supported for bodyType=java.util.Map&lt;?, ?&gt;" type="org.springframework.web.reactive.function.UnsupportedMediaTypeException"><![CDATA[org.springframework.web.reactive.function.UnsupportedMediaTypeException: Content type 'text/plain;charset=UTF-8' not supported for bodyType=java.util.Map<?, ?>
+	at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+	Suppressed: The stacktrace has been enhanced by Reactor, refer to additional information below: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ Body from GET /health [DefaultClientResponse]
+Original Stack Trace:
+		at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+		at org.springframework.web.reactive.function.BodyExtractors.lambda$toMono$2(BodyExtractors.java:84)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.body(DefaultClientResponse.java:135)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.bodyToMono(DefaultClientResponse.java:150)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.health_ShouldReturnUpStatus(CashflowControllerTest.java:277)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:146)
+		at reactor.core.publisher.Mono.block(Mono.java:1807)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.health_ShouldReturnUpStatus(CashflowControllerTest.java:277)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></error>
+  </testcase>
+  <testcase name="generateCashflowsStream_ShouldReturnServerSentEvents" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.008">
+    <system-out><![CDATA[2025-08-28 19:48:30 [parallel-9] INFO  c.f.c.controller.CashflowController - Received streaming Actor-based cashflow generation request for 1 contracts
+]]></system-out>
+  </testcase>
+  <testcase name="generateDailyAccruals_ShouldReturnStreamOfCashflows" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.008">
+    <failure message="Status expected:&lt;200 OK&gt; but was:&lt;404 NOT_FOUND&gt;" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: Status expected:<200 OK> but was:<404 NOT_FOUND>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isOk(StatusAssertions.java:68)
+	at com.finos.cashflow.controller.CashflowControllerTest.generateDailyAccruals_ShouldReturnStreamOfCashflows(CashflowControllerTest.java:241)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></failure>
+    <system-out><![CDATA[2025-08-28 19:48:30 [main] ERROR o.s.t.w.r.server.ExchangeResult - Request details for assertion failure:
+
+> POST /cashflows/accruals/daily?contractIds=d32faf47-1e87-449c-aff9-c5ee4aa64392&startDate=2025-08-21&endDate=2025-08-28
+> WebTestClient-Request-Id: [10]
+
+No content
+
+< 404 NOT_FOUND Not Found
+< Content-Type: [application/json]
+< Content-Length: [193]
+
+{"timestamp":"2025-08-28T23:48:30.607+00:00","path":"/cashflows/accruals/daily","status":404,"error":"Not Found","requestId":"4bb143aa","message":"No static resource cashflows/accruals/daily."}
+
+]]></system-out>
+  </testcase>
+  <testcase name="getThreadPartitionStatus_ShouldReturnPartitionStatistics" classname="com.finos.cashflow.controller.CashflowControllerTest" time="0.004">
+    <error message="Content type &apos;text/plain;charset=UTF-8&apos; not supported for bodyType=java.util.Map&lt;?, ?&gt;" type="org.springframework.web.reactive.function.UnsupportedMediaTypeException"><![CDATA[org.springframework.web.reactive.function.UnsupportedMediaTypeException: Content type 'text/plain;charset=UTF-8' not supported for bodyType=java.util.Map<?, ?>
+	at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+	Suppressed: The stacktrace has been enhanced by Reactor, refer to additional information below: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ Body from GET /threads/partitions [DefaultClientResponse]
+Original Stack Trace:
+		at org.springframework.web.reactive.function.BodyExtractors.readWithMessageReaders(BodyExtractors.java:205)
+		at org.springframework.web.reactive.function.BodyExtractors.lambda$toMono$2(BodyExtractors.java:84)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.body(DefaultClientResponse.java:135)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.bodyToMono(DefaultClientResponse.java:150)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.getThreadPartitionStatus_ShouldReturnPartitionStatistics(CashflowControllerTest.java:263)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:146)
+		at reactor.core.publisher.Mono.block(Mono.java:1807)
+		at org.springframework.test.web.reactive.server.DefaultWebTestClient$DefaultResponseSpec.expectBody(DefaultWebTestClient.java:435)
+		at com.finos.cashflow.controller.CashflowControllerTest.getThreadPartitionStatus_ShouldReturnPartitionStatistics(CashflowControllerTest.java:263)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+]]></error>
+  </testcase>
+</testsuite>

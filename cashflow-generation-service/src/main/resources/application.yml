@@ -1,0 +1,144 @@
+spring:
+  application:
+    name: cashflow-generation-service
+  
+  # Disable Spring Cloud compatibility verifier for Spring Boot 3.3.0
+  cloud:
+    compatibility-verifier:
+      enabled: false
+  
+  # Database configuration (R2DBC)
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/cashflow_db
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+  
+  # Redis configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  
+  # Kafka configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: cashflow-generation-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+  
+  # Cache configuration
+  cache:
+    type: redis
+    redis:
+      time-to-live: 30m
+      cache-null-values: false
+
+# Service configuration
+cashflow:
+  generation:
+    # Thread partitioning configuration
+    thread-partitioning:
+      enabled: true
+      max-partitions: 1000
+      partition-timeout: 30s
+      virtual-threads-enabled: true
+    
+    # Processing configuration
+    processing:
+      batch-size: 100
+      max-concurrent-batches: 10
+      timeout: 5m
+      retry-attempts: 3
+      retry-delay: 1s
+    
+    # Calculation configuration
+    calculation:
+      interest:
+        day-count-convention: ACT_365
+        business-day-adjustment: FOLLOWING
+        default-rate: 0.05
+      equity:
+        price-precision: 6
+        amount-precision: 2
+        fx-precision: 6
+
+# Logging configuration
+logging:
+  level:
+    com.finos.cashflow: DEBUG
+    org.springframework.web: INFO
+    reactor.netty: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management endpoints
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Server configuration
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Circuit breaker configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      default:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+  retry:
+    instances:
+      default:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
