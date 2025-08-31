@@ -7,7 +7,6 @@
 /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/src/main/java/com/lifecycle/cashflow/repository/UnrealizedPnLRepository.java
 /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/src/main/java/com/lifecycle/cashflow/model/Cashflow.java
 /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/src/main/java/com/lifecycle/cashflow/actor/Actor.java
-/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/src/main/java/com/lifecycle/cashflow/config/R2dbcConfig.java
 /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/src/main/java/com/lifecycle/cashflow/repository/CashflowRepository.java
 /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/src/main/java/com/lifecycle/cashflow/actor/BaseActor.java
 /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/cashflow-generation-service/src/main/java/com/lifecycle/cashflow/model/DailyAccrualGenerationResponse.java

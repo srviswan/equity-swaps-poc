@@ -59,17 +59,16 @@ public class CashflowGenerationService {
         }
         
         // Ensure cashflowTypes is not null/empty, default to INTEREST
-        final CashflowGenerationRequest finalRequest;
         List<CashflowType> cashflowTypes = request.getCashflowTypes();
         if (cashflowTypes == null || cashflowTypes.isEmpty()) {
-            finalRequest = new CashflowGenerationRequest(
-                request.getContractIds(),
-                request.getCalculationDate(),
-                List.of(CashflowType.INTEREST) // Default to INTEREST
-            );
-        } else {
-            finalRequest = request;
+            cashflowTypes = List.of(CashflowType.INTEREST); // Default to INTEREST
         }
+        
+        final CashflowGenerationRequest finalRequest = new CashflowGenerationRequest(
+            request.getContractIds(),
+            request.getCalculationDate(),
+            cashflowTypes // Always use safe cashflowTypes
+        );
         
         return Mono.fromCallable(() -> {
             // Create partition key based on contract and calculation type

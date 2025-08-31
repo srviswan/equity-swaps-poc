@@ -73,8 +73,12 @@ public class CashflowGenerationRequest {
     }
     
     public List<CashflowType> getCashflowTypes() {
+        // Debug logging
+        System.out.println("DEBUG: getCashflowTypes() called, cashflowTypes field = " + cashflowTypes);
         // Return default INTEREST type if null
-        return cashflowTypes != null ? cashflowTypes : List.of(CashflowType.INTEREST);
+        List<CashflowType> result = cashflowTypes != null ? cashflowTypes : List.of(CashflowType.INTEREST);
+        System.out.println("DEBUG: getCashflowTypes() returning = " + result);
+        return result;
     }
     
     public void setCashflowTypes(List<CashflowType> cashflowTypes) {
@@ -103,8 +107,9 @@ public class CashflowGenerationRequest {
      * @return true if interest calculations are requested
      */
     public boolean isInterestRequest() {
-        return cashflowTypes != null && 
-               cashflowTypes.stream().anyMatch(CashflowType::isInterest);
+        List<CashflowType> types = getCashflowTypes(); // Use getter which has null safety
+        return types != null && 
+               types.stream().anyMatch(CashflowType::isInterest);
     }
     
     /**
@@ -113,8 +118,9 @@ public class CashflowGenerationRequest {
      * @return true if equity calculations are requested
      */
     public boolean isEquityRequest() {
-        return cashflowTypes != null && 
-               cashflowTypes.stream().anyMatch(type -> 
+        List<CashflowType> types = getCashflowTypes(); // Use getter which has null safety
+        return types != null && 
+               types.stream().anyMatch(type -> 
                    type == CashflowType.PERFORMANCE || type == CashflowType.DIVIDEND);
     }
     

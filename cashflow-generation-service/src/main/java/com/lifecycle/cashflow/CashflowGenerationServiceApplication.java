@@ -8,7 +8,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -26,7 +25,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 @SpringBootApplication(scanBasePackages = "com.lifecycle.cashflow")
 @EnableCaching
 @EnableAsync
-@EnableR2dbcRepositories
 public class CashflowGenerationServiceApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(CashflowGenerationServiceApplication.class);

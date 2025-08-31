@@ -73,15 +73,12 @@ public class CashflowController {
             return Mono.just(ResponseEntity.badRequest().build());
         }
         
-        // Ensure cashflowTypes is set for interest generation
-        CashflowGenerationRequest finalRequest = request;
-        if (request.getCashflowTypes() == null || request.getCashflowTypes().isEmpty()) {
-            finalRequest = new CashflowGenerationRequest(
-                request.getContractIds(),
-                request.getCalculationDate(),
-                List.of(CashflowType.INTEREST) // Default to INTEREST type
-            );
-        }
+        // ALWAYS create a safe request for interest generation (avoid null pointer)
+        CashflowGenerationRequest finalRequest = new CashflowGenerationRequest(
+            request.getContractIds(),
+            request.getCalculationDate(),
+            List.of(CashflowType.INTEREST) // Always INTEREST for this endpoint
+        );
         
         logger.info("Received interest cashflow generation request for {} contracts", finalRequest.getContractIds().size());
         

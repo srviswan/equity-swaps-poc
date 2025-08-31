@@ -39,7 +39,6 @@ com/lifecycle/cashflow/service/ThreadPartitioningService.class
 com/lifecycle/cashflow/actor/CashflowGenerationActor$GenerationJob.class
 com/lifecycle/cashflow/model/CashflowDeferralRequest$DeferralReason.class
 com/lifecycle/cashflow/config/DatabaseConfig.class
-com/lifecycle/cashflow/config/R2dbcConfig.class
 com/lifecycle/cashflow/actor/CashflowGenerationActor$JobStoppedResult.class
 com/lifecycle/cashflow/model/UnrealizedPnL.class
 com/lifecycle/cashflow/actor/CashflowGenerationActor$MessageType.class
