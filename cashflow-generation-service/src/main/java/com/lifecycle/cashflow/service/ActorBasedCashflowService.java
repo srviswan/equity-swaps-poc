@@ -66,7 +66,11 @@ public class ActorBasedCashflowService {
                 activeActorCount.incrementAndGet();
                 
                 // Generate cashflows for each contract using business logic
-                return Flux.fromIterable(request.getCashflowTypes())
+                List<CashflowType> cashflowTypes = request.getCashflowTypes();
+                if (cashflowTypes == null || cashflowTypes.isEmpty()) {
+                    cashflowTypes = List.of(CashflowType.INTEREST); // Default fallback
+                }
+                return Flux.fromIterable(cashflowTypes)
                     .map(cashflowType -> {
                         // Create a new cashflow based on the request
                         Cashflow cashflow = new Cashflow(
@@ -129,7 +133,11 @@ public class ActorBasedCashflowService {
                 actorRegistry.put(actorName, "reactive");
                 
                 // Generate cashflows reactively with business logic
-                return Flux.fromIterable(request.getCashflowTypes())
+                List<CashflowType> cashflowTypes = request.getCashflowTypes();
+                if (cashflowTypes == null || cashflowTypes.isEmpty()) {
+                    cashflowTypes = List.of(CashflowType.INTEREST); // Default fallback
+                }
+                return Flux.fromIterable(cashflowTypes)
                     .map(cashflowType -> {
                         Cashflow cashflow = new Cashflow(
                             contractId,

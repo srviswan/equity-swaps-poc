@@ -3,7 +3,9 @@ package com.lifecycle.cashflow;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
@@ -23,5 +25,12 @@ public class CashflowGenerationServiceApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(CashflowGenerationServiceApplication.class, args);
+    }
+    
+    @Bean
+    public ConnectionFactoryInitializer initializer() {
+        ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
+        // Note: Database schema is already initialized via Docker
+        return initializer;
     }
 }

@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -369,47 +371,39 @@ public class CashflowGenerationService {
         }
         
         // Generate accruals for each contract and each day in the date range
-        return Flux.fromIterable(contractIds)
-            .doOnNext(contractId -> logger.debug("Processing daily accruals for contract: {}", contractId))
-            .flatMap(contractId -> {
-                // Generate daily accruals for the date range
-                long dayCount = startDate.datesUntil(endDate.plusDays(1)).count();
-                logger.debug("Generating {} daily accruals for contract {} from {} to {}", 
-                           dayCount, contractId, startDate, endDate);
-                
-                return Flux.fromStream(startDate.datesUntil(endDate.plusDays(1)))
-                    .doOnNext(date -> logger.debug("Generating accrual for date: {}", date))
-                    .map(accrualDate -> {
-                        // Create a daily accrual cashflow
-                        Cashflow cashflow = new Cashflow(
-                            contractId,
-                            UUID.randomUUID(), // legId
-                            "ACCRUAL_SECURITY_" + contractId.toString().substring(0, 8), // securityId
-                            CalculationType.INTEREST, // calculationType
-                            CashflowType.INTEREST, // cashflowType
-                            calculateDailyAccrualAmount(contractId, accrualDate), // amount
-                            "USD", // currency
-                            accrualDate, // calculationDate
-                            "DAILY_ACCRUAL_SYSTEM" // createdBy
-                        );
-                        logger.debug("Created accrual cashflow: {} for {}", cashflow.getId(), accrualDate);
-                        return cashflow;
-                    });
-            })
-            .doOnComplete(() -> logger.info("Completed daily accrual generation"))
-            .doOnError(error -> logger.error("Error generating daily accruals", error))
-            .timeout(Duration.ofSeconds(5)) // Timeout at service level too
-            .onErrorReturn(new Cashflow(
-                contractIds.get(0),
-                UUID.randomUUID(),
-                "ERROR_SECURITY",
-                CalculationType.INTEREST,
-                CashflowType.INTEREST,
-                BigDecimal.ZERO,
-                "USD",
-                LocalDate.now(),
-                "ERROR_FALLBACK"
-            ));
+        // Use a simple approach to avoid reactive stream complexity
+        List<Cashflow> allCashflows = new ArrayList<>();
+        
+        for (UUID contractId : contractIds) {
+            logger.debug("Processing daily accruals for contract: {}", contractId);
+            
+            // Calculate the number of days
+            long dayCount = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+            logger.debug("Generating {} daily accruals for contract {} from {} to {}", 
+                       dayCount, contractId, startDate, endDate);
+            
+            // Generate accruals for each day
+            LocalDate currentDate = startDate;
+            while (!currentDate.isAfter(endDate) && allCashflows.size() < 1000) { // Safety limit
+                Cashflow cashflow = new Cashflow(
+                    contractId,
+                    UUID.randomUUID(), // legId
+                    "ACCRUAL_SECURITY_" + contractId.toString().substring(0, 8), // securityId
+                    CalculationType.INTEREST, // calculationType
+                    CashflowType.INTEREST, // cashflowType
+                    calculateDailyAccrualAmount(contractId, currentDate), // amount
+                    "USD", // currency
+                    currentDate, // calculationDate
+                    "DAILY_ACCRUAL_SYSTEM" // createdBy
+                );
+                allCashflows.add(cashflow);
+                logger.debug("Created accrual cashflow: {} for {}", cashflow.getId(), currentDate);
+                currentDate = currentDate.plusDays(1);
+            }
+        }
+        
+        logger.info("Completed daily accrual generation: {} cashflows created", allCashflows.size());
+        return Flux.fromIterable(allCashflows);
     }
     
     /**

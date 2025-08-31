@@ -74,17 +74,18 @@ public class CashflowController {
         }
         
         // Ensure cashflowTypes is set for interest generation
+        CashflowGenerationRequest finalRequest = request;
         if (request.getCashflowTypes() == null || request.getCashflowTypes().isEmpty()) {
-            request = new CashflowGenerationRequest(
+            finalRequest = new CashflowGenerationRequest(
                 request.getContractIds(),
                 request.getCalculationDate(),
                 List.of(CashflowType.INTEREST) // Default to INTEREST type
             );
         }
         
-        logger.info("Received interest cashflow generation request for {} contracts", request.getContractIds().size());
+        logger.info("Received interest cashflow generation request for {} contracts", finalRequest.getContractIds().size());
         
-        return cashflowGenerationService.generateInterestCashflows(request)
+        return cashflowGenerationService.generateInterestCashflows(finalRequest)
             .map(response -> ResponseEntity.accepted().body(response));
     }
     
@@ -100,17 +101,18 @@ public class CashflowController {
         }
         
         // Ensure cashflowTypes is set for interest generation
+        CashflowGenerationRequest finalRequest = request;
         if (request.getCashflowTypes() == null || request.getCashflowTypes().isEmpty()) {
-            request = new CashflowGenerationRequest(
+            finalRequest = new CashflowGenerationRequest(
                 request.getContractIds(),
                 request.getCalculationDate(),
                 List.of(CashflowType.INTEREST) // Default to INTEREST type
             );
         }
         
-        logger.info("Received batch interest cashflow generation request for {} contracts", request.getContractIds().size());
+        logger.info("Received batch interest cashflow generation request for {} contracts", finalRequest.getContractIds().size());
         
-        return cashflowGenerationService.generateInterestCashflows(request)
+        return cashflowGenerationService.generateInterestCashflows(finalRequest)
             .map(response -> ResponseEntity.accepted().body(response));
     }
     
@@ -147,11 +149,20 @@ public class CashflowController {
     }
     
     /**
+     * Test endpoint to verify batch routing
+     */
+    @GetMapping("/cashflows/generate/batch/test")
+    public Mono<ResponseEntity<String>> testBatchEndpoint() {
+        return Mono.just(ResponseEntity.ok("Batch endpoint is working!"));
+    }
+    
+    /**
      * Generate batch cashflows using thread partitioning.
      */
     @PostMapping("/cashflows/generate/batch")
     public Mono<ResponseEntity<BatchCashflowGenerationResponse>> generateBatchCashflows(
             @RequestBody BatchCashflowGenerationRequest request) {
+        logger.info("=== BATCH ENDPOINT HIT ===");
         if (request.requests() == null || request.requests().isEmpty()) {
             logger.warn("Received batch cashflow generation request with null or empty requests");
             return Mono.just(ResponseEntity.badRequest().build());
