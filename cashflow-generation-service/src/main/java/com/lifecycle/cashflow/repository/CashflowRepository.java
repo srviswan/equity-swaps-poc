@@ -3,6 +3,8 @@ package com.lifecycle.cashflow.repository;
 import com.lifecycle.cashflow.model.Cashflow;
 import com.lifecycle.cashflow.model.CashflowStatus;
 import com.lifecycle.cashflow.model.CashflowType;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -12,103 +14,68 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Mock implementation of CashflowRepository with all required methods
+ * R2DBC Repository for Cashflow entities with reactive database operations
  */
 @Repository
-public class CashflowRepository {
+public interface CashflowRepository extends ReactiveCrudRepository<Cashflow, UUID> {
     
-    public Flux<Cashflow> findAll() {
-        return Flux.empty();
-    }
+    // Basic query methods are automatically provided by Spring Data R2DBC
+    // findAll(), findById(), save(), delete(), etc. are inherited from ReactiveCrudRepository
     
-    public Mono<Cashflow> findById(UUID id) {
-        return Mono.empty();
-    }
+    // Custom query methods using Spring Data naming convention
+    Flux<Cashflow> findByContractId(UUID contractId);
     
-    public Mono<Cashflow> save(Cashflow cashflow) {
-        return Mono.just(cashflow);
-    }
+    Mono<Long> countByContractId(UUID contractId);
     
-    // Contract-based queries
-    public Flux<Cashflow> findByContractId(UUID contractId) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByContractIdAndCashflowType(UUID contractId, CashflowType cashflowType);
     
-    public Flux<Cashflow> findByContractIdAndCashflowType(UUID contractId, CashflowType cashflowType) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByContractIdAndStatus(UUID contractId, CashflowStatus status);
     
-    public Flux<Cashflow> findByContractIdAndStatus(UUID contractId, CashflowStatus status) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByContractIdIn(List<UUID> contractIds);
     
-    public Flux<Cashflow> findByContractIdIn(List<UUID> contractIds) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByContractIdInAndCashflowType(List<UUID> contractIds, CashflowType cashflowType);
     
-    public Flux<Cashflow> findByContractIdInAndCashflowType(List<UUID> contractIds, CashflowType cashflowType) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByContractIdInAndStatus(List<UUID> contractIds, CashflowStatus status);
     
-    public Flux<Cashflow> findByContractIdInAndStatus(List<UUID> contractIds, CashflowStatus status) {
-        return Flux.empty();
-    }
-    
-    public Flux<Cashflow> findByContractIdAndSecurityId(UUID contractId, String securityId) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByContractIdAndSecurityId(UUID contractId, String securityId);
     
     // Date-based queries
-    public Flux<Cashflow> findBySettlementDateBetween(LocalDate startDate, LocalDate endDate) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findBySettlementDateBetween(LocalDate startDate, LocalDate endDate);
     
-    public Flux<Cashflow> findByContractIdAndSettlementDateBetween(UUID contractId, LocalDate startDate, LocalDate endDate) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByContractIdAndSettlementDateBetween(UUID contractId, LocalDate startDate, LocalDate endDate);
     
     // Security-based queries
-    public Flux<Cashflow> findBySecurityId(String securityId) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findBySecurityId(String securityId);
     
     // Status-based queries
-    public Flux<Cashflow> findByStatus(CashflowStatus status) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByStatus(CashflowStatus status);
     
     // Type-based queries
-    public Flux<Cashflow> findByCashflowType(CashflowType cashflowType) {
-        return Flux.empty();
-    }
+    Flux<Cashflow> findByCashflowType(CashflowType cashflowType);
+    
+    // Custom SQL queries for complex operations
+    @Query("SELECT * FROM cashflows WHERE cashflow_type = :cashflowType AND status = :status ORDER BY calculation_date DESC LIMIT :limit OFFSET :offset")
+    Flux<Cashflow> findByCashflowTypeAndStatusWithPagination(CashflowType cashflowType, CashflowStatus status, int limit, int offset);
+    
+    @Query("SELECT COUNT(*) FROM cashflows WHERE cashflow_type = :cashflowType AND status = :status")
+    Mono<Long> countByCashflowTypeAndStatus(CashflowType cashflowType, CashflowStatus status);
     
     // Specialized business queries
-    public Flux<Cashflow> findCashflowsForSettlement(LocalDate settlementDate) {
-        return Flux.empty();
-    }
+    @Query("SELECT * FROM cashflows WHERE settlement_date = :settlementDate AND status = 'APPROVED'")
+    Flux<Cashflow> findCashflowsForSettlement(LocalDate settlementDate);
     
-    public Flux<Cashflow> findCashflowsForAccrual(LocalDate accrualDate) {
-        return Flux.empty();
-    }
+    @Query("SELECT * FROM cashflows WHERE calculation_date = :accrualDate AND cashflow_type = 'INTEREST'")
+    Flux<Cashflow> findCashflowsForAccrual(LocalDate accrualDate);
     
-    public Flux<Cashflow> findPerformanceCashflows(UUID contractId) {
-        return Flux.empty();
-    }
+    @Query("SELECT * FROM cashflows WHERE contract_id = :contractId AND cashflow_type = 'PERFORMANCE'")
+    Flux<Cashflow> findPerformanceCashflows(UUID contractId);
     
-    public Flux<Cashflow> findInterestCashflows(UUID contractId) {
-        return Flux.empty();
-    }
+    @Query("SELECT * FROM cashflows WHERE contract_id = :contractId AND cashflow_type = 'INTEREST'")
+    Flux<Cashflow> findInterestCashflows(UUID contractId);
     
-    public Flux<Cashflow> findDividendCashflows(UUID contractId) {
-        return Flux.empty();
-    }
+    @Query("SELECT * FROM cashflows WHERE contract_id = :contractId AND cashflow_type = 'DIVIDEND'")
+    Flux<Cashflow> findDividendCashflows(UUID contractId);
     
     // Count queries
-    public Mono<Long> countByContractId(UUID contractId) {
-        return Mono.just(0L);
-    }
-    
-    public Mono<Long> countByContractIdAndStatus(UUID contractId, CashflowStatus status) {
-        return Mono.just(0L);
-    }
+    Mono<Long> countByContractIdAndStatus(UUID contractId, CashflowStatus status);
 }

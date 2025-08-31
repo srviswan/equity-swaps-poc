@@ -1,6 +1,8 @@
 package com.lifecycle.cashflow.repository;
 
 import com.lifecycle.cashflow.model.DailyAccrual;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -9,36 +11,23 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Mock implementation of DailyAccrualRepository with all required methods
+ * R2DBC Repository for DailyAccrual entities with reactive database operations
  */
 @Repository
-public class DailyAccrualRepository {
+public interface DailyAccrualRepository extends ReactiveCrudRepository<DailyAccrual, UUID> {
     
-    public Mono<DailyAccrual> save(DailyAccrual dailyAccrual) {
-        return Mono.just(dailyAccrual);
-    }
+    // Custom query methods using Spring Data naming convention
+    Flux<DailyAccrual> findByContractId(UUID contractId);
     
-    public Flux<DailyAccrual> save() {
-        return Flux.empty();
-    }
+    Flux<DailyAccrual> findByContractIdAndAccrualDateBetween(UUID contractId, LocalDate startDate, LocalDate endDate);
     
-    public Flux<DailyAccrual> findInterestAccruals(UUID contractId, LocalDate startDate, LocalDate endDate) {
-        return Flux.empty();
-    }
+    // Business-specific queries with custom SQL
+    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND accrual_type = 'INTEREST' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
+    Flux<DailyAccrual> findInterestAccruals(UUID contractId, LocalDate startDate, LocalDate endDate);
     
-    public Flux<DailyAccrual> findDividendAccruals(UUID contractId, LocalDate startDate, LocalDate endDate) {
-        return Flux.empty();
-    }
+    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND accrual_type = 'DIVIDEND' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
+    Flux<DailyAccrual> findDividendAccruals(UUID contractId, LocalDate startDate, LocalDate endDate);
     
-    public Flux<DailyAccrual> findPerformanceAccruals(UUID contractId, LocalDate startDate, LocalDate endDate) {
-        return Flux.empty();
-    }
-    
-    public Mono<DailyAccrual> findById(UUID id) {
-        return Mono.empty();
-    }
-    
-    public Flux<DailyAccrual> findAll() {
-        return Flux.empty();
-    }
+    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND accrual_type = 'PERFORMANCE' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
+    Flux<DailyAccrual> findPerformanceAccruals(UUID contractId, LocalDate startDate, LocalDate endDate);
 }

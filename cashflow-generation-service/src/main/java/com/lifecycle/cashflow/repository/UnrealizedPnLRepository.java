@@ -1,6 +1,8 @@
 package com.lifecycle.cashflow.repository;
 
 import com.lifecycle.cashflow.model.UnrealizedPnL;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -9,28 +11,25 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Mock implementation of UnrealizedPnLRepository with all required methods
+ * R2DBC Repository for UnrealizedPnL entities with reactive database operations
  */
 @Repository
-public class UnrealizedPnLRepository {
+public interface UnrealizedPnLRepository extends ReactiveCrudRepository<UnrealizedPnL, UUID> {
     
-    public Mono<UnrealizedPnL> save(UnrealizedPnL unrealizedPnL) {
-        return Mono.just(unrealizedPnL);
-    }
+    // Custom query methods using Spring Data naming convention
+    Flux<UnrealizedPnL> findByContractId(UUID contractId);
     
-    public Flux<UnrealizedPnL> findUnrealizedPnLForPerformance(UUID contractId, String securityId, LocalDate startDate, LocalDate endDate) {
-        return Flux.empty();
-    }
+    Flux<UnrealizedPnL> findByContractIdAndSecurityId(UUID contractId, String securityId);
     
-    public Mono<UnrealizedPnL> findLatestUnrealizedPnLBySecurity(UUID contractId, String securityId) {
-        return Mono.empty();
-    }
+    Flux<UnrealizedPnL> findByContractIdAndValuationDateBetween(UUID contractId, LocalDate startDate, LocalDate endDate);
     
-    public Mono<UnrealizedPnL> findById(UUID id) {
-        return Mono.empty();
-    }
+    // Business-specific queries with custom SQL
+    @Query("SELECT * FROM unrealized_pnl WHERE contract_id = :contractId AND security_id = :securityId AND valuation_date BETWEEN :startDate AND :endDate ORDER BY valuation_date DESC")
+    Flux<UnrealizedPnL> findUnrealizedPnLForPerformance(UUID contractId, String securityId, LocalDate startDate, LocalDate endDate);
     
-    public Flux<UnrealizedPnL> findAll() {
-        return Flux.empty();
-    }
+    @Query("SELECT * FROM unrealized_pnl WHERE security_id = :securityId ORDER BY valuation_date DESC LIMIT 1")
+    Mono<UnrealizedPnL> findLatestUnrealizedPnLBySecurity(String securityId);
+    
+    @Query("SELECT * FROM unrealized_pnl WHERE contract_id = :contractId ORDER BY valuation_date DESC LIMIT 1")
+    Mono<UnrealizedPnL> findLatestUnrealizedPnLByContract(UUID contractId);
 }

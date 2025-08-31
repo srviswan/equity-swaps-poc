@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -71,7 +72,43 @@ public class CashflowController {
             logger.warn("Received interest cashflow generation request with null or empty contract IDs");
             return Mono.just(ResponseEntity.badRequest().build());
         }
+        
+        // Ensure cashflowTypes is set for interest generation
+        if (request.getCashflowTypes() == null || request.getCashflowTypes().isEmpty()) {
+            request = new CashflowGenerationRequest(
+                request.getContractIds(),
+                request.getCalculationDate(),
+                List.of(CashflowType.INTEREST) // Default to INTEREST type
+            );
+        }
+        
         logger.info("Received interest cashflow generation request for {} contracts", request.getContractIds().size());
+        
+        return cashflowGenerationService.generateInterestCashflows(request)
+            .map(response -> ResponseEntity.accepted().body(response));
+    }
+    
+    /**
+     * Generate batch interest cashflows using thread partitioning.
+     */
+    @PostMapping("/cashflows/generate/interest/batch")
+    public Mono<ResponseEntity<CashflowGenerationResponse>> generateBatchInterestCashflows(
+            @RequestBody CashflowGenerationRequest request) {
+        if (request.getContractIds() == null || request.getContractIds().isEmpty()) {
+            logger.warn("Received batch interest cashflow generation request with null or empty contract IDs");
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+        
+        // Ensure cashflowTypes is set for interest generation
+        if (request.getCashflowTypes() == null || request.getCashflowTypes().isEmpty()) {
+            request = new CashflowGenerationRequest(
+                request.getContractIds(),
+                request.getCalculationDate(),
+                List.of(CashflowType.INTEREST) // Default to INTEREST type
+            );
+        }
+        
+        logger.info("Received batch interest cashflow generation request for {} contracts", request.getContractIds().size());
         
         return cashflowGenerationService.generateInterestCashflows(request)
             .map(response -> ResponseEntity.accepted().body(response));
@@ -314,6 +351,7 @@ public class CashflowController {
         
         return cashflowGenerationService.generateDailyAccruals(request.contractIds(), 
                                                               request.startDate(), request.endDate())
+            .timeout(Duration.ofSeconds(10)) // Set 10-second timeout
             .collectList()
             .map(accruals -> {
                 List<DailyAccrualGenerationResponse.DailyAccrual> dailyAccruals = accruals.stream()

@@ -213,7 +213,7 @@ public class EquityPerformanceService {
         logger.info("Updating market price for contract: {}, security: {}, new price: {}, effective: {}",
                    contractId, securityId, newPrice, effectiveDate);
         
-        return unrealizedPnLRepository.findLatestUnrealizedPnLBySecurity(contractId, securityId)
+        return unrealizedPnLRepository.findLatestUnrealizedPnLBySecurity(securityId)
                 .flatMap(pnl -> {
                     pnl.updateMarketPrice(newPrice);
                     return unrealizedPnLRepository.save(pnl);

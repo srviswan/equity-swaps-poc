@@ -25,8 +25,7 @@ public class CashflowGenerationRequest {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate calculationDate;
     
-    @NotNull(message = "Cashflow types are required")
-    @Size(min = 1, message = "At least one cashflow type must be specified")
+    // Optional - will default to INTEREST if not provided
     private List<CashflowType> cashflowTypes;
     
     private String businessRules;
@@ -70,7 +69,8 @@ public class CashflowGenerationRequest {
     }
     
     public List<CashflowType> getCashflowTypes() {
-        return cashflowTypes;
+        // Return default INTEREST type if null
+        return cashflowTypes != null ? cashflowTypes : List.of(CashflowType.INTEREST);
     }
     
     public void setCashflowTypes(List<CashflowType> cashflowTypes) {
