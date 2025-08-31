@@ -1,6 +1,8 @@
 package com.lifecycle.cashflow.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +28,8 @@ public class CashflowGenerationRequest {
     private LocalDate calculationDate;
     
     // Optional - will default to INTEREST if not provided
+    @JsonProperty(defaultValue = "[]")
+    @JsonDeserialize(using = CashflowTypesDeserializer.class)
     private List<CashflowType> cashflowTypes;
     
     private String businessRules;

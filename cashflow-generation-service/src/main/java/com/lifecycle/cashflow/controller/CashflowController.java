@@ -360,15 +360,18 @@ public class CashflowController {
         logger.info("Received daily accrual generation request for {} contracts from {} to {}", 
                    request.contractIds().size(), request.startDate(), request.endDate());
         
+        // Handle the request asynchronously without blocking
         return cashflowGenerationService.generateDailyAccruals(request.contractIds(), 
                                                               request.startDate(), request.endDate())
-            .timeout(Duration.ofSeconds(10)) // Set 10-second timeout
+            .take(100) // Limit results to prevent memory issues
             .collectList()
+            .timeout(Duration.ofSeconds(5)) // Shorter timeout
             .map(accruals -> {
+                logger.info("Collected {} daily accruals", accruals.size());
                 List<DailyAccrualGenerationResponse.DailyAccrual> dailyAccruals = accruals.stream()
                     .map(cf -> new DailyAccrualGenerationResponse.DailyAccrual(
                         cf.getContractId(),
-                        cf.getSettlementDate(),
+                        cf.getSettlementDate() != null ? cf.getSettlementDate() : cf.getCalculationDate(),
                         DailyAccrualGenerationRequest.AccrualType.INTEREST,
                         cf.getAmount().doubleValue(),
                         cf.getCurrency()
@@ -382,7 +385,15 @@ public class CashflowController {
                     request.endDate()
                 );
             })
-            .map(response -> ResponseEntity.accepted().body(response));
+            .map(response -> ResponseEntity.accepted().body(response))
+            .onErrorReturn(ResponseEntity.status(500).body(
+                DailyAccrualGenerationResponse.success(
+                    UUID.randomUUID(),
+                    List.of(), // Empty list on error
+                    request.startDate(),
+                    request.endDate()
+                )
+            ));
     }
     
     /**
