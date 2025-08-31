@@ -48,29 +48,56 @@ public class CashflowGenerationService {
         logger.info("Generating cashflows for {} contracts using thread partitioning", 
                    request.getContractIds().size());
         
-        // Use thread partitioning for simple operations
-        List<CompletableFuture<Cashflow>> futures = request.getContractIds().stream()
-            .map(contractId -> {
-                ThreadPartitionKey partitionKey = threadPartitioningService.createPartitionKey(
-                    contractId, "DEFAULT", request.getPrimaryCalculationType());
-                return threadPartitioningService.executeInPartition(
-                    partitionKey,
-                    () -> generateCashflowForContract(contractId, request)
-                );
-            })
-            .toList();
+        // Validate request
+        if (request.getContractIds() == null || request.getContractIds().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("Contract IDs cannot be null or empty"));
+        }
         
-        // Wait for all operations to complete
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-            futures.toArray(new CompletableFuture[0])
-        );
+        // Ensure cashflowTypes is not null/empty, default to INTEREST
+        final CashflowGenerationRequest finalRequest;
+        if (request.getCashflowTypes() == null || request.getCashflowTypes().isEmpty()) {
+            finalRequest = new CashflowGenerationRequest(
+                request.getContractIds(),
+                request.getCalculationDate(),
+                List.of(CashflowType.INTEREST) // Default to INTEREST
+            );
+        } else {
+            finalRequest = request;
+        }
         
-        return Mono.fromFuture(allFutures)
-            .then(Mono.just(new CashflowGenerationResponse(
-                UUID.randomUUID(),
-                request.getContractIds().size(),
-                "Cashflow generation completed using thread partitioning"
-            )));
+        return Mono.fromCallable(() -> {
+            // Create partition key based on contract and calculation type
+            String partitionKey = threadPartitioningService.createPartitionKey(
+                finalRequest.getContractIds().get(0), // Use first contract for partitioning
+                "DEFAULT_SECURITY",
+                finalRequest.getCashflowTypes().get(0)
+            );
+            
+            // Execute cashflow generation in the appropriate partition
+            return threadPartitioningService.executeInPartition(partitionKey, () -> {
+                try {
+                    // Delegate to actor-based service for actual generation
+                    List<Cashflow> cashflows = actorBasedCashflowService
+                        .generateCashflows(finalRequest)
+                        .collectList()
+                        .block();
+                    
+                    return new CashflowGenerationResponse(
+                        UUID.randomUUID(),
+                        cashflows != null ? cashflows.size() : 0,
+                        "Cashflow generation completed successfully"
+                    );
+                } catch (Exception e) {
+                    logger.error("Error generating cashflows", e);
+                    throw new RuntimeException("Cashflow generation failed", e);
+                }
+            });
+        })
+        .onErrorReturn(new CashflowGenerationResponse(
+            UUID.randomUUID(),
+            0,
+            "Cashflow generation failed"
+        ));
     }
     
     /**
@@ -83,7 +110,24 @@ public class CashflowGenerationService {
         logger.info("Generating cashflows for {} contracts using Actor pattern", 
                    request.getContractIds().size());
         
-        return actorBasedCashflowService.generateCashflows(request);
+        // Validate request
+        if (request.getContractIds() == null || request.getContractIds().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("Contract IDs cannot be null or empty"));
+        }
+        
+        // Use actor-based service directly
+        return actorBasedCashflowService.generateCashflows(request)
+            .collectList()
+            .map(cashflows -> new CashflowGenerationResponse(
+                UUID.randomUUID(),
+                cashflows.size(),
+                "Cashflow generation completed using Actor pattern"
+            ))
+            .onErrorReturn(new CashflowGenerationResponse(
+                UUID.randomUUID(),
+                0,
+                "Actor-based cashflow generation failed"
+            ));
     }
     
     /**
@@ -96,7 +140,17 @@ public class CashflowGenerationService {
         logger.info("Generating cashflows reactively for {} contracts using Actor pattern", 
                    request.getContractIds().size());
         
-        return actorBasedCashflowService.generateCashflowsReactive(request);
+        // Validate request
+        if (request.getContractIds() == null || request.getContractIds().isEmpty()) {
+            return Flux.error(new IllegalArgumentException("Contract IDs cannot be null or empty"));
+        }
+        
+        // Use actor-based service for reactive generation
+        return actorBasedCashflowService.generateCashflowsReactive(request)
+            .doOnNext(cashflow -> logger.debug("Reactively generated cashflow: {}", cashflow.getId()))
+            .onErrorContinue((error, item) -> {
+                logger.error("Error in reactive cashflow generation for item: {}", item, error);
+            });
     }
     
     /**
@@ -122,18 +176,56 @@ public class CashflowGenerationService {
      * @param request The cashflow generation request
      * @return Response with job tracking information
      */
-    public Mono<CashflowGenerationResponse> generateInterestCashflows(CashflowGenerationRequest request) {
-        logger.info("Generating interest cashflows for {} contracts using thread partitioning", 
+        public Mono<CashflowGenerationResponse> generateInterestCashflows(CashflowGenerationRequest request) {
+        logger.info("Generating interest cashflows for {} contracts using thread partitioning",
                    request.getContractIds().size());
+
+        // Validate request
+        if (request.getContractIds() == null || request.getContractIds().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("Contract IDs cannot be null or empty"));
+        }
         
-        // Create interest-specific request with INTEREST type
+        // Create interest-specific request
         CashflowGenerationRequest interestRequest = new CashflowGenerationRequest(
             request.getContractIds(),
             request.getCalculationDate(),
-            List.of(CashflowType.INTEREST)
+            List.of(CashflowType.INTEREST) // Force to INTEREST type
         );
         
-        return generateCashflows(interestRequest);
+        return Mono.fromCallable(() -> {
+            // Create partition key for interest calculations
+            String partitionKey = threadPartitioningService.createPartitionKey(
+                interestRequest.getContractIds().get(0),
+                "INTEREST_SECURITY",
+                CalculationType.INTEREST
+            );
+            
+            // Execute interest calculation in appropriate partition
+            return threadPartitioningService.executeInPartition(partitionKey, () -> {
+                try {
+                    // Use actor-based service for interest-specific generation
+                    List<Cashflow> interestCashflows = actorBasedCashflowService
+                        .generateCashflows(interestRequest)
+                        .filter(cashflow -> cashflow.getCashflowType() == CashflowType.INTEREST)
+                        .collectList()
+                        .block();
+                    
+                    return new CashflowGenerationResponse(
+                        UUID.randomUUID(),
+                        interestCashflows != null ? interestCashflows.size() : 0,
+                        "Interest cashflow generation completed successfully"
+                    );
+                } catch (Exception e) {
+                    logger.error("Error generating interest cashflows", e);
+                    throw new RuntimeException("Interest cashflow generation failed", e);
+                }
+            });
+        })
+        .onErrorReturn(new CashflowGenerationResponse(
+            UUID.randomUUID(),
+            0,
+            "Interest cashflow generation failed"
+        ));
     }
     
     /**

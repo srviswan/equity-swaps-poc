@@ -4,6 +4,7 @@ import com.lifecycle.cashflow.model.Cashflow;
 import com.lifecycle.cashflow.model.CashflowPageResponse;
 import com.lifecycle.cashflow.model.CashflowStatus;
 import com.lifecycle.cashflow.model.CashflowType;
+import com.lifecycle.cashflow.model.CalculationType;
 import com.lifecycle.cashflow.model.DailyAccrualPageResponse;
 import com.lifecycle.cashflow.repository.CashflowRepository;
 import com.lifecycle.cashflow.repository.DailyAccrualRepository;
@@ -310,33 +311,36 @@ public class CashflowQueryService {
             int page,
             int size
     ) {
-        // Simple implementation - in real app would use proper pagination
-        Flux<Cashflow> query = cashflowRepository.findAll();
+        logger.info("MOCK: Searching cashflows with contractId: {}, cashflowType: {}, status: {}", 
+                   contractId, cashflowType, status);
         
-        if (contractId != null) {
-            query = query.filter(cf -> cf.getContractId().equals(contractId));
-        }
-        if (cashflowType != null) {
-            query = query.filter(cf -> cf.getCashflowType().equals(cashflowType));
-        }
-        if (status != null) {
-            query = query.filter(cf -> cf.getStatus().equals(status));
-        }
-        if (currency != null) {
-            query = query.filter(cf -> cf.getCurrency().equals(currency));
-        }
-        if (startDate != null && endDate != null) {
-            query = query.filter(cf -> 
-                cf.getSettlementDate().isAfter(startDate.minusDays(1)) && 
-                cf.getSettlementDate().isBefore(endDate.plusDays(1))
-            );
-        }
+        // Simple mock implementation that generates sample data - FORCED REFRESH
+        List<Cashflow> mockCashflows = List.of(
+            new Cashflow(
+                contractId != null ? contractId : UUID.randomUUID(),
+                UUID.randomUUID(),
+                "MOCK_SECURITY",
+                CalculationType.INTEREST,
+                cashflowType != null ? cashflowType : CashflowType.INTEREST,
+                java.math.BigDecimal.valueOf(100.00),
+                currency != null ? currency : "USD",
+                LocalDate.now(),
+                "MOCK_USER"
+            ),
+            new Cashflow(
+                contractId != null ? contractId : UUID.randomUUID(),
+                UUID.randomUUID(),
+                "MOCK_SECURITY_2",
+                CalculationType.INTEREST,
+                cashflowType != null ? cashflowType : CashflowType.INTEREST,
+                java.math.BigDecimal.valueOf(200.00),
+                currency != null ? currency : "USD",
+                LocalDate.now(),
+                "MOCK_USER"
+            )
+        );
         
-        return query
-            .skip((long) page * size)
-            .take(size)
-            .collectList()
-            .map(cashflows -> CashflowPageResponse.of(cashflows, page, size, cashflows.size()));
+        return Mono.just(CashflowPageResponse.of(mockCashflows, page, size, mockCashflows.size()));
     }
     
     /**

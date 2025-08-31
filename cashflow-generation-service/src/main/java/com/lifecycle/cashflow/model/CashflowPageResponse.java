@@ -29,4 +29,16 @@ public record CashflowPageResponse(
             hasPrevious
         );
     }
+    
+    public static CashflowPageResponse empty(int page, int size) {
+        return new CashflowPageResponse(
+            List.of(),
+            page,
+            size,
+            0,
+            0,
+            false,
+            false
+        );
+    }
 }

@@ -3,6 +3,7 @@ package com.lifecycle.cashflow.integration;
 import com.lifecycle.cashflow.controller.CashflowController;
 import com.lifecycle.cashflow.model.*;
 import com.lifecycle.cashflow.service.*;
+import com.lifecycle.cashflow.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.when;
  * This validates that our REST endpoints work correctly with production-like configurations
  * without requiring actual database connections.
  */
-@WebFluxTest(CashflowController.class)
+@WebFluxTest(controllers = CashflowController.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ProductionEndpointTest {
 
@@ -52,6 +53,23 @@ public class ProductionEndpointTest {
 
     @MockBean
     private ThreadPartitioningService threadPartitioningService;
+
+    // Add missing repository mocks to prevent Spring context loading issues
+    @MockBean
+    private CashflowRepository cashflowRepository;
+
+    @MockBean
+    private DailyAccrualRepository dailyAccrualRepository;
+
+    @MockBean
+    private UnrealizedPnLRepository unrealizedPnLRepository;
+
+    // Add missing service mocks
+    @MockBean
+    private InterestCalculationService interestCalculationService;
+
+    @MockBean
+    private EquityPerformanceService equityPerformanceService;
 
     private UUID testContractId;
     private UUID testCashflowId;
@@ -77,6 +95,8 @@ public class ProductionEndpointTest {
         when(cashflowGenerationService.generateCashflows(any(CashflowGenerationRequest.class)))
                 .thenReturn(Mono.just(mockResponse));
         when(cashflowGenerationService.generateCashflowsWithActors(any(CashflowGenerationRequest.class)))
+                .thenReturn(Mono.just(mockResponse));
+        when(cashflowGenerationService.generateInterestCashflows(any(CashflowGenerationRequest.class)))
                 .thenReturn(Mono.just(mockResponse));
         when(cashflowGenerationService.generateCashflowsReactive(any(CashflowGenerationRequest.class)))
                 .thenReturn(Flux.just(createMockCashflow(), createMockCashflow(), createMockCashflow()));
@@ -268,12 +288,15 @@ public class ProductionEndpointTest {
             createMockCashflowGenerationResponse(),
             createMockCashflowGenerationResponse()
         );
+        String jobIdValue = UUID.randomUUID().toString();
         BatchCashflowGenerationResponse mockBatchResponse = new BatchCashflowGenerationResponse(
             responses,
             2, // totalRequests
             2, // successfulRequests
             0, // failedRequests
-            UUID.randomUUID().toString() // batchId
+            2, // acceptedRequests
+            jobIdValue, // batchId
+            jobIdValue  // jobId
         );
 
         when(cashflowGenerationService.generateBatchCashflows(any(BatchCashflowGenerationRequest.class)))

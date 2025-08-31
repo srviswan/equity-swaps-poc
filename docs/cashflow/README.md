@@ -42,7 +42,10 @@ The **Cash Flow Generation Service** is a core microservice responsible for gene
 
 ### **3. Data Models & Database** ✅
 - [Domain Models](data/domain-models.md) - Core business entities and relationships
-- [Database Schema](data/database-schema.md) - PostgreSQL table structures and indexes
+- [📊 **Database Documentation**](../database/README.md) - **Comprehensive database design and analysis**
+  - [🗃️ ER Design](../database/ER_DESIGN.md) - Entity-relationship diagrams and relationship analysis
+  - [📊 Index Design](../database/INDEX_DESIGN.md) - Performance optimization and index strategy  
+  - [🏗️ Schema Reference](../database/DATABASE_SCHEMA.md) - Complete schema with constraints and validation
 - [Data Migration](data/data-migration.md) - Schema evolution and migration strategies
 - [Data Partitioning](data/data-partitioning.md) - Database partitioning strategies
 

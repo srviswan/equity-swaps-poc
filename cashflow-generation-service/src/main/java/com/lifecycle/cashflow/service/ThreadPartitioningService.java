@@ -1,198 +1,156 @@
 package com.lifecycle.cashflow.service;
 
+import com.lifecycle.cashflow.model.ThreadPartitionStatus;
 import com.lifecycle.cashflow.model.CalculationType;
-import com.lifecycle.cashflow.model.ThreadPartitionKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
-import com.lifecycle.cashflow.model.ThreadPartitionStatus;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.Map;
 
 /**
- * Service for managing thread partitioning in cashflow processing.
+ * Thread Partitioning Service for Cash Flow Generation
  * 
- * This service ensures that all operations for the same contract + underlier + calculation type
- * run in the same thread, providing data consistency and preventing race conditions.
+ * This service implements thread partitioning strategy for cashflow calculations.
+ * It ensures that cashflows for the same contract+security+calculation type
+ * are processed in the same thread partition to maintain consistency and ordering.
+ * 
+ * Key Features:
+ * - Thread isolation by partition key (ContractId + SecurityId + CalculationType)
+ * - Configurable number of partitions 
+ * - Load balancing across partitions
+ * - Monitoring and statistics
+ * 
+ * @version 1.0.0
  */
 @Service
 public class ThreadPartitioningService {
     
     private static final Logger logger = LoggerFactory.getLogger(ThreadPartitioningService.class);
     
-    private final ConcurrentMap<String, ExecutorService> partitionExecutors = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Scheduler> partitionSchedulers = new ConcurrentHashMap<>();
+    private static final int DEFAULT_PARTITION_COUNT = 10;
+    private final int partitionCount;
+    private final Map<Integer, Executor> partitionExecutors;
+    private final Map<Integer, Integer> partitionLoadCounts;
+    private final LocalDateTime serviceStartTime;
     
-    /**
-     * Get or create an executor for the specified partition key.
-     * 
-     * @param partitionKey The partition key
-     * @return ExecutorService for the partition
-     */
-    public ExecutorService getPartitionExecutor(ThreadPartitionKey partitionKey) {
-        String partitionString = partitionKey.getPartitionString();
+    public ThreadPartitioningService() {
+        this.partitionCount = DEFAULT_PARTITION_COUNT;
+        this.partitionExecutors = new ConcurrentHashMap<>();
+        this.partitionLoadCounts = new ConcurrentHashMap<>();
+        this.serviceStartTime = LocalDateTime.now();
         
-        return partitionExecutors.computeIfAbsent(partitionString, key -> {
-            logger.info("Creating new executor for partition: {}", key);
-            
-            // Use virtual threads for high-throughput processing
-            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-            
-            return executor;
-        });
-    }
-    
-    /**
-     * Get or create a scheduler for the specified partition key.
-     * 
-     * @param partitionKey The partition key
-     * @return Scheduler for the partition
-     */
-    public Scheduler getPartitionScheduler(ThreadPartitionKey partitionKey) {
-        String partitionString = partitionKey.getPartitionString();
-        
-        return partitionSchedulers.computeIfAbsent(partitionString, key -> {
-            logger.info("Creating new scheduler for partition: {}", key);
-            
-            if (partitionKey.isInterestPartition()) {
-                // Use bounded elastic for interest calculations (daily processing)
-                return Schedulers.boundedElastic();
-            } else if (partitionKey.isEquityPartition()) {
-                // Use parallel for equity calculations (market-driven)
-                return Schedulers.parallel();
-            } else {
-                // Default to bounded elastic
-                return Schedulers.boundedElastic();
-            }
-        });
-    }
-    
-    /**
-     * Execute a task in the appropriate partition.
-     * 
-     * @param partitionKey The partition key
-     * @param task The task to execute
-     * @return CompletableFuture for the task
-     */
-    public <T> java.util.concurrent.CompletableFuture<T> executeInPartition(
-            ThreadPartitionKey partitionKey, 
-            java.util.concurrent.Callable<T> task) {
-        
-        ExecutorService executor = getPartitionExecutor(partitionKey);
-        return java.util.concurrent.CompletableFuture.supplyAsync(() -> {
-            try {
-                logger.debug("Executing task in partition: {}", partitionKey.getPartitionString());
-                return task.call();
-            } catch (Exception e) {
-                logger.error("Error executing task in partition: {}", partitionKey.getPartitionString(), e);
-                throw new RuntimeException("Task execution failed in partition: " + partitionKey.getPartitionString(), e);
-            }
-        }, executor);
-    }
-    
-    /**
-     * Execute a reactive task in the appropriate partition.
-     * 
-     * @param partitionKey The partition key
-     * @param task The reactive task to execute
-     * @return Mono for the task
-     */
-    public <T> reactor.core.publisher.Mono<T> executeReactiveInPartition(
-            ThreadPartitionKey partitionKey, 
-            reactor.core.publisher.Mono<T> task) {
-        
-        Scheduler scheduler = getPartitionScheduler(partitionKey);
-        return task.publishOn(scheduler)
-                  .doOnSubscribe(s -> logger.debug("Executing reactive task in partition: {}", 
-                                                 partitionKey.getPartitionString()));
-    }
-    
-    /**
-     * Get partition statistics.
-     * 
-     * @return Map of partition statistics
-     */
-    public ConcurrentMap<String, Object> getPartitionStatistics() {
-        ConcurrentMap<String, Object> stats = new ConcurrentHashMap<>();
-        
-        stats.put("totalPartitions", partitionExecutors.size());
-        stats.put("activePartitions", partitionExecutors.size());
-        
-        partitionExecutors.forEach((partition, executor) -> {
-            // Virtual thread executors don't have the same metrics as ThreadPoolExecutor
-            // So we'll provide basic partition information
-            stats.put(partition + ".status", "ACTIVE");
-            stats.put(partition + ".type", "VIRTUAL_THREAD");
-            stats.put(partition + ".activeThreads", "N/A"); // Virtual threads don't have pool size
-            stats.put(partition + ".poolSize", "N/A");
-            stats.put(partition + ".queueSize", "N/A");
-        });
-        
-        return stats;
-    }
-    
-    /**
-     * Shutdown all partition executors.
-     */
-    public void shutdown() {
-        logger.info("Shutting down all partition executors");
-        
-        partitionExecutors.forEach((partition, executor) -> {
-            logger.info("Shutting down executor for partition: {}", partition);
-            executor.shutdown();
-        });
-        
-        partitionSchedulers.forEach((partition, scheduler) -> {
-            logger.info("Disposing scheduler for partition: {}", partition);
-            if (scheduler != null && !scheduler.isDisposed()) {
-                scheduler.dispose();
-            }
-        });
-        
-        partitionExecutors.clear();
-        partitionSchedulers.clear();
-    }
-    
-    /**
-     * Create a partition key for the given parameters.
-     * 
-     * @param contractId Contract ID
-     * @param securityId Security ID
-     * @param calculationType Calculation type
-     * @return ThreadPartitionKey
-     */
-    public ThreadPartitionKey createPartitionKey(UUID contractId, String securityId, CalculationType calculationType) {
-        return new ThreadPartitionKey(contractId, securityId, calculationType);
-    }
-    
-    /**
-     * Check if a partition is active.
-     * 
-     * @param partitionKey The partition key
-     * @return true if the partition is active
-     */
-    public boolean isPartitionActive(ThreadPartitionKey partitionKey) {
-        String partitionString = partitionKey.getPartitionString();
-        ExecutorService executor = partitionExecutors.get(partitionString);
-        
-        if (executor instanceof java.util.concurrent.ThreadPoolExecutor) {
-            java.util.concurrent.ThreadPoolExecutor tpe = (java.util.concurrent.ThreadPoolExecutor) executor;
-            return !tpe.isShutdown() && tpe.getActiveCount() > 0;
+        // Initialize partition executors
+        for (int i = 0; i < partitionCount; i++) {
+            final int partitionIndex = i;
+            partitionExecutors.put(i, Executors.newSingleThreadExecutor(r -> 
+                new Thread(r, "cashflow-partition-" + partitionIndex)));
+            partitionLoadCounts.put(i, 0);
         }
         
-        return executor != null && !executor.isShutdown();
+        logger.info("ThreadPartitioningService initialized with {} partitions", partitionCount);
     }
     
     /**
-     * Get partition status information
+     * Create a partition key from contract, security, and calculation type
+     */
+    public String createPartitionKey(Object contractId, Object securityId, Object calculationType) {
+        return String.format("partition-%s-%s-%s",
+            contractId != null ? contractId.toString() : "default",
+            securityId != null ? securityId.toString() : "default", 
+            calculationType != null ? calculationType.toString() : CalculationType.INTEREST.toString()
+        );
+    }
+    
+    /**
+     * Execute a task in the appropriate partition based on the partition key
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T executeInPartition(Object partitionKey, Callable<T> task) {
+        try {
+            int partition = getPartitionIndex(partitionKey);
+            Executor executor = partitionExecutors.get(partition);
+            
+            // Increment load count for this partition
+            partitionLoadCounts.merge(partition, 1, Integer::sum);
+            
+            logger.debug("Executing task in partition {} for key {}", partition, partitionKey);
+            
+            // Submit task to the partition executor
+            Future<T> future = ((java.util.concurrent.ExecutorService) executor).submit(task);
+            return future.get(); // Block and wait for result
+            
+        } catch (Exception e) {
+            logger.error("Error executing task in partition for key {}", partitionKey, e);
+            throw new RuntimeException("Partition execution failed", e);
+        }
+    }
+    
+    /**
+     * Get partition index for a given key using consistent hashing
+     */
+    private int getPartitionIndex(Object key) {
+        if (key == null) {
+            return 0;
+        }
+        return Math.abs(key.hashCode()) % partitionCount;
+    }
+    
+    /**
+     * Get current partition status and statistics
      */
     public ThreadPartitionStatus getPartitionStatus() {
-        return ThreadPartitionStatus.defaultStatus();
+        int totalPartitions = partitionCount;
+        int activePartitions = (int) partitionLoadCounts.values().stream()
+            .filter(count -> count > 0)
+            .count();
+        int availablePartitions = totalPartitions - activePartitions;
+        
+        Map<String, Integer> partitionDetails = new ConcurrentHashMap<>();
+        for (Map.Entry<Integer, Integer> entry : partitionLoadCounts.entrySet()) {
+            partitionDetails.put("partition-" + entry.getKey(), entry.getValue());
+        }
+        
+        return new ThreadPartitionStatus(
+            totalPartitions,
+            activePartitions, 
+            availablePartitions,
+            partitionDetails,
+            serviceStartTime,
+            "ACTIVE"
+        );
+    }
+    
+    /**
+     * Get partition statistics for monitoring
+     */
+    public ThreadPartitionStatus getPartitionStatistics() {
+        return getPartitionStatus();
+    }
+    
+    /**
+     * Reset partition load counters (useful for testing)
+     */
+    public void resetPartitionCounters() {
+        partitionLoadCounts.replaceAll((k, v) -> 0);
+        logger.info("Partition load counters reset");
+    }
+    
+    /**
+     * Shutdown all partition executors
+     */
+    public void shutdown() {
+        logger.info("Shutting down ThreadPartitioningService");
+        for (Executor executor : partitionExecutors.values()) {
+            if (executor instanceof java.util.concurrent.ExecutorService) {
+                ((java.util.concurrent.ExecutorService) executor).shutdown();
+            }
+        }
     }
 }

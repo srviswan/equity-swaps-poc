@@ -9,7 +9,7 @@ import java.util.Map;
 public record ThreadPartitionStatus(
     int totalPartitions,
     int activePartitions,
-    int idlePartitions,
+    int availablePartitions,
     Map<String, Integer> partitionDistribution,
     LocalDateTime lastUpdateTime,
     String status

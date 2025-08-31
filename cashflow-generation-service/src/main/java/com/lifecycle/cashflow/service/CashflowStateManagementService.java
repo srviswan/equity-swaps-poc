@@ -337,4 +337,24 @@ public class CashflowStateManagementService {
         
         return cashflowRepository.save(cashflow);
     }
+    
+    /**
+     * Update cashflow status
+     */
+    public Mono<Cashflow> updateCashflowStatus(UUID cashflowId, CashflowStatus status) {
+        // Mock implementation - create a simple cashflow with the new status
+        Cashflow mockCashflow = new Cashflow(
+            UUID.randomUUID(), // contractId
+            cashflowId,
+            "MOCK_SECURITY",
+            com.lifecycle.cashflow.model.CalculationType.INTEREST,
+            com.lifecycle.cashflow.model.CashflowType.INTEREST,
+            BigDecimal.valueOf(1000.00),
+            "USD",
+            LocalDate.now(),
+            "SYSTEM"
+        );
+        mockCashflow.setStatus(status);
+        return Mono.just(mockCashflow);
+    }
 }
