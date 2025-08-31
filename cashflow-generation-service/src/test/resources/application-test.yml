@@ -1,86 +1,48 @@
 spring:
   application:
     name: cashflow-generation-service-test
-  
-  # Disable Spring Cloud compatibility verifier for Spring Boot 3.3.0
-  cloud:
-    compatibility-verifier:
-      enabled: false
-  
-  # Test database configuration (H2 in-memory)
+
+  # Use H2 for testing
   r2dbc:
-    url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: r2dbc:h2:mem:///testdb
     username: sa
     password: 
-  
-  # Test Redis configuration (embedded)
+    pool:
+      initial-size: 1
+      max-size: 5
+      max-idle-time: 300
+
+  # Embedded Redis for testing
   data:
     redis:
       host: localhost
-      port: 6379
-  
-  # Test Kafka configuration (embedded)
+      port: 6370
+      timeout: 1000ms
+
+  # Disable Kafka for testing
   kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: cashflow-generation-test-group
-      auto-offset-reset: earliest
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    enabled: false
 
-# Test service configuration
-cashflow:
-  generation:
-    thread-partitioning:
-      enabled: true
-      max-partitions: 100
-      partition-timeout: 10s
-      virtual-threads-enabled: true
-    processing:
-      batch-size: 10
-      max-concurrent-batches: 5
-      timeout: 1m
-      retry-attempts: 2
-      retry-delay: 100ms
+  # Disable cache for testing
+  cache:
+    type: none
 
-# Test logging configuration
+# Test-specific logging
 logging:
   level:
-    com.finos.cashflow: DEBUG
-    org.springframework.web: DEBUG
-    reactor.netty: DEBUG
-    org.springframework.test: DEBUG
+    com.lifecycle.cashflow: INFO
+    org.springframework.web: WARN
+    reactor.netty: WARN
 
-# Test server configuration
-server:
-  port: 0  # Random port for tests
-
-# Test management configuration
+# Test management endpoints
 management:
+  server:
+    port: 0
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: always
-      show-components: always
+        include: health
 
-# Test circuit breaker configuration
-resilience4j:
-  circuitbreaker:
-    instances:
-      default:
-        sliding-window-size: 5
-        minimum-number-of-calls: 2
-        permitted-number-of-calls-in-half-open-state: 2
-        automatic-transition-from-open-to-half-open-enabled: true
-        wait-duration-in-open-state: 1s
-        failure-rate-threshold: 50
-  retry:
-    instances:
-      default:
-        max-attempts: 2
-        wait-duration: 100ms
-        enable-exponential-backoff: false
+# Test server configuration
+server:
+  port: 0

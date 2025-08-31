@@ -1,26 +1,21 @@
 spring:
   application:
     name: cashflow-generation-service
-  
-  # Disable Spring Cloud compatibility verifier for Spring Boot 3.3.0
-  cloud:
-    compatibility-verifier:
-      enabled: false
-  
-  # Database configuration (R2DBC)
+
+  # Database configuration (R2DBC) - Docker environment
   r2dbc:
-    url: r2dbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:cashflow_db}
+    url: r2dbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/${POSTGRES_DB:cashflow_db}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:password}
     pool:
       initial-size: 5
       max-size: 20
       max-idle-time: 1800
-  
-  # Redis configuration
+
+  # Redis configuration - Docker environment
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:redis}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       timeout: 2000ms
@@ -29,10 +24,10 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
-  
-  # Kafka configuration
+
+  # Kafka configuration - Docker environment
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     consumer:
       group-id: cashflow-generation-group
       auto-offset-reset: earliest
@@ -45,7 +40,7 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: false
-  
+
   # Cache configuration
   cache:
     type: redis
@@ -82,12 +77,13 @@ cashflow:
         amount-precision: 2
         fx-precision: 6
 
-# Logging configuration
+# Logging configuration for Docker
 logging:
   level:
-    com.lifecycle.cashflow: DEBUG
-    org.springframework.web: INFO
-    reactor.netty: INFO
+    com.lifecycle.cashflow: INFO
+    org.springframework.web: WARN
+    reactor.netty: WARN
+    org.springframework.r2dbc: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
@@ -102,7 +98,7 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: always
       show-components: always
     info:
       enabled: true
