@@ -8,7 +8,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
-import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
+
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -33,12 +33,7 @@ public class CashflowGenerationServiceApplication {
         SpringApplication.run(CashflowGenerationServiceApplication.class, args);
     }
     
-    @Bean
-    public ConnectionFactoryInitializer initializer() {
-        ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
-        // Note: Database schema is already initialized via Docker
-        return initializer;
-    }
+
     
     @EventListener(ApplicationReadyEvent.class)
     public void logApplicationReady() {

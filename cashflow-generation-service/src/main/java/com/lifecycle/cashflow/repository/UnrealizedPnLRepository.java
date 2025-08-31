@@ -21,15 +21,15 @@ public interface UnrealizedPnLRepository extends ReactiveCrudRepository<Unrealiz
     
     Flux<UnrealizedPnL> findByContractIdAndSecurityId(UUID contractId, String securityId);
     
-    Flux<UnrealizedPnL> findByContractIdAndValuationDateBetween(UUID contractId, LocalDate startDate, LocalDate endDate);
+    Flux<UnrealizedPnL> findByContractIdAndCalculationDateBetween(UUID contractId, LocalDate startDate, LocalDate endDate);
     
     // Business-specific queries with custom SQL
-    @Query("SELECT * FROM unrealized_pnl WHERE contract_id = :contractId AND security_id = :securityId AND valuation_date BETWEEN :startDate AND :endDate ORDER BY valuation_date DESC")
+    @Query("SELECT * FROM unrealized_pnl_timeseries WHERE contract_id = :contractId AND security_id = :securityId AND calculation_date BETWEEN :startDate AND :endDate ORDER BY calculation_date DESC")
     Flux<UnrealizedPnL> findUnrealizedPnLForPerformance(UUID contractId, String securityId, LocalDate startDate, LocalDate endDate);
     
-    @Query("SELECT * FROM unrealized_pnl WHERE security_id = :securityId ORDER BY valuation_date DESC LIMIT 1")
+    @Query("SELECT * FROM unrealized_pnl_timeseries WHERE security_id = :securityId ORDER BY calculation_date DESC LIMIT 1")
     Mono<UnrealizedPnL> findLatestUnrealizedPnLBySecurity(String securityId);
     
-    @Query("SELECT * FROM unrealized_pnl WHERE contract_id = :contractId ORDER BY valuation_date DESC LIMIT 1")
+    @Query("SELECT * FROM unrealized_pnl_timeseries WHERE contract_id = :contractId ORDER BY calculation_date DESC LIMIT 1")
     Mono<UnrealizedPnL> findLatestUnrealizedPnLByContract(UUID contractId);
 }

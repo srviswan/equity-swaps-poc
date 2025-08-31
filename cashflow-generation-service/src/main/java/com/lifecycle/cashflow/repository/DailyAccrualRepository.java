@@ -22,12 +22,12 @@ public interface DailyAccrualRepository extends ReactiveCrudRepository<DailyAccr
     Flux<DailyAccrual> findByContractIdAndAccrualDateBetween(UUID contractId, LocalDate startDate, LocalDate endDate);
     
     // Business-specific queries with custom SQL
-    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND accrual_type = 'INTEREST' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
+    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND type = 'INTEREST' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
     Flux<DailyAccrual> findInterestAccruals(UUID contractId, LocalDate startDate, LocalDate endDate);
     
-    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND accrual_type = 'DIVIDEND' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
+    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND type = 'DIVIDEND' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
     Flux<DailyAccrual> findDividendAccruals(UUID contractId, LocalDate startDate, LocalDate endDate);
     
-    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND accrual_type = 'PERFORMANCE' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
+    @Query("SELECT * FROM daily_accruals WHERE contract_id = :contractId AND type = 'PERFORMANCE' AND accrual_date BETWEEN :startDate AND :endDate ORDER BY accrual_date")
     Flux<DailyAccrual> findPerformanceAccruals(UUID contractId, LocalDate startDate, LocalDate endDate);
 }
