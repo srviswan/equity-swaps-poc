@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: archival-sqlserver-secure
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_PASSWORD:-Archival@2025!}
+      - MSSQL_PID=Developer
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./sql:/docker-entrypoint-initdb.d
+      - ./config:/secure-config
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${DB_PASSWORD:-Archival@2025!} -C -Q 'SELECT 1'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    env_file:
+      - .env
+
+volumes:
+  sqlserver_data:
