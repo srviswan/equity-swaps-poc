@@ -1,0 +1,90 @@
+2025-10-18 20:22:24,749 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,749 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 24f0b993-0ee4-4c5c-b67c-9526ae8c89bf
+2025-10-18 20:22:24,749 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:22:24
+2025-10-18 20:22:24,749 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,749 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:22:24,751 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:24,752 - ArchivalOrchestrator - ERROR - Prerequisites error: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:24,808 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,808 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: 3b6f354f-668a-4b67-aa31-9a912bb22c96
+2025-10-18 20:22:24,808 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:22:24,808 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,808 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:22:24,809 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:24,809 - ArchivalOrchestrator - ERROR - Disposal failed: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:24,846 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,846 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: bd7602c7-82b0-45af-99e3-fef03d00d829
+2025-10-18 20:22:24,846 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:22:24,846 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,846 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:22:24,847 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:24,847 - ArchivalOrchestrator - ERROR - Disposal failed: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:24,881 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,881 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:22:24,881 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,882 - ArchivalOrchestrator - ERROR - Error getting system status: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:24,917 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,917 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:22:24,917 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,918 - ArchivalOrchestrator - ERROR - Error getting system status: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:24,954 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,954 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:22:24,954 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:24,956 - ArchivalOrchestrator - ERROR - Error getting system status: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:25,179 - ArchivalOrchestrator - INFO - Resuming failed executions...
+2025-10-18 20:22:25,180 - ArchivalOrchestrator - ERROR - Error resuming executions: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:25,217 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:25,217 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:22:25,217 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:25,218 - ArchivalOrchestrator - ERROR - Error getting system status: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:25,254 - ArchivalOrchestrator - INFO - Monitoring executions...
+2025-10-18 20:22:25,255 - ArchivalOrchestrator - ERROR - Error monitoring executions: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:25,292 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:25,292 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 8153a59f-7c31-4ecc-b063-b588df71afa6
+2025-10-18 20:22:25,292 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:22:25
+2025-10-18 20:22:25,292 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:25,292 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:22:25,293 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:25,293 - ArchivalOrchestrator - ERROR - Prerequisites error: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:28,481 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:28,481 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: bca96f6d-7ca5-43ec-b08f-5e654c81fb0e
+2025-10-18 20:22:28,481 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:22:28
+2025-10-18 20:22:28,481 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:28,481 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:22:28,482 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:28,483 - ArchivalOrchestrator - ERROR - Prerequisites error: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:28,683 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:28,683 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: 86a18fce-abbe-40c8-974a-99efa41f1515
+2025-10-18 20:22:28,683 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:22:28,683 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:28,683 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:22:28,684 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:28,684 - ArchivalOrchestrator - ERROR - Disposal failed: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:28,722 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:28,722 - ArchivalOrchestrator - INFO - COMPLETE LIFECYCLE - Batch ID: 59da56e8-a149-416e-8287-00b751891c51
+2025-10-18 20:22:28,722 - ArchivalOrchestrator - INFO - Running archival + disposal workflow
+2025-10-18 20:22:28,722 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:22:28,722 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:22:28,724 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:22:28,724 - ArchivalOrchestrator - ERROR - Lifecycle execution failed: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:36:05,610 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:36:05,610 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 029bba7d-4af4-47f5-887e-9e2d943e8a1e
+2025-10-18 20:36:05,610 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:36:05
+2025-10-18 20:36:05,610 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:36:05,610 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:36:05,612 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:36:05,612 - ArchivalOrchestrator - ERROR - Prerequisites error: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:36:05,811 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:36:05,811 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: eb372f17-d1b5-44eb-9d60-1923181ce38e
+2025-10-18 20:36:05,811 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:36:05,811 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:36:05,811 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:36:05,813 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:36:05,813 - ArchivalOrchestrator - ERROR - Disposal failed: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:36:05,852 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:36:05,852 - ArchivalOrchestrator - INFO - COMPLETE LIFECYCLE - Batch ID: 9752bfd7-2578-47d1-8310-dfc167b64286
+2025-10-18 20:36:05,852 - ArchivalOrchestrator - INFO - Running archival + disposal workflow
+2025-10-18 20:36:05,852 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:36:05,852 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:36:05,853 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:36:05,853 - ArchivalOrchestrator - ERROR - Lifecycle execution failed: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")

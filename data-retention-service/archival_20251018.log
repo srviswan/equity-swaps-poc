@@ -1,0 +1,16 @@
+2025-10-18 20:19:05,643 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:19:05,643 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:19:05,643 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:19:05,647 - ArchivalOrchestrator - ERROR - Error getting system status: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:26:17,603 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:26:17,603 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:26:17,603 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:26:17,746 - ArchivalOrchestrator - ERROR - Error getting system status: SQL execution failed: ('IM004', "[IM004] [unixODBC][Driver Manager]Driver's SQLAllocHandle on SQL_HANDLE_HENV failed (0) (SQLDriverConnect)")
+2025-10-18 20:29:53,781 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:29:53,781 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:29:53,781 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:29:53,782 - ArchivalOrchestrator - ERROR - Error getting system status: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:33:30,204 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:33:30,205 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:33:30,205 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:33:30,206 - ArchivalOrchestrator - ERROR - Error getting system status: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
