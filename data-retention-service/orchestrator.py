@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, Dict, Any
 
-import pyodbc
+import pymssql
 
 
 class PrerequisiteError(Exception):
@@ -23,14 +23,15 @@ class ArchivalOrchestrator:
     """Production-ready archival orchestrator with resilience and monitoring"""
     
     def __init__(self, connection_string: str = None):
-        self.connection_string = connection_string or (
-            "DRIVER={ODBC Driver 18 for SQL Server};"
-            "SERVER=localhost,1436;"
-            "DATABASE=control_db;"
-            "UID=sa;"
-            "PWD=Archival@2025!;"
-            "TrustServerCertificate=yes;"
-        )
+        self.connection_string = connection_string or {
+            'server': 'localhost:1436',
+            'database': 'control_db',
+            'user': 'sa',
+            'password': 'Archival@2025!',
+            'timeout': 30,
+            'login_timeout': 30,
+            'charset': 'UTF-8'
+        }
         self.batch_id = str(uuid.uuid4())
         self.sql = SQLExecutor(self.connection_string)
         
@@ -267,15 +268,15 @@ class ArchivalOrchestrator:
 
 
 class SQLExecutor:
-    """SQL execution wrapper with error handling"""
+    """SQL execution wrapper with error handling using native SQL Server driver"""
     
-    def __init__(self, connection_string: str):
-        self.connection_string = connection_string
+    def __init__(self, connection_params: dict):
+        self.connection_params = connection_params
         
     def execute(self, query: str) -> str:
         """Execute SQL query and return result"""
         try:
-            with pyodbc.connect(self.connection_string) as conn:
+            with pymssql.connect(**self.connection_params) as conn:
                 cursor = conn.cursor()
                 cursor.execute(query)
                 
@@ -284,7 +285,7 @@ class SQLExecutor:
                     # SELECT query
                     rows = cursor.fetchall()
                     if rows:
-                        return '\\n'.join([' '.join(str(cell) for cell in row) for row in rows])
+                        return '\n'.join([' '.join(str(cell) for cell in row) for row in rows])
                     else:
                         return ""
                 else:
@@ -297,11 +298,11 @@ class SQLExecutor:
     def execute_procedure(self, procedure_name: str, parameters: Dict[str, Any]) -> bool:
         """Execute stored procedure with parameters"""
         try:
-            with pyodbc.connect(self.connection_string) as conn:
+            with pymssql.connect(**self.connection_params) as conn:
                 cursor = conn.cursor()
                 
                 # Build parameter string
-                param_str = ', '.join([f"@{k} = ?" for k in parameters.keys()])
+                param_str = ', '.join([f"@{k} = %s" for k in parameters.keys()])
                 query = f"EXEC {procedure_name} {param_str}"
                 
                 # Execute with parameters

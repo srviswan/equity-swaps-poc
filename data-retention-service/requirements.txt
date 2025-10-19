@@ -1,7 +1,2 @@
-pyodbc>=4.0.34
-uuid
-datetime
-argparse
-logging
-sys
-typing
+# Data Retention Service Dependencies
+pymssql>=2.2.0
