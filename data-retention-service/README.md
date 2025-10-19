@@ -10,6 +10,7 @@ A production-ready data archival and retention system with comprehensive lifecyc
 - **Comprehensive Monitoring**: Real-time metrics, health checks, alerting
 - **Retention Policies**: Configurable retention periods with compliance holds
 - **Partition Support**: Automatic partition detection and switching
+- **Schema Change Handling**: Automatic detection and versioning of schema changes
 - **Audit Trail**: Complete tracking of all operations
 - **Test Suite**: Comprehensive testing with failure injection
 
@@ -30,7 +31,20 @@ Source DB → Staging Table → Archive DB → Disposal
     ↓           ↓            ↓          ↓
   Mark      Partition     Retain     Dispose
  Records    Switch/Copy   Data       Old Data
+    ↓           ↓            ↓          ↓
+Schema     Versioned     Multiple   Cross-Version
+Detection  Archive       Versions   Disposal
 ```
+
+### Schema Change Handling
+
+The system automatically handles schema changes in source tables:
+
+- **Column Addition**: Creates new versioned archive table (e.g., `Table_Archive_v2`)
+- **Column Removal**: Creates new versioned archive table without removed columns
+- **Type Changes**: Creates new versioned archive table with updated types
+- **Backward Compatibility**: Existing archive tables remain untouched
+- **Automatic Detection**: Schema changes detected before every archival run
 
 ## Quick Start
 
@@ -91,6 +105,12 @@ python3 orchestrator.py --monitor
 
 # Resume failed operations
 python3 orchestrator.py --resume
+
+# Show schema version information
+python3 orchestrator.py --schema-versions
+
+# Validate schemas for all configured tables
+python3 orchestrator.py --validate-schemas
 ```
 
 ### Advanced Operations
@@ -198,6 +218,41 @@ The system tracks metrics and can alert on:
 - Performance degradation
 - Storage thresholds
 - Compliance violations
+
+## Schema Change Handling
+
+### Automatic Schema Detection
+
+The system automatically detects and handles schema changes:
+
+```sql
+-- View schema versions
+EXEC control.sp_Show_Schema_Versions
+
+-- View schema changes
+EXEC control.sp_Show_Schema_Changes @days_back = 30
+
+-- Validate schema before archival
+EXEC control.sp_Validate_Schema_Before_Archival 
+    @source_database = 'TestDB', 
+    @table_name = 'TestTable'
+```
+
+### Schema Versioning
+
+- **Versioned Archive Tables**: `Table_Archive_v1`, `Table_Archive_v2`, etc.
+- **Automatic Detection**: Schema changes detected before every archival run
+- **Backward Compatibility**: Existing archive tables remain untouched
+- **Cross-Version Disposal**: Disposal works across all archive table versions
+
+### Supported Schema Changes
+
+| Change Type | Detection | Handling | Example |
+|-------------|-----------|----------|---------|
+| Add Column | ✅ Automatic | ✅ Creates new version | `Table_Archive_v2` |
+| Remove Column | ✅ Automatic | ✅ Creates new version | `Table_Archive_v3` |
+| Type Change | ✅ Automatic | ✅ Creates new version | `Table_Archive_v4` |
+| Multiple Changes | ✅ Automatic | ✅ Creates new version | `Table_Archive_v5` |
 
 ## Resilience Features
 

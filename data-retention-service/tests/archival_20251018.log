@@ -88,3 +88,34 @@
 2025-10-18 20:36:05,852 - ArchivalOrchestrator - INFO - Validating system prerequisites...
 2025-10-18 20:36:05,853 - ArchivalOrchestrator - ERROR - Prerequisites validation error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
 2025-10-18 20:36:05,853 - ArchivalOrchestrator - ERROR - Lifecycle execution failed: Setup required. Run './init_control_db.sh' first. Error: SQL execution failed: ('01000', "[01000] [unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found (0) (SQLDriverConnect)")
+2025-10-18 20:42:33,602 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:42:33,602 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: bc785fc8-55e7-4a4e-b649-e7c2758a70b9
+2025-10-18 20:42:33,602 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:42:33
+2025-10-18 20:42:33,602 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:42:33,603 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:42:33,631 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:42:33,631 - ArchivalOrchestrator - INFO - Checking for running or failed executions...
+2025-10-18 20:42:33,643 - ArchivalOrchestrator - WARNING - Found running or failed executions:
+2025-10-18 20:42:33,643 - ArchivalOrchestrator - WARNING - e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow FAILED 6 359 0 Invalid object name 'archive_db.TestDB.TestTable_Archive'. True False
+1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 6 372 0 None True False
+11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 6 380 0 None True False
+ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 7 424 0 None True False
+30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 20 1184 0 None True False
+7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None FAILED 20 1208 1 Simulated test failure True False
+2025-10-18 20:42:33,643 - ArchivalOrchestrator - INFO - Attempting to resume failed executions...
+2025-10-18 20:42:33,655 - ArchivalOrchestrator - INFO - Executing archival workflow...
+2025-10-18 20:42:33,669 - ArchivalOrchestrator - INFO - ✓ Archival workflow completed successfully
+2025-10-18 20:42:34,029 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:42:34,029 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: 39a2616e-747c-4ecc-b98f-d6b58ab93ea8
+2025-10-18 20:42:34,030 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:42:34,030 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:42:34,030 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:42:34,050 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:42:34,082 - ArchivalOrchestrator - ERROR - Disposal failed: Procedure execution failed: (208, b"Invalid object name 'archive_db.TestDB.TestTable_Archive'.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\nDB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\nDB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\nDB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n")
+2025-10-18 20:42:34,125 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:42:34,125 - ArchivalOrchestrator - INFO - COMPLETE LIFECYCLE - Batch ID: 329a883c-8276-4151-aa1d-796b96550857
+2025-10-18 20:42:34,125 - ArchivalOrchestrator - INFO - Running archival + disposal workflow
+2025-10-18 20:42:34,125 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:42:34,125 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:42:34,144 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:42:34,171 - ArchivalOrchestrator - ERROR - Lifecycle execution failed: Procedure execution failed: (208, b"Invalid object name 'archive_db.TestDB.TestTable_Archive'.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n")

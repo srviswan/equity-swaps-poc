@@ -22,6 +22,8 @@ BEGIN
     DECLARE @current_phase VARCHAR(50);
     DECLARE @resume_point VARCHAR(200);
     DECLARE @error_msg NVARCHAR(MAX);
+    DECLARE @archive_table_versioned VARCHAR(200);
+    DECLARE @schema_version INT;
     
     -- Create or retrieve execution state
     IF @execution_id IS NULL
@@ -78,7 +80,8 @@ BEGIN
             
             -- Execute preparation (idempotent)
             EXEC control.sp_Prepare_Archival_Records_Idempotent 
-                @source_database, @table_name, @batch_id, @staging_table_name OUTPUT;
+                @source_database, @table_name, @batch_id, 
+                @staging_table_name OUTPUT, @archive_table_versioned OUTPUT, @schema_version OUTPUT;
             
             -- Move to next phase
             UPDATE control.archival_execution_state
@@ -104,10 +107,10 @@ BEGIN
             
             IF @staging_table_name IS NOT NULL
             BEGIN
-                -- Execute movement (idempotent)
+                -- Execute movement (idempotent) using versioned archive table
                 DECLARE @records_moved BIGINT;
                 EXEC control.sp_Move_To_Archive_Master 
-                    @source_database, @staging_table_name, @archive_schema, @archive_table, 
+                    @source_database, @staging_table_name, @archive_schema, @archive_table_versioned, 
                     @batch_id, @records_moved OUTPUT;
                 
                 -- Drop staging table after successful move

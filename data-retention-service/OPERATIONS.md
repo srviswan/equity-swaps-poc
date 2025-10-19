@@ -427,6 +427,23 @@ GROUP BY metric_name
 ORDER BY metric_name;
 ```
 
+#### 3. Monitor Schema Changes
+```sql
+-- Review schema changes in last week
+EXEC control.sp_Show_Schema_Changes @days_back = 7;
+
+-- Check schema version summary
+SELECT 
+    source_database,
+    table_name,
+    COUNT(*) as total_versions,
+    MAX(schema_version) as latest_version,
+    MAX(created_date) as last_change
+FROM control.archive_schema_versions
+GROUP BY source_database, table_name
+ORDER BY last_change DESC;
+```
+
 ### Monthly Tasks
 
 #### 1. Review Retention Policies
@@ -506,6 +523,174 @@ WHERE name IN (
     'max worker threads'
 );
 ```
+
+## Schema Change Management
+
+### Overview
+
+The system automatically handles schema changes in source tables by creating versioned archive tables. This ensures data integrity and backward compatibility while allowing schema evolution.
+
+### Schema Change Detection
+
+#### Automatic Detection
+Schema changes are automatically detected before every archival run:
+
+```sql
+-- Manual schema validation
+EXEC control.sp_Validate_Schema_Before_Archival 
+    @source_database = 'TestDB', 
+    @table_name = 'TestTable';
+```
+
+#### Schema Change Types
+- **Column Addition**: New columns added to source table
+- **Column Removal**: Columns removed from source table  
+- **Type Changes**: Data type modifications
+- **Multiple Changes**: Any combination of the above
+
+### Schema Versioning
+
+#### Archive Table Naming
+- **Version 1**: `TableName_Archive_v1`
+- **Version 2**: `TableName_Archive_v2`
+- **Version N**: `TableName_Archive_vN`
+
+#### Version Management
+```sql
+-- View all schema versions
+EXEC control.sp_Show_Schema_Versions;
+
+-- View schema changes
+EXEC control.sp_Show_Schema_Changes @days_back = 30;
+
+-- Get active archive table for a source table
+DECLARE @archive_table VARCHAR(200);
+DECLARE @schema_version INT;
+EXEC control.sp_Get_Active_Archive_Table 
+    'TestDB', 'TestTable', 
+    @archive_table OUTPUT, @schema_version OUTPUT;
+```
+
+### Schema Change Workflow
+
+#### 1. Detection Phase
+- System compares current source table schema with last known version
+- Generates MD5 hash of column definitions
+- Identifies specific change types
+
+#### 2. Version Creation Phase
+- Creates new versioned archive table if schema changed
+- Includes all source columns plus archival metadata
+- Sets up appropriate indexes and constraints
+
+#### 3. Data Movement Phase
+- Uses explicit column lists for data movement
+- Only moves columns that exist in both source and archive
+- Handles schema mismatches gracefully
+
+#### 4. Disposal Phase
+- Applies disposal logic to all archive table versions
+- Tracks disposal per version for audit compliance
+
+### Monitoring Schema Changes
+
+#### Daily Monitoring
+```sql
+-- Check for schema changes in last 24 hours
+SELECT 
+    source_database,
+    table_name,
+    change_type,
+    detected_date,
+    status
+FROM control.schema_change_log
+WHERE detected_date >= DATEADD(DAY, -1, GETDATE())
+ORDER BY detected_date DESC;
+```
+
+#### Weekly Review
+```sql
+-- Schema version summary
+SELECT 
+    source_database,
+    table_name,
+    COUNT(*) as total_versions,
+    MAX(schema_version) as latest_version,
+    MAX(created_date) as last_change
+FROM control.archive_schema_versions
+GROUP BY source_database, table_name
+ORDER BY last_change DESC;
+```
+
+### Troubleshooting Schema Changes
+
+#### Common Issues
+
+1. **Schema Detection Failures**
+   ```sql
+   -- Check for failed schema validations
+   SELECT *
+   FROM control.schema_change_log
+   WHERE status = 'FAILED'
+   ORDER BY detected_date DESC;
+   ```
+
+2. **Archive Table Creation Issues**
+   ```sql
+   -- Check archive table registry
+   SELECT *
+   FROM control.archive_table_registry
+   WHERE is_active = 1
+   ORDER BY table_created_date DESC;
+   ```
+
+3. **Data Movement Failures**
+   ```sql
+   -- Check data movement tracking
+   SELECT *
+   FROM control.archive_data_movement_tracking
+   WHERE operation_status = 'FAILED'
+   ORDER BY started_at DESC;
+   ```
+
+#### Recovery Procedures
+
+1. **Manual Schema Validation**
+   ```bash
+   # Validate schemas for all configured tables
+   python3 orchestrator.py --validate-schemas
+   ```
+
+2. **Schema Version Display**
+   ```bash
+   # Show current schema versions
+   python3 orchestrator.py --schema-versions
+   ```
+
+3. **Force Schema Re-detection**
+   ```sql
+   -- Force schema re-detection by clearing last known version
+   DELETE FROM control.archive_schema_versions
+   WHERE source_database = 'TestDB' 
+   AND table_name = 'TestTable';
+   ```
+
+### Best Practices
+
+1. **Schema Change Planning**
+   - Plan schema changes during maintenance windows
+   - Test schema changes in development environment first
+   - Monitor archival performance after schema changes
+
+2. **Archive Table Management**
+   - Regularly review archive table versions
+   - Clean up old versions when no longer needed
+   - Monitor storage usage across all versions
+
+3. **Data Integrity**
+   - Verify data movement after schema changes
+   - Check archive table structures match expectations
+   - Validate disposal works across all versions
 
 ## Security Considerations
 

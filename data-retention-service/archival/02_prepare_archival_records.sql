@@ -11,7 +11,9 @@ CREATE OR ALTER PROCEDURE control.sp_Prepare_Archival_Records_Idempotent
     @source_database VARCHAR(100),
     @table_name VARCHAR(100),
     @batch_id UNIQUEIDENTIFIER,
-    @staging_table_name VARCHAR(200) OUTPUT
+    @staging_table_name VARCHAR(200) OUTPUT,
+    @archive_table_versioned VARCHAR(200) OUTPUT,
+    @schema_version INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -26,6 +28,9 @@ BEGIN
     DECLARE @date_column VARCHAR(100);
     DECLARE @months_before_archival INT;
     DECLARE @error_msg NVARCHAR(MAX);
+    DECLARE @archive_table_versioned VARCHAR(200);
+    DECLARE @schema_version INT;
+    DECLARE @validation_status VARCHAR(50);
     
     -- Generate staging table name
     SET @staging_table_name = @table_name + '_Archive_Staging_' + FORMAT(GETDATE(), 'yyyyMMdd_HHmmss');
@@ -42,6 +47,29 @@ BEGIN
         SET @error_msg = 'Table not configured: ' + @source_database + '.' + @table_name;
         PRINT @error_msg;
         THROW 50001, @error_msg, 1;
+    END
+    
+    -- Validate schema before archival
+    EXEC control.sp_Validate_Schema_Before_Archival 
+        @source_database, @table_name,
+        @archive_table_versioned OUTPUT,
+        @schema_version OUTPUT,
+        @validation_status OUTPUT,
+        @batch_id;
+    
+    IF @validation_status = 'SCHEMA_CHANGED'
+    BEGIN
+        PRINT 'Schema change detected. Using new archive table: ' + @archive_table_versioned;
+    END
+    ELSE IF @validation_status = 'INITIAL_SCHEMA'
+    BEGIN
+        PRINT 'Initial schema detected. Created archive table: ' + @archive_table_versioned;
+    END
+    ELSE IF @validation_status = 'CONFIG_ERROR'
+    BEGIN
+        SET @error_msg = 'Schema validation failed: ' + @validation_status;
+        PRINT @error_msg;
+        THROW 50002, @error_msg, 1;
     END
     
     BEGIN TRY

@@ -55,12 +55,19 @@ BEGIN
     
     DECLARE @sql NVARCHAR(MAX);
     DECLARE @start_time DATETIME = GETDATE();
+    DECLARE @column_list NVARCHAR(MAX);
     
-    -- Simple INSERT INTO archive_db...SELECT FROM staging
+    -- Get column list for explicit insert
+    EXEC control.sp_Get_Column_List_For_Insert 
+        @source_database, @staging_table_name, @archive_schema, @archive_table,
+        @column_list OUTPUT;
+    
+    -- Simple INSERT INTO archive_db...SELECT FROM staging with explicit columns
     SET @sql = '
     USE archive_db;
-    INSERT INTO ' + QUOTENAME(@archive_schema) + '.' + QUOTENAME(@archive_table) + '
-    SELECT *, GETDATE() AS archived_date
+    INSERT INTO ' + QUOTENAME(@archive_schema) + '.' + QUOTENAME(@archive_table) + ' 
+        (' + @column_list + ', archived_date)
+    SELECT ' + @column_list + ', GETDATE()
     FROM ' + QUOTENAME(@source_database) + '.dbo.' + QUOTENAME(@staging_table_name) + ';
     ';
     
@@ -112,6 +119,12 @@ BEGIN
     DECLARE @start_time DATETIME = GETDATE();
     DECLARE @total_moved BIGINT = 0;
     DECLARE @batch_moved INT;
+    DECLARE @column_list NVARCHAR(MAX);
+    
+    -- Get column list for explicit insert
+    EXEC control.sp_Get_Column_List_For_Insert 
+        @source_database, @staging_table_name, @archive_schema, @archive_table,
+        @column_list OUTPUT;
     
     -- Batch INSERT with table hints for performance
     WHILE 1 = 1
@@ -120,11 +133,12 @@ BEGIN
         USE archive_db;
         
         INSERT TOP(' + CAST(@batch_size AS VARCHAR) + ') INTO ' + QUOTENAME(@archive_schema) + '.' + QUOTENAME(@archive_table) + ' WITH (TABLOCK, BULK)
-        SELECT TOP(' + CAST(@batch_size AS VARCHAR) + ') *, GETDATE() AS archived_date
+            (' + @column_list + ', archived_date)
+        SELECT TOP(' + CAST(@batch_size AS VARCHAR) + ') ' + @column_list + ', GETDATE()
         FROM ' + QUOTENAME(@source_database) + '.dbo.' + QUOTENAME(@staging_table_name) + ' s
         WHERE NOT EXISTS (
             SELECT 1 FROM ' + QUOTENAME(@archive_schema) + '.' + QUOTENAME(@archive_table) + ' a
-            WHERE a.' + @staging_table_name + 'Id = s.' + @staging_table_name + 'Id
+            WHERE a.id = s.id
         );
         ';
         

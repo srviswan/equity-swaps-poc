@@ -174,6 +174,7 @@ main() {
     execute_sql "01_create_databases.sql" "Create control_db and archive_db"
     execute_sql "02_create_archival_table_list.sql" "Create configuration table"
     execute_sql "03_create_marker_tables.sql" "Create tracking tables"
+    execute_sql "04_schema_tracking_tables.sql" "Create schema tracking tables"
     execute_sql "04_partition_detection_procedures.sql" "Create partition detection procedures"
     execute_sql "05_monitoring_procedures.sql" "Create monitoring procedures"
     
@@ -188,6 +189,7 @@ main() {
     execute_sql "../archival/05_archive_movement_procedures.sql" "Create data movement procedures"
     execute_sql "../archival/07_disposal_procedures.sql" "Create disposal procedures"
     execute_sql "../archival/06_master_archival_procedure.sql" "Create master orchestration procedures"
+    execute_sql "../archival/08_schema_management_procedures.sql" "Create schema management procedures"
     
     echo ""
     echo "========================================"

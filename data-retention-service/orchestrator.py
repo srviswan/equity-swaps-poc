@@ -144,6 +144,87 @@ class ArchivalOrchestrator:
         except Exception as e:
             self.logger.error(f"Error getting system status: {e}")
     
+    def show_schema_versions(self):
+        """Show schema version information"""
+        self.logger.info("=" * 80)
+        self.logger.info("SCHEMA VERSION INFORMATION")
+        self.logger.info("=" * 80)
+        
+        try:
+            # Show active schema versions
+            versions = self.sql.execute("EXEC control.sp_Show_Schema_Versions")
+            self.logger.info("Active Schema Versions:")
+            if versions:
+                for line in versions.split('\n'):
+                    if line.strip():
+                        self.logger.info(f"  {line.strip()}")
+            else:
+                self.logger.info("  No schema versions found")
+            
+            # Show recent schema changes
+            changes = self.sql.execute("EXEC control.sp_Show_Schema_Changes @days_back = 30")
+            self.logger.info("\nRecent Schema Changes (Last 30 days):")
+            if changes:
+                for line in changes.split('\n'):
+                    if line.strip():
+                        self.logger.info(f"  {line.strip()}")
+            else:
+                self.logger.info("  No schema changes detected")
+                
+        except Exception as e:
+            self.logger.error(f"Error getting schema version information: {e}")
+    
+    def validate_schemas(self):
+        """Manually validate schemas for all configured tables"""
+        self.logger.info("=" * 80)
+        self.logger.info("SCHEMA VALIDATION")
+        self.logger.info("=" * 80)
+        
+        try:
+            # Get configured tables
+            tables = self.sql.execute("""
+                SELECT source_database, table_name
+                FROM control.archival_table_list 
+                WHERE active = 1
+                ORDER BY source_database, table_name
+            """)
+            
+            if not tables:
+                self.logger.info("No tables configured for archival")
+                return
+            
+            self.logger.info("Validating schemas for configured tables...")
+            
+            for line in tables.split('\n'):
+                if line.strip():
+                    parts = line.strip().split()
+                    if len(parts) >= 2:
+                        source_db = parts[0]
+                        table_name = parts[1]
+                        
+                        self.logger.info(f"Validating {source_db}.{table_name}...")
+                        
+                        # Run schema validation
+                        result = self.sql.execute(f"""
+                            DECLARE @archive_table VARCHAR(200);
+                            DECLARE @schema_version INT;
+                            DECLARE @validation_status VARCHAR(50);
+                            
+                            EXEC control.sp_Validate_Schema_Before_Archival 
+                                '{source_db}', '{table_name}',
+                                @archive_table OUTPUT,
+                                @schema_version OUTPUT,
+                                @validation_status OUTPUT;
+                            
+                            SELECT @validation_status as status, @archive_table as archive_table, @schema_version as version;
+                        """)
+                        
+                        if result:
+                            self.logger.info(f"  Status: {result}")
+                        
+        except Exception as e:
+            self.logger.error(f"Error validating schemas: {e}")
+    
     def run_monthly_archival_resilient(self) -> bool:
         """Run archival with resilience and recovery"""
         self.logger.info("=" * 80)
@@ -329,11 +410,13 @@ def main():
     parser.add_argument('--status', action='store_true', help='Show system status')
     parser.add_argument('--monitor', action='store_true', help='Monitor running executions')
     parser.add_argument('--resume', action='store_true', help='Resume failed executions')
+    parser.add_argument('--schema-versions', action='store_true', help='Show schema version information')
+    parser.add_argument('--validate-schemas', action='store_true', help='Validate schemas for all configured tables')
     parser.add_argument('--connection-string', help='Custom connection string')
     
     args = parser.parse_args()
     
-    if not any([args.run, args.dispose, args.lifecycle, args.status, args.monitor, args.resume]):
+    if not any([args.run, args.dispose, args.lifecycle, args.status, args.monitor, args.resume, args.schema_versions, args.validate_schemas]):
         parser.print_help()
         return 1
     
@@ -351,6 +434,14 @@ def main():
         if args.resume:
             success = orchestrator.resume_failed_executions()
             return 0 if success else 1
+        
+        if args.schema_versions:
+            orchestrator.show_schema_versions()
+            return 0
+        
+        if args.validate_schemas:
+            orchestrator.validate_schemas()
+            return 0
         
         if args.run:
             success = orchestrator.run_monthly_archival_resilient()

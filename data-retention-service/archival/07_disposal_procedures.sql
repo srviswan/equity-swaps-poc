@@ -263,11 +263,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    -- Get tables eligible for disposal from archival_table_list
+    -- Get all archive table versions eligible for disposal
     DECLARE @tables TABLE (
         archive_schema VARCHAR(100),
-        archive_table VARCHAR(100),
+        archive_table VARCHAR(200),
         source_database VARCHAR(100),
+        schema_version INT,
         retention_years INT,
         disposal_method VARCHAR(50),
         disposal_enabled BIT
@@ -275,39 +276,47 @@ BEGIN
     
     INSERT INTO @tables
     SELECT 
-        archive_db_schema,
-        archive_db_table,
-        source_database,
-        retention_years_in_archive,
-        disposal_method,
-        disposal_enabled
-    FROM control.archival_table_list
-    WHERE disposal_enabled = 1 AND active = 1;
+        atr.archive_schema,
+        atr.archive_table,
+        atr.source_database,
+        atr.schema_version,
+        atr.retention_years,
+        COALESCE(atl.disposal_method, 'BATCH_DELETE'),
+        atr.disposal_enabled
+    FROM control.archive_table_registry atr
+    LEFT JOIN control.archival_table_list atl 
+        ON atr.source_database = atl.source_database 
+        AND atr.source_table = atl.table_name
+    WHERE atr.disposal_enabled = 1 
+    AND atr.is_active = 1;
     
-    -- Process each table
+    -- Process each table version
     DECLARE @archive_schema VARCHAR(100);
-    DECLARE @archive_table VARCHAR(100);
+    DECLARE @archive_table VARCHAR(200);
+    DECLARE @source_database VARCHAR(100);
+    DECLARE @schema_version INT;
     DECLARE @retention_years INT;
     DECLARE @disposal_method VARCHAR(50);
     DECLARE @records_identified BIGINT;
     DECLARE @disposal_cutoff_date DATE;
     
     DECLARE disposal_cursor CURSOR FOR
-    SELECT archive_schema, archive_table, retention_years, disposal_method
+    SELECT archive_schema, archive_table, source_database, schema_version, retention_years, disposal_method
     FROM @tables;
     
     OPEN disposal_cursor;
     FETCH NEXT FROM disposal_cursor 
-    INTO @archive_schema, @archive_table, @retention_years, @disposal_method;
+    INTO @archive_schema, @archive_table, @source_database, @schema_version, @retention_years, @disposal_method;
     
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        PRINT 'Processing disposal for ' + @archive_schema + '.' + @archive_table;
+        PRINT 'Processing disposal for ' + @archive_schema + '.' + @archive_table + ' (v' + CAST(@schema_version AS VARCHAR) + ')';
         
         -- Identify records for disposal
         EXEC control.sp_Identify_Records_For_Disposal
             @archive_schema, @archive_table, @retention_years, @batch_id,
-            @records_identified OUTPUT, @disposal_cutoff_date OUTPUT;
+            @records_identified OUTPUT, @disposal_cutoff_date OUTPUT,
+            @source_database;
         
         -- Skip if no records to dispose
         IF @records_identified > 0
@@ -347,7 +356,7 @@ BEGIN
         END
         
         FETCH NEXT FROM disposal_cursor 
-        INTO @archive_schema, @archive_table, @retention_years, @disposal_method;
+        INTO @archive_schema, @archive_table, @source_database, @schema_version, @retention_years, @disposal_method;
     END
     
     CLOSE disposal_cursor;

@@ -48,3 +48,227 @@ ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIV
 2025-10-18 20:42:03,795 - ArchivalOrchestrator - INFO - Attempting to resume failed executions...
 2025-10-18 20:42:03,823 - ArchivalOrchestrator - INFO - Executing archival workflow...
 2025-10-18 20:42:03,848 - ArchivalOrchestrator - INFO - ✓ Archival workflow completed successfully
+2025-10-18 20:43:25,785 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:43:25,786 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 65ff2beb-e765-46d9-8891-206a7451e2a0
+2025-10-18 20:43:25,786 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:43:25
+2025-10-18 20:43:25,786 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:43:25,786 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:43:25,823 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:43:25,823 - ArchivalOrchestrator - INFO - Checking for running or failed executions...
+2025-10-18 20:43:25,835 - ArchivalOrchestrator - WARNING - Found running or failed executions:
+2025-10-18 20:43:25,835 - ArchivalOrchestrator - WARNING - e0922d25-b5d1-4ffb-b769-cd62519fedb2 2c064591-e1fc-4d7b-b865-1a6dc231bd9a ARCHIVAL TestDB TestTable PREPARE None RUNNING 1 44 0 None True False
+e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow FAILED 7 411 0 Invalid object name 'archive_db.TestDB.TestTable_Archive'. True False
+1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 7 424 0 None True False
+11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 7 432 0 None True False
+ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 8 476 0 None True False
+30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1236 0 None True False
+7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None FAILED 21 1260 1 Simulated test failure True False
+2025-10-18 20:43:25,835 - ArchivalOrchestrator - INFO - Attempting to resume failed executions...
+2025-10-18 20:43:25,847 - ArchivalOrchestrator - INFO - Executing archival workflow...
+2025-10-18 20:43:25,859 - ArchivalOrchestrator - INFO - ✓ Archival workflow completed successfully
+2025-10-18 20:44:20,238 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:44:20,238 - ArchivalOrchestrator - INFO - SYSTEM STATUS
+2025-10-18 20:44:20,238 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:44:20,276 - ArchivalOrchestrator - INFO - Configured Tables: 1
+2025-10-18 20:44:20,276 - ArchivalOrchestrator - INFO -   - TestDB TestTable True True 1 None
+2025-10-18 20:44:20,291 - ArchivalOrchestrator - INFO - \nRecent Executions (Last 24h):
+2025-10-18 20:44:20,291 - ArchivalOrchestrator - INFO -   RUNNING ARCHIVAL TestDB TestTable 2
+2025-10-18 20:44:20,291 - ArchivalOrchestrator - INFO -   FAILED LIFECYCLE None None 8
+2025-10-18 20:44:20,291 - ArchivalOrchestrator - INFO -   RUNNING ARCHIVAL TestDB TestTable 8
+2025-10-18 20:44:20,291 - ArchivalOrchestrator - INFO -   RUNNING ARCHIVAL TestDB TestTable 8
+2025-10-18 20:44:20,291 - ArchivalOrchestrator - INFO -   RUNNING ARCHIVAL TestDB TestTable 9
+2025-10-18 20:44:20,291 - ArchivalOrchestrator - INFO -   RUNNING ARCHIVAL TestDB TestTable 22
+2025-10-18 20:44:20,291 - ArchivalOrchestrator - INFO -   FAILED ARCHIVAL TestDB TestTable 22
+2025-10-18 20:44:20,307 - ArchivalOrchestrator - INFO - \nArchive Database Status:
+2025-10-18 20:45:03,041 - ArchivalOrchestrator - INFO - Monitoring executions...
+2025-10-18 20:45:03,078 - ArchivalOrchestrator - INFO - Current executions:
+2025-10-18 20:45:03,078 - ArchivalOrchestrator - INFO -   e0922d25-b5d1-4ffb-b769-cd62519fedb2 2c064591-e1fc-4d7b-b865-1a6dc231bd9a ARCHIVAL TestDB TestTable PREPARE None RUNNING 3 142 0 None True False
+2025-10-18 20:45:03,078 - ArchivalOrchestrator - INFO -   e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow FAILED 9 509 0 Invalid object name 'archive_db.TestDB.TestTable_Archive'. True False
+2025-10-18 20:45:03,078 - ArchivalOrchestrator - INFO -   1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 9 522 0 None True False
+2025-10-18 20:45:03,078 - ArchivalOrchestrator - INFO -   11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 9 530 0 None True False
+2025-10-18 20:45:03,078 - ArchivalOrchestrator - INFO -   ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 10 574 0 None True False
+2025-10-18 20:45:03,078 - ArchivalOrchestrator - INFO -   30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 23 1334 0 None True False
+2025-10-18 20:45:03,078 - ArchivalOrchestrator - INFO -   7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None FAILED 23 1358 1 Simulated test failure True False
+2025-10-18 20:46:12,717 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:12,717 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: 7742efaf-a9a2-44d4-9117-98158db20dad
+2025-10-18 20:46:12,717 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:46:12,717 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:12,717 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:46:12,742 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:46:12,759 - ArchivalOrchestrator - ERROR - Disposal failed: Procedure execution failed: (515, b"Cannot insert the value NULL into column 'source_database', table 'control_db.control.archive_disposal_tracking'; column does not allow nulls. INSERT fails.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n")
+2025-10-18 20:46:33,098 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:33,098 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: 8a7acebb-c027-4084-8969-06774cc48059
+2025-10-18 20:46:33,098 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:46:33,098 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:33,098 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:46:33,123 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:46:33,136 - ArchivalOrchestrator - ERROR - Disposal failed: Procedure execution failed: (8144, b'Procedure or function sp_Identify_Records_For_Disposal has too many arguments specified.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+2025-10-18 20:46:46,061 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:46,061 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: 15ea528d-cd21-4362-926d-41c791dd1f92
+2025-10-18 20:46:46,061 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:46:46,061 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:46,061 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:46:46,087 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:46:46,116 - ArchivalOrchestrator - ERROR - Disposal failed: Procedure execution failed: (515, b"Cannot insert the value NULL into column 'disposal_method', table 'control_db.control.archive_disposal_tracking'; column does not allow nulls. INSERT fails.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n")
+2025-10-18 20:46:52,951 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:52,951 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: d59c062a-efd3-48c9-9e36-ea31ba3ada1b
+2025-10-18 20:46:52,951 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:46:52,951 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:52,951 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:46:52,978 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:46:52,998 - ArchivalOrchestrator - INFO - ✓ Disposal workflow completed successfully
+2025-10-18 20:46:57,818 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:57,818 - ArchivalOrchestrator - INFO - COMPLETE LIFECYCLE - Batch ID: 74be6141-f950-4d80-a614-6e5b9db47226
+2025-10-18 20:46:57,818 - ArchivalOrchestrator - INFO - Running archival + disposal workflow
+2025-10-18 20:46:57,818 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:46:57,818 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:46:57,845 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:46:57,861 - ArchivalOrchestrator - INFO - ✓ Complete lifecycle executed successfully
+2025-10-18 20:46:59,302 - ArchivalOrchestrator - INFO - Monitoring executions...
+2025-10-18 20:46:59,327 - ArchivalOrchestrator - INFO - Current executions:
+2025-10-18 20:46:59,327 - ArchivalOrchestrator - INFO -   e0922d25-b5d1-4ffb-b769-cd62519fedb2 2c064591-e1fc-4d7b-b865-1a6dc231bd9a ARCHIVAL TestDB TestTable PREPARE None RUNNING 4 258 0 None True False
+2025-10-18 20:46:59,327 - ArchivalOrchestrator - INFO -   e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow READY_TO_RESUME 10 625 0 None True False
+2025-10-18 20:46:59,327 - ArchivalOrchestrator - INFO -   1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 10 638 0 None True False
+2025-10-18 20:46:59,327 - ArchivalOrchestrator - INFO -   11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 10 646 0 None True False
+2025-10-18 20:46:59,327 - ArchivalOrchestrator - INFO -   ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 11 690 0 None True False
+2025-10-18 20:46:59,328 - ArchivalOrchestrator - INFO -   30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 24 1450 0 None True False
+2025-10-18 20:46:59,328 - ArchivalOrchestrator - INFO -   7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None RUNNING 24 49 2 None True False
+2025-10-18 20:56:27,880 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:56:27,880 - ArchivalOrchestrator - INFO - SCHEMA VERSION INFORMATION
+2025-10-18 20:56:27,881 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:56:27,922 - ArchivalOrchestrator - ERROR - Error getting schema version information: SQL execution failed: (208, b"Invalid object name 'control.archive_schema_versions'.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n")
+2025-10-18 20:56:54,658 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:56:54,658 - ArchivalOrchestrator - INFO - SCHEMA VERSION INFORMATION
+2025-10-18 20:56:54,658 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:56:54,698 - ArchivalOrchestrator - INFO - Active Schema Versions:
+2025-10-18 20:56:54,698 - ArchivalOrchestrator - INFO -   No schema versions found
+2025-10-18 20:56:54,713 - ArchivalOrchestrator - INFO - 
+Recent Schema Changes (Last 30 days):
+2025-10-18 20:56:54,713 - ArchivalOrchestrator - INFO -   No schema changes detected
+2025-10-18 20:56:56,846 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:56:56,846 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: c78573c9-b976-4ca4-8620-8ec92c6adab2
+2025-10-18 20:56:56,846 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:56:56
+2025-10-18 20:56:56,846 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:56:56,846 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:56:57,027 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:56:57,027 - ArchivalOrchestrator - INFO - Checking for running or failed executions...
+2025-10-18 20:56:57,044 - ArchivalOrchestrator - WARNING - Found running or failed executions:
+2025-10-18 20:56:57,044 - ArchivalOrchestrator - WARNING - e0922d25-b5d1-4ffb-b769-cd62519fedb2 2c064591-e1fc-4d7b-b865-1a6dc231bd9a ARCHIVAL TestDB TestTable PREPARE None RUNNING 14 856 0 None True False
+e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow READY_TO_RESUME 20 1223 0 None True False
+1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 20 1236 0 None True False
+11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 20 1244 0 None True False
+ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1288 0 None True False
+30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 34 2048 0 None True False
+7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None RUNNING 34 647 2 None True False
+2025-10-18 20:56:57,044 - ArchivalOrchestrator - INFO - Attempting to resume failed executions...
+2025-10-18 20:56:57,065 - ArchivalOrchestrator - INFO - Executing archival workflow...
+2025-10-18 20:56:57,086 - ArchivalOrchestrator - INFO - ✓ Archival workflow completed successfully
+2025-10-18 20:56:59,196 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:56:59,196 - ArchivalOrchestrator - INFO - SCHEMA VERSION INFORMATION
+2025-10-18 20:56:59,196 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:56:59,216 - ArchivalOrchestrator - INFO - Active Schema Versions:
+2025-10-18 20:56:59,216 - ArchivalOrchestrator - INFO -   No schema versions found
+2025-10-18 20:56:59,227 - ArchivalOrchestrator - INFO - 
+Recent Schema Changes (Last 30 days):
+2025-10-18 20:56:59,227 - ArchivalOrchestrator - INFO -   No schema changes detected
+2025-10-18 20:57:06,023 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:06,023 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: e0ae6c3f-4b20-48f9-95ba-f2f236354574
+2025-10-18 20:57:06,023 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:57:06
+2025-10-18 20:57:06,023 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:06,023 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:57:06,044 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:57:06,044 - ArchivalOrchestrator - INFO - Checking for running or failed executions...
+2025-10-18 20:57:06,056 - ArchivalOrchestrator - WARNING - Found running or failed executions:
+2025-10-18 20:57:06,056 - ArchivalOrchestrator - WARNING - e0922d25-b5d1-4ffb-b769-cd62519fedb2 2c064591-e1fc-4d7b-b865-1a6dc231bd9a ARCHIVAL TestDB TestTable PREPARE None RUNNING 15 865 0 None True False
+e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow READY_TO_RESUME 21 1232 0 None True False
+1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1245 0 None True False
+11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1253 0 None True False
+ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 22 1297 0 None True False
+30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 35 2057 0 None True False
+7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None RUNNING 35 656 2 None True False
+2025-10-18 20:57:06,056 - ArchivalOrchestrator - INFO - Attempting to resume failed executions...
+2025-10-18 20:57:06,067 - ArchivalOrchestrator - INFO - Executing archival workflow...
+2025-10-18 20:57:06,077 - ArchivalOrchestrator - INFO - ✓ Archival workflow completed successfully
+2025-10-18 20:57:06,437 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:06,437 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 3325c2da-e4bd-49a7-b278-b4e4aced1329
+2025-10-18 20:57:06,437 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:57:06
+2025-10-18 20:57:06,437 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:06,437 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:57:06,458 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:57:06,458 - ArchivalOrchestrator - INFO - Checking for running or failed executions...
+2025-10-18 20:57:06,469 - ArchivalOrchestrator - WARNING - Found running or failed executions:
+2025-10-18 20:57:06,469 - ArchivalOrchestrator - WARNING - e0922d25-b5d1-4ffb-b769-cd62519fedb2 2c064591-e1fc-4d7b-b865-1a6dc231bd9a ARCHIVAL TestDB TestTable PREPARE None RUNNING 15 865 0 None True False
+e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow READY_TO_RESUME 21 1232 0 None True False
+1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1245 0 None True False
+11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1253 0 None True False
+ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 22 1297 0 None True False
+30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 35 2057 0 None True False
+7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None RUNNING 35 656 2 None True False
+2025-10-18 20:57:06,469 - ArchivalOrchestrator - INFO - Attempting to resume failed executions...
+2025-10-18 20:57:06,480 - ArchivalOrchestrator - INFO - Executing archival workflow...
+2025-10-18 20:57:06,490 - ArchivalOrchestrator - INFO - ✓ Archival workflow completed successfully
+2025-10-18 20:57:07,088 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:07,088 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: eda33e2a-7bc8-46d7-8f83-90359b4a51bb
+2025-10-18 20:57:07,088 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:57:07
+2025-10-18 20:57:07,088 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:07,088 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:57:07,108 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:57:07,108 - ArchivalOrchestrator - INFO - Checking for running or failed executions...
+2025-10-18 20:57:07,119 - ArchivalOrchestrator - WARNING - Found running or failed executions:
+2025-10-18 20:57:07,119 - ArchivalOrchestrator - WARNING - e0922d25-b5d1-4ffb-b769-cd62519fedb2 2c064591-e1fc-4d7b-b865-1a6dc231bd9a ARCHIVAL TestDB TestTable PREPARE None RUNNING 15 866 0 None True False
+e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow READY_TO_RESUME 21 1233 0 None True False
+1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1246 0 None True False
+11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1254 0 None True False
+ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 22 1298 0 None True False
+30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 35 2058 0 None True False
+7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None RUNNING 35 657 2 None True False
+2025-10-18 20:57:07,119 - ArchivalOrchestrator - INFO - Attempting to resume failed executions...
+2025-10-18 20:57:07,130 - ArchivalOrchestrator - INFO - Executing archival workflow...
+2025-10-18 20:57:07,140 - ArchivalOrchestrator - INFO - ✓ Archival workflow completed successfully
+2025-10-18 20:57:07,500 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:07,500 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: e2e7b8c2-b126-48fd-b070-e298244f4dc1
+2025-10-18 20:57:07,500 - ArchivalOrchestrator - INFO - Started: 2025-10-18 20:57:07
+2025-10-18 20:57:07,500 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:07,500 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:57:07,520 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:57:07,520 - ArchivalOrchestrator - INFO - Checking for running or failed executions...
+2025-10-18 20:57:07,532 - ArchivalOrchestrator - WARNING - Found running or failed executions:
+2025-10-18 20:57:07,532 - ArchivalOrchestrator - WARNING - e0922d25-b5d1-4ffb-b769-cd62519fedb2 2c064591-e1fc-4d7b-b865-1a6dc231bd9a ARCHIVAL TestDB TestTable PREPARE None RUNNING 15 866 0 None True False
+e661d323-2bef-4727-a181-0538280a1667 3df57f82-cc6c-4ada-905b-b42681390ff7 LIFECYCLE None None ARCHIVE Running disposal workflow READY_TO_RESUME 21 1233 0 None True False
+1c3eb41f-7b71-4b83-8d76-329d7325a70a 4abece8f-e140-4249-8c8f-d5b639740d72 ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1246 0 None True False
+11c3ccff-5171-4685-943e-476fd59e6035 303c8e10-5b80-4c24-9c46-9b802f02ee5c ARCHIVAL TestDB TestTable PREPARE None RUNNING 21 1254 0 None True False
+ebb779ec-7e39-478a-8db3-04597b746fe5 97ec026b-fb16-469a-90e0-53b79e26532c ARCHIVAL TestDB TestTable PREPARE None RUNNING 22 1298 0 None True False
+30e277c3-f545-462e-8e2c-1685bc1c742f 8af877eb-2ecc-480e-9aee-d7eabdcb8327 ARCHIVAL TestDB TestTable PREPARE None RUNNING 35 2058 0 None True False
+7626c1b3-d48c-4c72-8c3d-045a477ded64 5f19e2b9-e715-4fcf-a5f6-41f51e5b23c7 ARCHIVAL TestDB TestTable MOVE None RUNNING 35 657 2 None True False
+2025-10-18 20:57:07,532 - ArchivalOrchestrator - INFO - Attempting to resume failed executions...
+2025-10-18 20:57:07,542 - ArchivalOrchestrator - INFO - Executing archival workflow...
+2025-10-18 20:57:07,552 - ArchivalOrchestrator - INFO - ✓ Archival workflow completed successfully
+2025-10-18 20:57:07,756 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:07,756 - ArchivalOrchestrator - INFO - DISPOSAL WORKFLOW - Batch ID: b8b86da7-02a4-448e-b689-ce1f985ffbd1
+2025-10-18 20:57:07,756 - ArchivalOrchestrator - INFO - Removing records past retention period from archive_db
+2025-10-18 20:57:07,756 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:07,756 - ArchivalOrchestrator - INFO - Validating system prerequisites...
+2025-10-18 20:57:07,777 - ArchivalOrchestrator - INFO - ✓ All prerequisites validated successfully
+2025-10-18 20:57:07,802 - ArchivalOrchestrator - INFO - ✓ Disposal workflow completed successfully
+2025-10-18 20:57:08,007 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:08,007 - ArchivalOrchestrator - INFO - SCHEMA VERSION INFORMATION
+2025-10-18 20:57:08,007 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:08,027 - ArchivalOrchestrator - INFO - Active Schema Versions:
+2025-10-18 20:57:08,027 - ArchivalOrchestrator - INFO -   No schema versions found
+2025-10-18 20:57:08,040 - ArchivalOrchestrator - INFO - 
+Recent Schema Changes (Last 30 days):
+2025-10-18 20:57:08,040 - ArchivalOrchestrator - INFO -   No schema changes detected
+2025-10-18 20:57:08,081 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:08,081 - ArchivalOrchestrator - INFO - SCHEMA VALIDATION
+2025-10-18 20:57:08,081 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:57:08,101 - ArchivalOrchestrator - INFO - Validating schemas for configured tables...
+2025-10-18 20:57:08,101 - ArchivalOrchestrator - INFO - Validating TestDB.TestTable...
+2025-10-18 20:57:08,245 - ArchivalOrchestrator - INFO -   Status: SCHEMA_CHANGED TestTable_Archive_v1 1
+2025-10-18 20:59:46,525 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:59:46,525 - ArchivalOrchestrator - INFO - SCHEMA VERSION INFORMATION
+2025-10-18 20:59:46,525 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-18 20:59:46,562 - ArchivalOrchestrator - INFO - Active Schema Versions:
+2025-10-18 20:59:46,562 - ArchivalOrchestrator - INFO -   No schema versions found
+2025-10-18 20:59:46,575 - ArchivalOrchestrator - INFO - 
+Recent Schema Changes (Last 30 days):
+2025-10-18 20:59:46,575 - ArchivalOrchestrator - INFO -   No schema changes detected
