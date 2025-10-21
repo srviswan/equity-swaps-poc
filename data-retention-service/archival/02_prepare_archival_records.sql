@@ -256,10 +256,38 @@ BEGIN
     DECLARE @batch_size INT = 10000;
     DECLARE @total_moved INT = 0;
     DECLARE @batch_moved INT;
+    DECLARE @primary_key_column VARCHAR(100);
+    
+    -- Get primary key column name for safe deletion
+    SET @sql = '
+    USE ' + QUOTENAME(@source_database) + ';
+    SELECT TOP 1 @pk_col = c.COLUMN_NAME
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+    JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE c ON tc.CONSTRAINT_NAME = c.CONSTRAINT_NAME
+    WHERE tc.TABLE_NAME = ''' + @table_name + '''
+      AND tc.CONSTRAINT_TYPE = ''PRIMARY KEY''
+    ORDER BY c.ORDINAL_POSITION;
+    ';
+    
+    DECLARE @pk_col VARCHAR(100);
+    EXEC sp_executesql @sql, N'@pk_col VARCHAR(100) OUTPUT', @pk_col = @pk_col OUTPUT;
+    
+    IF @pk_col IS NULL
+    BEGIN
+        -- Fallback: assume table has an ID column
+        SET @primary_key_column = @table_name + 'Id';
+    END
+    ELSE
+    BEGIN
+        SET @primary_key_column = @pk_col;
+    END
+    
+    PRINT 'Using primary key column: ' + @primary_key_column + ' for bulk copy operation';
     
     -- Insert records in batches to avoid long locks
     WHILE 1 = 1
     BEGIN
+        -- Step 1: Copy records to staging
         SET @sql = '
         USE ' + QUOTENAME(@source_database) + ';
         
@@ -269,16 +297,29 @@ BEGIN
         WHERE archival_flag = 1
           AND NOT EXISTS (
               SELECT 1 FROM dbo.' + QUOTENAME(@staging_table_name) + ' s
-              WHERE s.' + @table_name + 'Id = dbo.' + QUOTENAME(@table_name) + '.' + @table_name + 'Id
+              WHERE s.' + @primary_key_column + ' = dbo.' + QUOTENAME(@table_name) + '.' + @primary_key_column + '
           );
         ';
         
         EXEC sp_executesql @sql;
         SET @batch_moved = @@ROWCOUNT;
-        SET @total_moved = @total_moved + @batch_moved;
         
-        -- Break if no more records
+        -- Break if no more records to copy
         IF @batch_moved = 0 BREAK;
+        
+        -- Step 2: Delete the copied records from source table (efficient JOIN-based deletion)
+        SET @sql = '
+        USE ' + QUOTENAME(@source_database) + ';
+        
+        DELETE s FROM dbo.' + QUOTENAME(@table_name) + ' s
+        INNER JOIN dbo.' + QUOTENAME(@staging_table_name) + ' st 
+            ON s.' + @primary_key_column + ' = st.' + @primary_key_column + '
+        WHERE s.archival_flag = 1;
+        ';
+        
+        EXEC sp_executesql @sql;
+        
+        SET @total_moved = @total_moved + @batch_moved;
         
         -- Small delay to avoid overwhelming system
         WAITFOR DELAY '00:00:00.100';
@@ -286,7 +327,7 @@ BEGIN
     
     SET @records_moved = @total_moved;
     
-    PRINT 'Bulk copy completed: ' + CAST(@records_moved AS VARCHAR) + ' records moved to staging table';
+    PRINT 'Bulk copy completed: ' + CAST(@records_moved AS VARCHAR) + ' records moved to staging table and deleted from source';
 END;
 GO
 
