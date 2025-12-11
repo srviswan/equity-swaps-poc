@@ -1,0 +1,3 @@
+# Data Retention Service Dependencies
+pymssql>=2.2.0
+typing

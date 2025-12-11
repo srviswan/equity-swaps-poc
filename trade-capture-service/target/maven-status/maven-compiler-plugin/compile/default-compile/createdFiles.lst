@@ -1,0 +1,17 @@
+com/finos/tradecapture/model/EnrichedContract$ValidationStatus.class
+com/finos/tradecapture/service/enrichment/EconomicRulesEnrichmentService.class
+com/finos/tradecapture/service/enrichment/NonEconomicRulesEnrichmentService.class
+com/finos/tradecapture/controller/TradeCaptureController.class
+com/finos/tradecapture/model/EnrichedContract$EnrichmentStatus.class
+com/finos/tradecapture/config/RestTemplateConfig.class
+com/finos/tradecapture/service/messaging/JmsMessageSender.class
+com/finos/tradecapture/model/RawTrade.class
+com/finos/tradecapture/model/EnrichedContract.class
+com/finos/tradecapture/service/contract/ContractGenerationService.class
+com/finos/tradecapture/service/messaging/InstructionServiceClient.class
+com/finos/tradecapture/service/TradeProcessingService.class
+com/finos/tradecapture/service/enrichment/ReferenceDataEnrichmentService.class
+com/finos/tradecapture/model/RawTrade$TradeSide.class
+com/finos/tradecapture/config/SolaceConfig.class
+com/finos/tradecapture/TradeCaptureServiceApplication.class
+com/finos/tradecapture/service/validation/TradeValidationService.class

@@ -1,0 +1,130 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /trade-capture-service
+
+spring:
+  application:
+    name: trade-capture-service
+  cloud:
+    discovery:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  cache:
+    type: simple
+    cache-names:
+      - instrumentReferenceData
+      - counterpartyReferenceData
+      - bookReferenceData
+      - traderReferenceData
+  activemq:
+    broker-url: vm://embedded?broker.persistent=false
+    in-memory: true
+    packages:
+      trust-all: true
+  jms:
+    pub-sub-domain: false
+
+# Solace Configuration
+solace:
+  host: ${SOLACE_HOST:localhost}
+  port: ${SOLACE_PORT:55555}
+  username: ${SOLACE_USERNAME:default}
+  password: ${SOLACE_PASSWORD:default}
+  vpn: ${SOLACE_VPN:default}
+  queue:
+    name: ${SOLACE_QUEUE_NAME:raw-trades-queue}
+  connection:
+    retries: 3
+    timeout: 30000
+
+# Instruction Service Configuration
+instruction:
+  service:
+    url: ${INSTRUCTION_SERVICE_URL:http://localhost:8081}
+    timeout: 30000
+
+# Logging Configuration
+logging:
+  level:
+    com.finos.tradecapture: INFO
+    org.springframework.integration: INFO
+    org.springframework.jms: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${ENVIRONMENT:development}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+  health:
+    defaults:
+      enabled: true
+    jms:
+      enabled: true
+    db:
+      enabled: true
+    disk:
+      enabled: true
+
+# Processing Configuration
+trade:
+  capture:
+    processing:
+      batch-size: 100
+      max-threads: 10
+      timeout: 30000
+      retry-attempts: 3
+      retry-delay: 1000
+    validation:
+      enabled: true
+      strict-mode: false
+    enrichment:
+      reference-data:
+        enabled: true
+        cache-enabled: true
+      economic-rules:
+        enabled: true
+      non-economic-rules:
+        enabled: true
+    contract:
+      generation:
+        enabled: true
+        validation:
+          enabled: true
+    messaging:
+      instruction-service:
+        enabled: true
+        retry-enabled: true
+        max-retries: 3
+        retry-delay: 1000 

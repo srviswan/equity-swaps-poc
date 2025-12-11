@@ -1,0 +1,74 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /handler-service
+
+spring:
+  application:
+    name: synthetics-handler-service
+  cloud:
+    discovery:
+      enabled: true
+
+# Fault Tolerance Configuration
+handler:
+  fault-tolerance:
+    # Circuit Breaker Configuration
+    circuit-breaker-threshold: 5
+    circuit-breaker-timeout-ms: 30000  # 30 seconds
+    circuit-breaker-half-open-timeout-ms: 60000  # 1 minute
+    
+    # Retry Configuration
+    max-retry-attempts: 3
+    retry-delay-ms: 1000  # 1 second
+    max-retry-delay-ms: 10000  # 10 seconds
+    
+    # Timeout Configuration
+    processing-timeout-ms: 30000  # 30 seconds
+    
+    # Thread Pool Configuration
+    thread-pool-size: 10
+    thread-pool-shutdown-timeout-ms: 60000  # 1 minute
+
+# Logging Configuration
+logging:
+  level:
+    com.finos.synthetics.handler: INFO
+    com.finos.synthetics.handler.service.HandlerService: DEBUG
+    com.finos.synthetics.handler.strategy: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    health-check-url-path: /handler-service/actuator/health
+
+# Custom application properties
+app:
+  handler:
+    timeout:
+      default: 30
+      max: 300
+    validation:
+      enabled: true 

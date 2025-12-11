@@ -1,0 +1,19 @@
+FIXED GIA ANALYSIS
+============================================================
+
+PDF File: GIA_Trading_statement_1_Sep_2023_to_11_Apr_2025.pdf
+Analysis Date: 2025-08-30 19:17:35
+Total Transactions: 100
+
+PORTFOLIO: IP00839191 (GIA Account)
+--------------------------------------------------
+  Transactions: 100
+  Buy Transactions: 95
+  Sell Transactions: 5
+  Total Invested: £3,407.59
+  Total Received: £3,581.06
+  Net Cash Flow: £173.47
+  Return: 5.09%
+  Unique Funds: 5
+  Date Range: 2023-11-06 to 2025-03-20
+

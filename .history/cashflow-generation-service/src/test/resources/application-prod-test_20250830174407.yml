@@ -1,0 +1,148 @@
+server:
+  port: 0  # Random port for testing
+
+spring:
+  main:
+    allow-bean-definition-overriding: false
+  application:
+    name: cashflow-generation-service-test
+  r2dbc:
+    url: r2dbc:h2:mem:///test_cashflow_prod?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: ""
+    pool:
+      max-size: 10
+      initial-size: 2
+      max-idle-time: 30m
+      validation-query: "SELECT 1"
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+  redis:
+    enabled: false  # Disable Redis for testing
+  cache:
+    type: none  # Disable caching for testing
+  liquibase:
+    enabled: false  # Use schema.sql instead
+
+# Production-like Application Configuration (scaled down for testing)
+cashflow:
+  actor:
+    max-actors: 20
+    max-idle-time: 60
+    cleanup-interval: 30
+    message-timeout: 10000
+    pool-size: 8
+  database:
+    max-pool-size: 10
+    initial-pool-size: 2
+    max-idle-time: 1800
+    max-life-time: 3600
+    validation-query: "SELECT 1"
+    enable-metrics: true
+    connection-timeout: 10000
+    validation-timeout: 2000
+  thread-partitioning:
+    pool-size: 4
+    queue-capacity: 100
+    keep-alive-time: 60
+    enable-monitoring: true
+    max-threads-per-partition: 2
+  performance:
+    batch-size: 10
+    timeout-seconds: 60
+    max-concurrent-requests: 100
+    circuit-breaker:
+      failure-threshold: 5
+      timeout: 10000
+      reset-timeout: 30000
+  monitoring:
+    metrics:
+      enabled: true
+      export:
+        prometheus:
+          enabled: false  # Disable for testing
+    health:
+      detailed: true
+      components:
+        database: true
+        redis: false
+        actors: true
+        thread-pools: true
+
+# Logging Configuration for Testing
+logging:
+  level:
+    com.finos.cashflow: DEBUG
+    org.springframework: INFO
+    org.springframework.r2dbc: INFO
+    org.springframework.data.r2dbc: INFO
+    reactor.netty: INFO
+    io.r2dbc.h2: INFO
+    org.springframework.test: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+
+# Management endpoints for testing
+management:
+  server:
+    port: -1  # Disable separate management port
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  metrics:
+    export:
+      prometheus:
+        enabled: false
+  tracing:
+    enabled: false
+
+# Resilience Configuration (more lenient for testing)
+resilience4j:
+  circuitbreaker:
+    instances:
+      cashflow-generation:
+        failure-rate-threshold: 75
+        wait-duration-in-open-state: 5000
+        sliding-window-size: 5
+        minimum-number-of-calls: 3
+      database:
+        failure-rate-threshold: 80
+        wait-duration-in-open-state: 10000
+        sliding-window-size: 10
+  retry:
+    instances:
+      cashflow-generation:
+        max-attempts: 2
+        wait-duration: 500
+      database:
+        max-attempts: 2
+        wait-duration: 200
+  ratelimiter:
+    instances:
+      api:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+
+# Thread Pool Configuration for Testing
+spring:
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 8
+        queue-capacity: 50
+        keep-alive: 10s
+      thread-name-prefix: test-cashflow-task-
+    scheduling:
+      pool:
+        size: 2
+      thread-name-prefix: test-cashflow-scheduled-
+

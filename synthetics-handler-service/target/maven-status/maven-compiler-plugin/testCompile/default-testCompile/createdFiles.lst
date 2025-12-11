@@ -1,0 +1,6 @@
+com/finos/synthetics/handler/service/FaultToleranceTest.class
+com/finos/synthetics/handler/service/HandlerServiceTest.class
+com/finos/synthetics/handler/strategy/ExecutionHandlerStrategyTest.class
+com/finos/synthetics/handler/controller/HandlerControllerTest.class
+com/finos/synthetics/handler/HandlerServiceApplicationTests.class
+com/finos/synthetics/handler/integration/HandlerServiceIntegrationTest.class

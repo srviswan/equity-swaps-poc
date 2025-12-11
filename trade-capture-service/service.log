@@ -1,0 +1,102 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------< com.finos.synthetics:trade-capture-service >-------------
+[INFO] Building Trade Capture Service 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:2.7.18:run (default-cli) > test-compile @ trade-capture-service >>>
+[INFO] 
+[INFO] --- resources:3.2.0:resources (default-resources) @ trade-capture-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] Copying 0 resource
+[INFO] 
+[INFO] --- compiler:3.10.1:compile (default-compile) @ trade-capture-service ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.2.0:testResources (default-testResources) @ trade-capture-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/trade-capture-service/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.10.1:testCompile (default-testCompile) @ trade-capture-service ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:2.7.18:run (default-cli) < test-compile @ trade-capture-service <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:2.7.18:run (default-cli) @ trade-capture-service ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.7.18)
+
+2025-08-02 00:01:44 - Starting TradeCaptureServiceApplication using Java 21.0.3 on Mac with PID 46304 (/Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/trade-capture-service/target/classes started by sreekumarviswanathan in /Users/sreekumarviswanathan/ai-projects-cursor/equity-swaps-poc/trade-capture-service)
+2025-08-02 00:01:44 - No active profile set, falling back to 1 default profile: "default"
+2025-08-02 00:01:44 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-02 00:01:44 - Finished Spring Data repository scanning in 1 ms. Found 0 JPA repository interfaces.
+2025-08-02 00:01:44 - No bean named 'integrationHeaderChannelRegistry' has been explicitly defined. Therefore, a default DefaultHeaderChannelRegistry will be created.
+2025-08-02 00:01:44 - BeanFactory id=d34cee6f-e912-3d31-95a4-93b3851dda68
+2025-08-02 00:01:44 - Tomcat initialized with port(s): 8083 (http)
+2025-08-02 00:01:44 - Starting service [Tomcat]
+2025-08-02 00:01:44 - Starting Servlet engine: [Apache Tomcat/9.0.83]
+2025-08-02 00:01:44 - Initializing Spring embedded WebApplicationContext
+2025-08-02 00:01:44 - Root WebApplicationContext: initialization completed in 529 ms
+2025-08-02 00:01:45 - HikariPool-1 - Starting...
+2025-08-02 00:01:45 - HikariPool-1 - Start completed.
+2025-08-02 00:01:45 - H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:testdb'
+2025-08-02 00:01:45 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-02 00:01:45 - HHH000412: Hibernate ORM core version 5.6.15.Final
+2025-08-02 00:01:45 - HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-08-02 00:01:45 - HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2025-08-02 00:01:45 - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-08-02 00:01:45 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-02 00:01:45 - Raw trade channel configured
+2025-08-02 00:01:45 - Processed contract channel configured
+2025-08-02 00:01:45 - Error channel configured
+2025-08-02 00:01:45 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-02 00:01:45 - Exposing 4 endpoint(s) beneath base path '/actuator'
+2025-08-02 00:01:45 - Adding {service-activator:tradeProcessingService.processRawTrade.serviceActivator} as a subscriber to the 'rawTradeChannel' channel
+2025-08-02 00:01:45 - Channel 'trade-capture-service.rawTradeChannel' has 1 subscriber(s).
+2025-08-02 00:01:45 - started bean 'tradeProcessingService.processRawTrade.serviceActivator'
+2025-08-02 00:01:45 - Tomcat started on port(s): 8083 (http) with context path '/trade-capture-service'
+2025-08-02 00:01:45 - Started TradeCaptureServiceApplication in 1.311 seconds (JVM running for 1.445)
+2025-08-02 00:02:13 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-08-02 00:02:13 - Initializing Servlet 'dispatcherServlet'
+2025-08-02 00:02:13 - Completed initialization in 1 ms
+2025-08-02 00:02:13 - Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> com.finos.tradecapture.controller.TradeCaptureController.processTrade(com.finos.tradecapture.model.RawTrade) with 3 errors: [Field error in object 'rawTrade' on field 'traderId': rejected value [null]; codes [NotBlank.rawTrade.traderId,NotBlank.traderId,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [rawTrade.traderId,traderId]; arguments []; default message [traderId]]; default message [Trader ID is required]] [Field error in object 'rawTrade' on field 'counterpartyId': rejected value [null]; codes [NotBlank.rawTrade.counterpartyId,NotBlank.counterpartyId,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [rawTrade.counterpartyId,counterpartyId]; arguments []; default message [counterpartyId]]; default message [Counterparty ID is required]] [Field error in object 'rawTrade' on field 'instrumentId': rejected value [null]; codes [NotBlank.rawTrade.instrumentId,NotBlank.instrumentId,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [rawTrade.instrumentId,instrumentId]; arguments []; default message [instrumentId]]; default message [Instrument ID is required]] ]
+2025-08-02 00:02:57 - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' not supported]
+2025-08-02 00:06:19 - Manual trade processing requested for trade: TEST-TRADE-001
+2025-08-02 00:06:19 - Manually processing trade: TEST-TRADE-001
+2025-08-02 00:06:19 - Validating trade: TEST-TRADE-001
+2025-08-02 00:06:19 - Trade validation successful for trade: TEST-TRADE-001
+2025-08-02 00:06:19 - Enriching trade with reference data: TEST-TRADE-001
+2025-08-02 00:06:19 - Successfully enriched trade with reference data: TEST-TRADE-001
+2025-08-02 00:06:19 - Applying economic rules to contract: CONTRACT_TEST-TRADE-001_d32dd81e
+2025-08-02 00:06:19 - Successfully applied economic rules to contract: CONTRACT_TEST-TRADE-001_d32dd81e
+2025-08-02 00:06:19 - Applying non-economic rules to contract: CONTRACT_TEST-TRADE-001_d32dd81e
+2025-08-02 00:06:19 - Successfully applied non-economic rules to contract: CONTRACT_TEST-TRADE-001_d32dd81e
+2025-08-02 00:06:19 - Generating final contract: CONTRACT_TEST-TRADE-001_d32dd81e
+2025-08-02 00:06:19 - Successfully generated final contract: CONTRACT_TEST-TRADE-001_d32dd81e
+2025-08-02 00:06:19 - Successfully processed trade manually: TEST-TRADE-001 -> Contract: CONTRACT_TEST-TRADE-001_d32dd81e
+2025-08-02 00:06:19 - Successfully processed trade manually: TEST-TRADE-001 -> Contract: CONTRACT_TEST-TRADE-001_d32dd81e
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10:42 min
+[INFO] Finished at: 2025-08-02T00:12:26-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:2.7.18:run (default-cli) on project trade-capture-service: Application finished with exit code: 137 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

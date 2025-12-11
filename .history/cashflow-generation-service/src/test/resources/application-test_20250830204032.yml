@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: cashflow-generation-service-test
+
+  # Use H2 for testing
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb
+    username: sa
+    password: 
+    pool:
+      initial-size: 1
+      max-size: 5
+      max-idle-time: 300
+
+  # Embedded Redis for testing
+  data:
+    redis:
+      host: localhost
+      port: 6370
+      timeout: 1000ms
+
+  # Disable Kafka for testing
+  kafka:
+    enabled: false
+
+  # Disable cache for testing
+  cache:
+    type: none
+
+# Test-specific logging
+logging:
+  level:
+    com.lifecycle.cashflow: INFO
+    org.springframework.web: WARN
+    reactor.netty: WARN
+
+# Test management endpoints
+management:
+  server:
+    port: 0
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# Test server configuration
+server:
+  port: 0

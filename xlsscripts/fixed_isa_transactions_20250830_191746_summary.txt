@@ -1,0 +1,55 @@
+FIXED ISA ANALYSIS
+============================================================
+
+PDF File: ISA_Trading_statement_1_Sep_2023_to_11_Apr_2025.pdf
+Analysis Date: 2025-08-30 19:17:46
+Total Transactions: 872
+
+PORTFOLIO: IP00465009 (5 year ISA)
+--------------------------------------------------
+  Transactions: 147
+  Buy Transactions: 140
+  Sell Transactions: 7
+  Total Invested: £134.35
+  Total Received: £17,499.26
+  Net Cash Flow: £17,364.91
+  Return: 12925.13%
+  Unique Funds: 7
+  Date Range: 2023-09-04 to 2024-06-20
+
+PORTFOLIO: IP00824935 (Main ISA Portfolio)
+--------------------------------------------------
+  Transactions: 315
+  Buy Transactions: 271
+  Sell Transactions: 44
+  Total Invested: £4,075.34
+  Total Received: £4,225.33
+  Net Cash Flow: £149.99
+  Return: 3.68%
+  Unique Funds: 18
+  Date Range: 2023-11-06 to 2025-03-13
+
+PORTFOLIO: IP00824949 (Managed 5 years)
+--------------------------------------------------
+  Transactions: 28
+  Buy Transactions: 14
+  Sell Transactions: 14
+  Total Invested: £2,936.41
+  Total Received: £2,951.63
+  Net Cash Flow: £15.22
+  Return: 0.52%
+  Unique Funds: 14
+  Date Range: 2023-11-06 to 2023-11-13
+
+PORTFOLIO: IP00843395 (Sree ISA Growth)
+--------------------------------------------------
+  Transactions: 382
+  Buy Transactions: 300
+  Sell Transactions: 82
+  Total Invested: £38,465.00
+  Total Received: £39,501.77
+  Net Cash Flow: £1,036.77
+  Return: 2.70%
+  Unique Funds: 18
+  Date Range: 2023-11-10 to 2025-03-13
+

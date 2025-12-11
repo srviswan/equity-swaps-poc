@@ -1,0 +1,2025 @@
+openapi: 3.0.3
+info:
+  title: Cash Flow Management Service API
+  description: |
+    Comprehensive API for managing equity swap cashflows throughout their lifecycle.
+    
+    ## Overview
+    This service handles the complete lifecycle of cashflows including:
+    - **Interest & Dividend Accruals**: Daily accrual calculations with business day adjustments
+    - **Performance Cashflows**: Unrealized P&L calculations for equity returns
+    - **State Management**: Accrued → Realized Deferred → Realized Unsettled → Settled
+    - **Deferral Management**: Business rule-based cashflow deferrals
+    - **Reporting & Analytics**: Comprehensive cashflow reporting and analysis
+    
+    ## Technology Stack
+    - **Java 21**: Latest LTS with virtual threads, pattern matching, and performance improvements
+    - **Spring Boot 3.3+**: Latest version with Java 21 support and reactive programming
+    - **Virtual Threads**: High-throughput concurrent processing (100,000+ concurrent operations)
+    - **Thread Partitioning**: Contract + Underlier (securityId) + Calculation Type based isolation
+    - **Project Reactor**: Reactive streams for high-volume processing with backpressure handling
+    - **Spring WebFlux**: Non-blocking reactive web framework
+    - **Pattern Matching**: Clean, readable code for complex cashflow type handling
+    - **Sealed Classes**: Type-safe cashflow status and type hierarchies
+    
+    ## Cashflow States
+    1. **ACCRUED**: Initial state with daily accrual tracking
+    2. **REALIZED_DEFERRED**: Deferred due to business rules, regulatory requirements, or counterparty requests
+    3. **REALIZED_UNSETTLED**: Realized but not yet settled
+    4. **REALIZED_SETTLED**: Fully settled and confirmed
+    
+    ## Thread Partitioning Strategy
+    - **Partition Key**: ContractId + SecurityId (Underlier) + CalculationType
+    - **Calculation Types**: INTEREST (daily accruals) and EQUITY (P&L, dividends)
+    - **Thread Isolation**: All operations for the same partition run in the same thread
+    - **Data Consistency**: Prevents race conditions and ensures ACID operations within partitions
+    
+    ## Cashflow Types
+    - **INTEREST**: Interest rate accruals and payments (daily processing)
+    - **DIVIDEND**: Dividend entitlements and payments (market-driven)
+    - **PERFORMANCE**: Equity return and unrealized P&L (market-driven)
+    - **FEES**: Management fees, performance fees, and other charges
+    
+    ## Processing Architecture
+    - **Reactive Streams**: Project Reactor for high-volume processing with backpressure handling
+    - **Virtual Threads**: Java 21 virtual threads with partition-based isolation
+    - **Calculation Separation**: Interest and equity calculations processed independently
+    - **Non-blocking I/O**: Spring WebFlux for reactive REST APIs
+    
+  version: 1.0.0
+  contact:
+    name: Equity Swaps Development Team
+    email: dev-team@company.com
+  license:
+    name: Proprietary
+    url: https://company.com/license
+
+servers:
+  - url: https://api.company.com/cashflow-management/v1
+    description: Production server
+  - url: https://api-staging.company.com/cashflow-management/v1
+    description: Staging server
+  - url: http://localhost:8080/cashflow-management/v1
+    description: Local development server
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  # Health and Monitoring
+  /health:
+    get:
+      summary: Service Health Check
+      description: Check the health status of the Cash Flow Management Service
+      tags: [Health]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /health/detailed:
+    get:
+      summary: Detailed Health Check
+      description: Detailed health check including database, external services, and business metrics
+      tags: [Health]
+      responses:
+        '200':
+          description: Detailed health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedHealthStatus'
+
+  # Cashflow Generation
+  /cashflows/generate:
+    post:
+      summary: Generate Cashflows
+      description: Generate cashflows for specified contracts and calculation dates
+      tags: [Cashflow Generation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashflowGenerationRequest'
+      responses:
+        '202':
+          description: Cashflow generation accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashflowGenerationResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Business rule validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /cashflows/generate/batch:
+    post:
+      summary: Batch Generate Cashflows
+      description: Generate cashflows for multiple contracts in a single request
+      tags: [Cashflow Generation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCashflowGenerationRequest'
+      responses:
+        '202':
+          description: Batch cashflow generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchCashflowGenerationResponse'
+
+  /cashflows/generate/interest:
+    post:
+      summary: Generate Interest Cashflows
+      description: Generate interest accrual cashflows for specified contracts
+      tags: [Cashflow Generation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestCashflowGenerationRequest'
+      responses:
+        '202':
+          description: Interest cashflow generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashflowGenerationResponse'
+
+  /cashflows/generate/dividend:
+    post:
+      summary: Generate Dividend Cashflows
+      description: Generate dividend cashflows based on corporate actions
+      tags: [Cashflow Generation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DividendCashflowGenerationRequest'
+      responses:
+        '202':
+          description: Dividend cashflow generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashflowGenerationResponse'
+
+  /cashflows/generate/performance:
+    post:
+      summary: Generate Performance Cashflows
+      description: Generate unrealized P&L cashflows for equity performance
+      tags: [Cashflow Generation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerformanceCashflowGenerationRequest'
+      responses:
+        '202':
+          description: Performance cashflow generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashflowGenerationResponse'
+
+  # Reactive Streaming Endpoints
+  /cashflows/generate/reactive:
+    post:
+      summary: Generate Cashflows Reactively
+      description: Generate cashflows using reactive streams with backpressure handling
+      tags: [Reactive Processing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashflowGenerationRequest'
+      responses:
+        '200':
+          description: Cashflows generated reactively with streaming response
+          content:
+            application/stream+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cashflow'
+
+  /cashflows/generate/stream:
+    post:
+      summary: Generate Cashflows with Server-Sent Events
+      description: Generate cashflows using Server-Sent Events for real-time streaming
+      tags: [Reactive Processing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashflowGenerationRequest'
+      responses:
+        '200':
+          description: Server-Sent Events stream of cashflow generation
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/ServerSentEvent'
+
+  # Calculation Type Specific Endpoints
+  /cashflows/generate/interest/batch:
+    post:
+      summary: Batch Generate Interest Cashflows
+      description: Generate interest cashflows for multiple contracts with calculation type separation
+      tags: [Interest Calculations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchInterestGenerationRequest'
+      responses:
+        '202':
+          description: Batch interest cashflow generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchCashflowGenerationResponse'
+
+  /cashflows/generate/equity/batch:
+    post:
+      summary: Batch Generate Equity Cashflows
+      description: Generate equity cashflows for multiple contracts with calculation type separation
+      tags: [Equity Calculations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchEquityGenerationRequest'
+      responses:
+        '202':
+          description: Batch equity cashflow generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchCashflowGenerationResponse'
+
+  # Daily Accrual Management
+  /cashflows/accruals/daily:
+    post:
+      summary: Generate Daily Accruals
+      description: Generate daily accruals for specified contracts and date range
+      tags: [Daily Accruals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyAccrualGenerationRequest'
+      responses:
+        '202':
+          description: Daily accrual generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAccrualGenerationResponse'
+
+  /cashflows/accruals/daily/{contractId}:
+    get:
+      summary: Get Daily Accruals
+      description: Retrieve daily accruals for a specific contract
+      tags: [Daily Accruals]
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: Daily accruals retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAccrualPageResponse'
+
+  # Cashflow State Management
+  /cashflows/{cashflowId}/status:
+    patch:
+      summary: Update Cashflow Status
+      description: Update the status of a cashflow (state transition)
+      tags: [State Management]
+      parameters:
+        - name: cashflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashflowStatusUpdateRequest'
+      responses:
+        '200':
+          description: Cashflow status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cashflow'
+        '400':
+          description: Invalid status transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Status transition conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cashflows/{cashflowId}/defer:
+    post:
+      summary: Defer Cashflow
+      description: Defer a cashflow with specified reason and period
+      tags: [State Management]
+      parameters:
+        - name: cashflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashflowDeferralRequest'
+      responses:
+        '200':
+          description: Cashflow deferred successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cashflow'
+
+  /cashflows/{cashflowId}/realize:
+    post:
+      summary: Realize Cashflow
+      description: Mark a cashflow as realized (from accrued or deferred)
+      tags: [State Management]
+      parameters:
+        - name: cashflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashflowRealizationRequest'
+      responses:
+        '200':
+          description: Cashflow realized successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cashflow'
+
+  /cashflows/{cashflowId}/settle:
+    post:
+      summary: Settle Cashflow
+      description: Mark a cashflow as settled
+      tags: [State Management]
+      parameters:
+        - name: cashflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashflowSettlementRequest'
+      responses:
+        '200':
+          description: Cashflow settled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cashflow'
+
+  # Cashflow Queries
+  /cashflows:
+    get:
+      summary: Search Cashflows
+      description: Search and filter cashflows with pagination
+      tags: [Cashflow Queries]
+      parameters:
+        - name: contractId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: legId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: cashflowType
+          in: query
+          schema:
+            $ref: '#/components/schemas/CashflowType'
+        - name: cashflowStatus
+          in: query
+          schema:
+            $ref: '#/components/schemas/CashflowStatus'
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: currency
+          in: query
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 3
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: "createdAt,desc"
+      responses:
+        '200':
+          description: Cashflows retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashflowPageResponse'
+
+  /cashflows/{cashflowId}:
+    get:
+      summary: Get Cashflow by ID
+      description: Retrieve a specific cashflow by its ID
+      tags: [Cashflow Queries]
+      parameters:
+        - name: cashflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cashflow retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cashflow'
+        '404':
+          description: Cashflow not found
+
+  # Unrealized P&L Management
+  /cashflows/pnl/unrealized:
+    post:
+      summary: Generate Unrealized P&L
+      description: Generate unrealized P&L for specified contracts
+      tags: [Unrealized P&L]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnrealizedPnlGenerationRequest'
+      responses:
+        '202':
+          description: Unrealized P&L generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnrealizedPnlGenerationResponse'
+
+  /cashflows/pnl/unrealized/{contractId}:
+    get:
+      summary: Get Unrealized P&L Time Series
+      description: Retrieve unrealized P&L time series for a specific contract
+      tags: [Unrealized P&L]
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: includeEndOfDay
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Unrealized P&L time series retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnrealizedPnlTimeSeriesResponse'
+
+  # Reporting and Analytics
+  /cashflows/reports/summary:
+    get:
+      summary: Cashflow Summary Report
+      description: Generate cashflow summary report for specified criteria
+      tags: [Reporting]
+      parameters:
+        - name: contractId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: groupBy
+          in: query
+          schema:
+            type: string
+            enum: [contract, leg, type, status, currency, date]
+            default: "date"
+      responses:
+        '200':
+          description: Summary report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashflowSummaryReport'
+
+  /cashflows/reports/deferral:
+    get:
+      summary: Deferral Analysis Report
+      description: Generate deferral analysis report with aging and reasons
+      tags: [Reporting]
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: includeOverdue
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Deferral analysis report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeferralAnalysisReport'
+
+  /cashflows/reports/aging:
+    get:
+      summary: Cashflow Aging Report
+      description: Generate cashflow aging report by status and days outstanding
+      tags: [Reporting]
+      parameters:
+        - name: asOfDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: contractId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Aging report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashflowAgingReport'
+
+  # Batch Operations
+  /cashflows/batch/status-update:
+    post:
+      summary: Batch Status Update
+      description: Update status for multiple cashflows in a single request
+      tags: [Batch Operations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchStatusUpdateRequest'
+      responses:
+        '202':
+          description: Batch status update accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchStatusUpdateResponse'
+
+  /cashflows/batch/delete:
+    delete:
+      summary: Batch Delete Cashflows
+      description: Delete multiple cashflows (soft delete with audit trail)
+      tags: [Batch Operations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchDeleteRequest'
+      responses:
+        '202':
+          description: Batch delete accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchDeleteResponse'
+
+  # Job Management
+  /jobs/{jobId}:
+    get:
+      summary: Get Job Status
+      description: Retrieve the status of a background job
+      tags: [Job Management]
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+
+  # Thread Partitioning Management
+  /threads/partitions:
+    get:
+      summary: Get Thread Partition Status
+      description: Retrieve status of all thread partitions and their current load
+      tags: [Thread Management]
+      responses:
+        '200':
+          description: Thread partition status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreadPartitionStatus'
+
+  /threads/partitions/{partitionKey}:
+    get:
+      summary: Get Specific Partition Status
+      description: Retrieve status of a specific thread partition
+      tags: [Thread Management]
+      parameters:
+        - name: partitionKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Partition key in format contractId:securityId:calculationType
+      responses:
+        '200':
+          description: Partition status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartitionDetail'
+
+  /threads/partitions/{partitionKey}/operations:
+    get:
+      summary: Get Partition Operations
+      description: Retrieve current operations running in a specific partition
+      tags: [Thread Management]
+      parameters:
+        - name: partitionKey
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: includeHistory
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Partition operations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartitionOperations'
+
+  /jobs/{jobId}/cancel:
+    post:
+      summary: Cancel Job
+      description: Cancel a running background job
+      tags: [Job Management]
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+
+# Components
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    # Enums
+    CashflowType:
+      type: string
+      enum: [INTEREST, DIVIDEND, PERFORMANCE, FEES]
+      description: Type of cashflow
+
+    CashflowStatus:
+      type: string
+      enum: [ACCRUED, REALIZED_DEFERRED, REALIZED_UNSETTLED, REALIZED_SETTLED]
+      description: Current status of the cashflow
+
+    CashflowSubType:
+      type: string
+      enum: [PRICE_RETURN, DIVIDEND_RETURN, INTEREST_ACCRUAL, MANAGEMENT_FEE, PERFORMANCE_FEE]
+      description: Subtype of the cashflow
+
+    DeferralReason:
+      type: string
+      enum: [BUSINESS_RULE, REGULATORY, COUNTERPARTY_REQUEST, MARKET_CONDITIONS, TECHNICAL_ISSUE]
+      description: Reason for cashflow deferral
+
+    CalculationMethod:
+      type: string
+      enum: [MARK_TO_MARKET, MODEL_VALUATION, EXTERNAL_PRICE, INTERNAL_MODEL]
+      description: Method used for cashflow calculation
+
+    CalculationType:
+      type: string
+      enum: [INTEREST, EQUITY]
+      description: Type of calculation for thread partitioning
+
+    # Request/Response Models
+    CashflowGenerationRequest:
+      type: object
+      required: [contractIds, calculationDate, cashflowTypes]
+      properties:
+        contractIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of contract IDs to generate cashflows for
+        legIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Specific leg IDs (optional, generates for all legs if not specified)
+        calculationDate:
+          type: string
+          format: date
+          description: Date for cashflow calculation
+        cashflowTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CashflowType'
+          description: Types of cashflows to generate
+        marketDataOverride:
+          $ref: '#/components/schemas/MarketDataOverride'
+        businessRules:
+          $ref: '#/components/schemas/BusinessRules'
+
+    CashflowGenerationResponse:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+          description: ID of the background job processing the request
+        estimatedCompletionTime:
+          type: string
+          format: date-time
+          description: Estimated time when processing will complete
+        contractsProcessed:
+          type: integer
+          description: Number of contracts being processed
+        message:
+          type: string
+          description: Human-readable message about the request
+
+    InterestCashflowGenerationRequest:
+      type: object
+      required: [contractIds, calculationDate, interestRate]
+      properties:
+        contractIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        calculationDate:
+          type: string
+          format: date
+        interestRate:
+          type: number
+          format: decimal
+          description: Interest rate to use for calculation
+        dayCountConvention:
+          type: string
+          enum: [ACT_365, ACT_360, ACT_ACT, 30_360]
+          default: ACT_365
+        businessDayAdjustment:
+          type: string
+          enum: [FOLLOWING, PRECEDING, MODIFIED_FOLLOWING]
+          default: FOLLOWING
+
+    DividendCashflowGenerationRequest:
+      type: object
+      required: [contractIds, dividendDate, dividendAmount]
+      properties:
+        contractIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        dividendDate:
+          type: string
+          format: date
+        dividendAmount:
+          type: number
+          format: decimal
+        dividendType:
+          type: string
+          enum: [ORDINARY, SPECIAL, RETURN_OF_CAPITAL]
+          default: ORDINARY
+        exDate:
+          type: string
+          format: date
+        recordDate:
+          type: string
+          format: date
+
+    PerformanceCashflowGenerationRequest:
+      type: object
+      required: [contractIds, valuationDate]
+      properties:
+        contractIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        valuationDate:
+          type: string
+          format: date
+        marketData:
+          $ref: '#/components/schemas/MarketData'
+        calculationMethod:
+          $ref: '#/components/schemas/CalculationMethod'
+        includeComponents:
+          type: boolean
+          default: true
+          description: Whether to include P&L component breakdown
+
+    DailyAccrualGenerationRequest:
+      type: object
+      required: [contractIds, startDate, endDate]
+      properties:
+        contractIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        accrualTypes:
+          type: array
+          items:
+            type: string
+            enum: [INTEREST, DIVIDEND, PERFORMANCE]
+        businessDayAdjustment:
+          type: string
+          enum: [FOLLOWING, PRECEDING, MODIFIED_FOLLOWING]
+          default: FOLLOWING
+
+    CashflowStatusUpdateRequest:
+      type: object
+      required: [newStatus, reason]
+      properties:
+        newStatus:
+          $ref: '#/components/schemas/CashflowStatus'
+        reason:
+          type: string
+          description: Business reason for status change
+        effectiveDate:
+          type: string
+          format: date
+          description: Effective date for the status change
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional metadata for the status change
+
+    CashflowDeferralRequest:
+      type: object
+      required: [deferralReason, expectedRealizationDate]
+      properties:
+        deferralReason:
+          $ref: '#/components/schemas/DeferralReason'
+        expectedRealizationDate:
+          type: string
+          format: date
+        deferralPeriodDays:
+          type: integer
+          description: Number of days to defer
+        businessJustification:
+          type: string
+          description: Business justification for deferral
+        approvalRequired:
+          type: boolean
+          default: false
+
+    CashflowRealizationRequest:
+      type: object
+      required: [realizationDate]
+      properties:
+        realizationDate:
+          type: string
+          format: date
+        realizationAmount:
+          type: number
+          format: decimal
+        marketData:
+          $ref: '#/components/schemas/MarketData'
+        calculationMethod:
+          $ref: '#/components/schemas/CalculationMethod'
+
+    CashflowSettlementRequest:
+      type: object
+      required: [settlementDate, settlementAmount]
+      properties:
+        settlementDate:
+          type: string
+          format: date
+        settlementAmount:
+          type: number
+          format: decimal
+        paymentReference:
+          type: string
+          description: Reference to payment system
+        settlementMethod:
+          type: string
+          enum: [WIRE, ACH, CHAPS, SEPA]
+
+    # Core Models
+    Cashflow:
+      type: object
+      required: [id, contractId, legId, cashflowType, amount, currency, cashflowStatus]
+      properties:
+        id:
+          type: string
+          format: uuid
+        contractId:
+          type: string
+          format: uuid
+        legId:
+          type: string
+          format: uuid
+        performancePayoutId:
+          type: string
+          format: uuid
+        cashflowReference:
+          type: string
+        cashflowType:
+          $ref: '#/components/schemas/CashflowType'
+        cashflowSubType:
+          $ref: '#/components/schemas/CashflowSubType'
+        amount:
+          type: number
+          format: decimal
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        fxRate:
+          type: number
+          format: decimal
+          default: 1.0
+        baseCurrencyAmount:
+          type: number
+          format: decimal
+        payerPartyId:
+          type: string
+          format: uuid
+        receiverPartyId:
+          type: string
+          format: uuid
+        accrualStartDate:
+          type: string
+          format: date
+        accrualEndDate:
+          type: string
+          format: date
+        calculationDate:
+          type: string
+          format: date
+        paymentDate:
+          type: string
+          format: date
+        cashflowStatus:
+          $ref: '#/components/schemas/CashflowStatus'
+        realizationDate:
+          type: string
+          format: date
+        deferralDate:
+          type: string
+          format: date
+        settlementDate:
+          type: string
+          format: date
+        deferralReason:
+          $ref: '#/components/schemas/DeferralReason'
+        deferralPeriodDays:
+          type: integer
+        expectedRealizationDate:
+          type: string
+          format: date
+        calculationMethod:
+          $ref: '#/components/schemas/CalculationMethod'
+        calculationSource:
+          type: string
+        marketDataSnapshot:
+          type: object
+          additionalProperties: true
+        tags:
+          type: array
+          items:
+            type: string
+        businessMetadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+
+    DailyAccrual:
+      type: object
+      required: [id, cashflowId, contractId, legId, accrualDate, dailyAccrualAmount, cumulativeAccrualAmount]
+      properties:
+        id:
+          type: string
+          format: uuid
+        cashflowId:
+          type: string
+          format: uuid
+        contractId:
+          type: string
+          format: uuid
+        legId:
+          type: string
+          format: uuid
+        accrualDate:
+          type: string
+          format: date
+        businessDate:
+          type: string
+          format: date
+        dailyAccrualAmount:
+          type: number
+          format: decimal
+        cumulativeAccrualAmount:
+          type: number
+          format: decimal
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        accrualFactor:
+          type: number
+          format: decimal
+        notionalAmount:
+          type: number
+          format: decimal
+        rateOrPrice:
+          type: number
+          format: decimal
+        marketDataSnapshot:
+          type: object
+          additionalProperties: true
+        isBusinessDay:
+          type: boolean
+        businessDayAdjustment:
+          type: string
+          enum: [FOLLOWING, PRECEDING, MODIFIED_FOLLOWING]
+
+    UnrealizedPnl:
+      type: object
+      required: [id, contractId, legId, valuationDate, unrealizedPnlAmount, unrealizedPnlCurrency]
+      properties:
+        id:
+          type: string
+          format: uuid
+        contractId:
+          type: string
+          format: uuid
+        legId:
+          type: string
+          format: uuid
+        valuationDate:
+          type: string
+          format: date
+        businessDate:
+          type: string
+          format: date
+        unrealizedPnlAmount:
+          type: number
+          format: decimal
+        unrealizedPnlCurrency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        pricePnlAmount:
+          type: number
+          format: decimal
+        dividendPnlAmount:
+          type: number
+          format: decimal
+        interestPnlAmount:
+          type: number
+          format: decimal
+        fxPnlAmount:
+          type: number
+          format: decimal
+        otherPnlAmount:
+          type: number
+          format: decimal
+        marketPrices:
+          type: object
+          additionalProperties: true
+        interestRates:
+          type: object
+          additionalProperties: true
+        fxRates:
+          type: object
+          additionalProperties: true
+        dividendData:
+          type: object
+          additionalProperties: true
+        valuationMethod:
+          $ref: '#/components/schemas/CalculationMethod'
+        valuationSource:
+          type: string
+        confidenceLevel:
+          type: string
+          enum: [HIGH, MEDIUM, LOW]
+        isEndOfDay:
+          type: boolean
+        isMonthEnd:
+          type: boolean
+        isQuarterEnd:
+          type: boolean
+        isYearEnd:
+          type: boolean
+
+    # Supporting Models
+    MarketData:
+      type: object
+      properties:
+        prices:
+          type: object
+          additionalProperties:
+            type: number
+            format: decimal
+        interestRates:
+          type: object
+          additionalProperties:
+            type: number
+            format: decimal
+        fxRates:
+          type: object
+          additionalProperties:
+            type: number
+            format: decimal
+        dividendData:
+          type: object
+          additionalProperties:
+            type: object
+
+    MarketDataOverride:
+      type: object
+      properties:
+        prices:
+          type: object
+          additionalProperties:
+            type: number
+            format: decimal
+        rates:
+          type: object
+          additionalProperties:
+            type: number
+            format: decimal
+        effectiveDate:
+          type: string
+          format: date-time
+
+    BusinessRules:
+      type: object
+      properties:
+        deferralRules:
+          type: array
+          items:
+            type: object
+        calculationRules:
+          type: object
+        validationRules:
+          type: object
+
+    # Response Models
+    CashflowPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cashflow'
+        pageable:
+          $ref: '#/components/schemas/Pageable'
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+        first:
+          type: boolean
+        size:
+          type: integer
+        number:
+          type: integer
+
+    DailyAccrualPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailyAccrual'
+        pageable:
+          $ref: '#/components/schemas/Pageable'
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+
+    UnrealizedPnlTimeSeriesResponse:
+      type: object
+      properties:
+        contractId:
+          type: string
+          format: uuid
+        legId:
+          type: string
+          format: uuid
+        timeSeries:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnrealizedPnl'
+        summary:
+          type: object
+          properties:
+            totalPnl:
+              type: number
+              format: decimal
+            averagePnl:
+              type: number
+              format: decimal
+            volatility:
+              type: number
+              format: decimal
+
+    # Report Models
+    CashflowSummaryReport:
+      type: object
+      properties:
+        period:
+          type: object
+          properties:
+            startDate:
+              type: string
+              format: date
+            endDate:
+              type: string
+              format: date
+        summary:
+          type: object
+          properties:
+            totalCashflows:
+              type: integer
+            totalAmount:
+              type: number
+              format: decimal
+            currency:
+              type: string
+        breakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              group:
+                type: string
+              count:
+                type: integer
+              amount:
+                type: number
+                format: decimal
+
+    DeferralAnalysisReport:
+      type: object
+      properties:
+        period:
+          type: object
+          properties:
+            startDate:
+              type: string
+              format: date
+            endDate:
+              type: string
+              format: date
+        totalDeferred:
+          type: integer
+        totalDeferredAmount:
+          type: number
+          format: decimal
+        byReason:
+          type: array
+          items:
+            type: object
+            properties:
+              reason:
+                $ref: '#/components/schemas/DeferralReason'
+              count:
+                type: integer
+              amount:
+                type: number
+                format: decimal
+        overdue:
+          type: object
+          properties:
+            count:
+              type: integer
+            amount:
+              type: number
+              format: decimal
+
+    CashflowAgingReport:
+      type: object
+      properties:
+        asOfDate:
+          type: string
+          format: date
+        agingBuckets:
+          type: array
+          items:
+            type: object
+            properties:
+              bucket:
+                type: string
+                enum: [CURRENT, 1_30_DAYS, 31_60_DAYS, 61_90_DAYS, OVER_90_DAYS]
+              count:
+                type: integer
+              amount:
+                type: number
+                format: decimal
+        byStatus:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                $ref: '#/components/schemas/CashflowStatus'
+              count:
+                type: integer
+              amount:
+                type: number
+                format: decimal
+
+    # Job Models
+    JobStatus:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, RUNNING, COMPLETED, FAILED, CANCELLED]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        message:
+          type: string
+        result:
+          type: object
+          additionalProperties: true
+
+    # Health Models
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+
+    DetailedHealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        components:
+          type: object
+          properties:
+            database:
+              $ref: '#/components/schemas/ComponentHealth'
+            marketData:
+              $ref: '#/components/schemas/ComponentHealth'
+            paymentSystem:
+              $ref: '#/components/schemas/ComponentHealth'
+        businessMetrics:
+          type: object
+          properties:
+            totalCashflows:
+              type: integer
+            processingRate:
+              type: number
+              format: decimal
+            errorRate:
+              type: number
+              format: decimal
+
+    ComponentHealth:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN, UNKNOWN]
+        details:
+          type: object
+          additionalProperties: true
+
+    # Utility Models
+    Pageable:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          type: array
+          items:
+            type: object
+            properties:
+              property:
+                type: string
+              direction:
+                type: string
+                enum: [ASC, DESC]
+
+    # Error Models
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        validationErrors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              rejectedValue:
+                type: object
+
+    # Batch Operation Models
+    BatchCashflowGenerationRequest:
+      type: object
+      properties:
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/CashflowGenerationRequest'
+
+    BatchInterestGenerationRequest:
+      type: object
+      required: [contractIds, calculationDate, interestRate]
+      properties:
+        contractIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        calculationDate:
+          type: string
+          format: date
+        interestRate:
+          type: number
+          format: decimal
+        dayCountConvention:
+          type: string
+          enum: [ACT_365, ACT_360, ACT_ACT, 30_360]
+          default: ACT_365
+        businessDayAdjustment:
+          type: string
+          enum: [FOLLOWING, PRECEDING, MODIFIED_FOLLOWING]
+          default: FOLLOWING
+
+    BatchEquityGenerationRequest:
+      type: object
+      required: [contractIds, valuationDate]
+      properties:
+        contractIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        valuationDate:
+          type: string
+          format: date
+        marketData:
+          $ref: '#/components/schemas/MarketData'
+        calculationMethod:
+          $ref: '#/components/schemas/CalculationMethod'
+        includeComponents:
+          type: boolean
+          default: true
+
+    BatchCashflowGenerationResponse:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        totalRequests:
+          type: integer
+        acceptedRequests:
+          type: integer
+        rejectedRequests:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: object
+
+    BatchStatusUpdateRequest:
+      type: object
+      properties:
+        updates:
+          type: array
+          items:
+            type: object
+            properties:
+              cashflowId:
+                type: string
+                format: uuid
+              newStatus:
+                $ref: '#/components/schemas/CashflowStatus'
+              reason:
+                type: string
+
+    BatchStatusUpdateResponse:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        totalUpdates:
+          type: integer
+        successfulUpdates:
+          type: integer
+        failedUpdates:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: object
+
+    BatchDeleteRequest:
+      type: object
+      properties:
+        cashflowIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        reason:
+          type: string
+        softDelete:
+          type: boolean
+          default: true
+
+    BatchDeleteResponse:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        totalDeletions:
+          type: integer
+        successfulDeletions:
+          type: integer
+        failedDeletions:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: object
+
+    # Thread Partitioning Models
+    ThreadPartitionKey:
+      type: object
+      required: [contractId, securityId, calculationType]
+      properties:
+        contractId:
+          type: string
+          format: uuid
+        securityId:
+          type: string
+        calculationType:
+          $ref: '#/components/schemas/CalculationType'
+
+    ThreadPartitionStatus:
+      type: object
+      properties:
+        totalPartitions:
+          type: integer
+        activePartitions:
+          type: integer
+        partitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartitionSummary'
+
+    PartitionSummary:
+      type: object
+      properties:
+        partitionKey:
+          type: string
+        contractId:
+          type: string
+          format: uuid
+        securityId:
+          type: string
+        calculationType:
+          $ref: '#/components/schemas/CalculationType'
+        status:
+          type: string
+          enum: [IDLE, BUSY, OVERLOADED]
+        currentOperations:
+          type: integer
+        queueSize:
+          type: integer
+        lastActivity:
+          type: string
+          format: date-time
+
+    PartitionDetail:
+      type: object
+      properties:
+        partitionKey:
+          type: string
+        contractId:
+          type: string
+          format: uuid
+        securityId:
+          type: string
+        calculationType:
+          $ref: '#/components/schemas/CalculationType'
+        status:
+          type: string
+          enum: [IDLE, BUSY, OVERLOADED]
+        currentOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartitionOperation'
+        queueSize:
+          type: integer
+        lastActivity:
+          type: string
+          format: date-time
+        performanceMetrics:
+          $ref: '#/components/schemas/PartitionPerformanceMetrics'
+
+    PartitionOperation:
+      type: object
+      properties:
+        operationId:
+          type: string
+          format: uuid
+        operationType:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [RUNNING, COMPLETED, FAILED]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    PartitionPerformanceMetrics:
+      type: object
+      properties:
+        operationsPerSecond:
+          type: number
+          format: decimal
+        averageProcessingTime:
+          type: number
+          format: decimal
+        errorRate:
+          type: number
+          format: decimal
+        throughput:
+          type: number
+          format: decimal
+
+    PartitionOperations:
+      type: object
+      properties:
+        partitionKey:
+          type: string
+        currentOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartitionOperation'
+        completedOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartitionOperation'
+        failedOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartitionOperation'
+
+    # Reactive Processing Models
+    ServerSentEvent:
+      type: object
+      properties:
+        event:
+          type: string
+        data:
+          type: object
+        id:
+          type: string
+        retry:
+          type: integer
+
+    ReactiveProcessingConfig:
+      type: object
+      properties:
+        backpressureBufferSize:
+          type: integer
+          default: 10000
+        concurrencyLevel:
+          type: integer
+          default: 100
+        timeout:
+          type: integer
+          default: 300000
+        retryAttempts:
+          type: integer
+          default: 3
+
+tags:
+  - name: Health
+    description: Health check and monitoring endpoints
+  - name: Cashflow Generation
+    description: Endpoints for generating different types of cashflows
+  - name: Daily Accruals
+    description: Daily accrual calculation and management
+  - name: State Management
+    description: Cashflow state transitions and lifecycle management
+  - name: Cashflow Queries
+    description: Search and retrieve cashflow data
+  - name: Unrealized P&L
+    description: Unrealized P&L calculation and management
+  - name: Reporting
+    description: Reporting and analytics endpoints
+  - name: Batch Operations
+    description: Bulk operations on multiple cashflows
+  - name: Job Management
+    description: Background job monitoring and control
+  - name: Reactive Processing
+    description: Reactive streams and non-blocking processing endpoints
+  - name: Interest Calculations
+    description: Interest accrual and calculation specific endpoints
+  - name: Equity Calculations
+    description: Equity P&L and dividend calculation specific endpoints
+  - name: Thread Management
+    description: Thread partitioning and virtual thread management
+
+externalDocs:
+  description: Additional documentation
+  url: https://company.com/docs/cashflow-management-service
+  additionalInfo: |
+    ## Latest Updates
+    
+    ### Spring Boot 3.3+ Reactive Features
+    - **Project Reactor**: Reactive streams for high-volume processing
+    - **Spring WebFlux**: Non-blocking reactive web framework
+    - **Backpressure Handling**: Automatic flow control for large volumes
+    
+    ### Thread Partitioning Strategy
+    - **Partition Key**: ContractId + SecurityId + CalculationType
+    - **Calculation Types**: INTEREST (daily accruals) and EQUITY (P&L, dividends)
+    - **Thread Isolation**: Prevents race conditions within partitions
+    
+    ### Enhanced Processing
+    - **Reactive Endpoints**: Streaming responses with backpressure
+    - **Calculation Separation**: Independent processing of interest and equity
+    - **Virtual Threads**: High-throughput concurrent processing

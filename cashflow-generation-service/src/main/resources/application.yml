@@ -9,13 +9,21 @@ spring:
   
   # Database configuration (R2DBC)
   r2dbc:
-    url: r2dbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:cashflow_db}
+    url: r2dbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/${POSTGRES_DB:cashflow_db}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:password}
     pool:
       initial-size: 5
       max-size: 20
       max-idle-time: 1800
+    # Disable automatic ConnectionFactoryInitializer
+    connection-factory-initializer:
+      enabled: false
+  
+  # Disable SQL initialization since schema is handled by Docker
+  sql:
+    init:
+      mode: never
   
   # Redis configuration
   data:

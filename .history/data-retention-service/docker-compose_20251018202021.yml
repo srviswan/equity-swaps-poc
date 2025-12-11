@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: archival-sqlserver-v2
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Archival@2025!
+      - MSSQL_PID=Developer
+    ports:
+      - "1436:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./setup:/docker-entrypoint-initdb.d/setup:ro
+      - ./archival:/docker-entrypoint-initdb.d/archival:ro
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Archival@2025!' -C -Q 'SELECT 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:

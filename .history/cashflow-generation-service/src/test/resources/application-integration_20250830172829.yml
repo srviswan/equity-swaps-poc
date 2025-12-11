@@ -1,0 +1,49 @@
+server:
+  port: 0  # Random port for testing
+
+spring:
+  profiles:
+    active: integration
+  main:
+    allow-bean-definition-overriding: true
+  r2dbc:
+    url: r2dbc:h2:mem:///test_cashflow?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+  redis:
+    enabled: false
+  liquibase:
+    enabled: false
+
+# Application specific configuration
+cashflow:
+  actor:
+    max-actors: 10
+    max-idle-time: 30
+    cleanup-interval: 60
+    message-timeout: 5000
+  database:
+    max-pool-size: 5
+    initial-pool-size: 2
+    max-idle-time: 1800
+    max-life-time: 3600
+    validation-query: "SELECT 1"
+    enable-metrics: true
+  thread-partitioning:
+    pool-size: 4
+    queue-capacity: 100
+    keep-alive-time: 30
+    enable-monitoring: true
+
+# Logging configuration for testing
+logging:
+  level:
+    com.finos.cashflow: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+    reactor.netty: INFO
+    io.r2dbc.h2: INFO

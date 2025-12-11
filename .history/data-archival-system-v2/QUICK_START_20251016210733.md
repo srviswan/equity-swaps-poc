@@ -1,0 +1,196 @@
+# Quick Start Guide - Data Archival System V2
+
+## Prerequisites
+
+- Docker installed and running
+- Python 3.8+ installed
+- 10GB free disk space
+
+## Installation (5 minutes)
+
+### Step 1: Make Scripts Executable
+
+```bash
+cd data-archival-system-v2
+chmod +x start.sh test_system.sh
+```
+
+### Step 2: Install Python Dependencies
+
+```bash
+pip3 install -r requirements.txt
+```
+
+### Step 3: Start the System
+
+```bash
+./start.sh
+```
+
+Wait for the message: `✓ SQL Server is ready!`
+
+## Testing (2 minutes)
+
+### Run End-to-End Test
+
+```bash
+./test_system.sh
+```
+
+This will:
+1. Verify all databases are created
+2. Check configuration tables
+3. Verify test data
+4. Run the archival workflow
+5. Show results
+
+## Using the System
+
+### Show Current Status
+
+```bash
+python3 orchestrator.py --status
+```
+
+### Run Archival Manually
+
+```bash
+python3 orchestrator.py --run
+```
+
+### Schedule Monthly Execution
+
+Add to crontab:
+```bash
+# Run on 1st of every month at 2 AM
+0 2 1 * * cd /path/to/data-archival-system-v2 && python3 orchestrator.py --run
+```
+
+## What Gets Created
+
+### Databases
+- `control_db` - Configuration and tracking
+- `archive_db` - Final archival destination
+- `SourceDB1`, `SourceDB2`, `SourceDB3` - Source databases with test data
+
+### Test Tables (with archival_flag)
+- `SourceDB1.dbo.Position` - 7 positions (4 old, 3 recent)
+- `SourceDB2.dbo.Trade` - 5 trades (3 old, 2 recent)
+- `SourceDB3.dbo.PriceHistory` - ~120 price records (30 old, 30 recent)
+
+### Monthly Archival Tables (created automatically)
+- `Position_Archive_202406` (example)
+- `Trade_Archive_202406` (example)
+- `PriceHistory_Archive_202406` (example)
+
+## Archival Flow
+
+```
+1. MARK
+   └─ Set archival_flag = 1 on records older than 3 months
+
+2. MOVE TO MONTHLY TABLE
+   └─ Move marked records to Position_Archive_YYYYMM
+   └─ Delete from base table
+
+3. MOVE TO ARCHIVE DB (after 1 month)
+   └─ Move entire monthly table to archive_db
+   └─ Drop monthly table
+```
+
+## Query Examples
+
+### Check Archival Status
+
+```sql
+docker exec -it archival-sqlserver-v2 /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P 'Archival@2025!' -C \
+  -Q "SELECT * FROM control_db.control.monthly_archival_tracking ORDER BY archival_month DESC"
+```
+
+### Query Archived Data
+
+```sql
+docker exec -it archival-sqlserver-v2 /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P 'Archival@2025!' -C \
+  -Q "SELECT COUNT(*) FROM archive_db.SourceDB1.Position"
+```
+
+### Check Active Records
+
+```sql
+docker exec -it archival-sqlserver-v2 /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P 'Archival@2025!' -C \
+  -Q "SELECT COUNT(*) FROM SourceDB1.dbo.Position WHERE archival_flag = 0"
+```
+
+## Troubleshooting
+
+### Container Won't Start
+
+```bash
+# Check if port 1435 is in use
+lsof -i :1435
+
+# Or use different port in docker-compose.yml
+# Change: "1435:1433" to "1436:1433"
+```
+
+### SQL Scripts Not Loading
+
+```bash
+# Manually execute SQL scripts
+docker exec -it archival-sqlserver-v2 /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P 'Archival@2025!' -C \
+  -i /docker-entrypoint-initdb.d/01_create_databases.sql
+```
+
+### Python Dependencies Error
+
+```bash
+# Use pip3 instead of pip
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
+```
+
+## Stopping the System
+
+```bash
+# Stop Docker container
+docker-compose down
+
+# Stop and remove volumes (clean slate)
+docker-compose down -v
+```
+
+## Next Steps
+
+1. **Review Documentation**
+   - Read `README.md` for detailed information
+   - Check `IMPLEMENTATION_SUMMARY.md` for architecture details
+
+2. **Add Your Tables**
+   - Add `archival_flag` and `archival_month` columns to your tables
+   - Add configuration to `control_db.control.archival_table_list`
+
+3. **Schedule Monthly Execution**
+   - Set up cron job or scheduled task
+   - Monitor execution logs
+
+4. **Monitor and Optimize**
+   - Review execution logs regularly
+   - Optimize based on data volumes
+   - Adjust archival thresholds as needed
+
+## Support
+
+For issues:
+1. Check logs: `cat archival_*.log`
+2. Review execution log in `control_db.control.archival_execution_log`
+3. Run status command: `python3 orchestrator.py --status`
+
+---
+
+**Ready to go!** Start with `./start.sh` and then run `./test_system.sh` to see it in action.
+
+

@@ -1,0 +1,538 @@
+2025-10-16 20:59:53,119 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 20:59:53,119 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 4586d053-7252-48a9-a0fd-9de6e79d056b
+2025-10-16 20:59:53,119 - ArchivalOrchestrator - INFO - Started: 2025-10-16 20:59:53
+2025-10-16 20:59:53,119 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 20:59:53,252 - ArchivalOrchestrator - ERROR - SQL Error: Sqlcmd: Error: Microsoft ODBC Driver 18 for SQL Server : Cannot open database "control_db" requested by the login. The login failed..
+Sqlcmd: Error: Microsoft ODBC Driver 18 for SQL Server : Login failed for user 'sa'..
+
+2025-10-16 20:59:53,252 - ArchivalOrchestrator - WARNING - No tables configured for archival
+2025-10-16 20:59:53,930 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 20:59:53,930 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 20:59:53,930 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 20:59:54,066 - ArchivalOrchestrator - ERROR - SQL Error: Sqlcmd: Error: Microsoft ODBC Driver 18 for SQL Server : Cannot open database "control_db" requested by the login. The login failed..
+Sqlcmd: Error: Microsoft ODBC Driver 18 for SQL Server : Login failed for user 'sa'..
+
+2025-10-16 20:59:54,067 - ArchivalOrchestrator - INFO - 
+Configured Tables: 0
+2025-10-16 20:59:54,196 - ArchivalOrchestrator - ERROR - SQL Error: Sqlcmd: Error: Microsoft ODBC Driver 18 for SQL Server : Cannot open database "control_db" requested by the login. The login failed..
+Sqlcmd: Error: Microsoft ODBC Driver 18 for SQL Server : Login failed for user 'sa'..
+
+2025-10-16 20:59:54,326 - ArchivalOrchestrator - ERROR - SQL Error: Sqlcmd: Error: Microsoft ODBC Driver 18 for SQL Server : Cannot open database "control_db" requested by the login. The login failed..
+Sqlcmd: Error: Microsoft ODBC Driver 18 for SQL Server : Login failed for user 'sa'..
+
+2025-10-16 21:01:00,384 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:00,384 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 6e80ce92-c90e-4930-a5a8-b9f498c2c41a
+2025-10-16 21:01:00,384 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:01:00
+2025-10-16 21:01:00,384 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:00,542 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:01:00,542 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:01:00,542 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:01:00,542 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB1.Position
+2025-10-16 21:01:01,711 - ArchivalOrchestrator - INFO - Found 4 archival months: 202406, 202407, 202408, (3 rows affected)
+2025-10-16 21:01:01,711 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202406 to monthly archival table
+2025-10-16 21:01:01,881 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202407 to monthly archival table
+2025-10-16 21:01:02,028 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202408 to monthly archival table
+2025-10-16 21:01:02,177 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for (3 rows affected) to monthly archival table
+2025-10-16 21:01:02,328 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:01:02,328 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:01:02,328 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB2.Trade
+2025-10-16 21:01:02,625 - ArchivalOrchestrator - INFO - Found 3 archival months: 202406, 202407, (2 rows affected)
+2025-10-16 21:01:02,625 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for 202406 to monthly archival table
+2025-10-16 21:01:02,768 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for 202407 to monthly archival table
+2025-10-16 21:01:02,901 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for (2 rows affected) to monthly archival table
+2025-10-16 21:01:03,042 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:01:03,043 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:01:03,043 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB3.PriceHistory
+2025-10-16 21:01:03,345 - ArchivalOrchestrator - INFO - Found 3 archival months: 202506, 202507, (2 rows affected)
+2025-10-16 21:01:03,345 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for 202506 to monthly archival table
+2025-10-16 21:01:03,488 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for 202507 to monthly archival table
+2025-10-16 21:01:03,630 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for (2 rows affected) to monthly archival table
+2025-10-16 21:01:03,771 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:03,771 - ArchivalOrchestrator - INFO - Moving old monthly archival tables to archive_db
+2025-10-16 21:01:03,934 - ArchivalOrchestrator - INFO - Found 0 monthly tables ready to move to archive_db
+2025-10-16 21:01:03,934 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:03,934 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:01:03,934 - ArchivalOrchestrator - INFO - Batch ID: 6e80ce92-c90e-4930-a5a8-b9f498c2c41a
+2025-10-16 21:01:03,934 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:01:03
+2025-10-16 21:01:03,934 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:04,712 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:04,712 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:01:04,712 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:04,852 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:01:04,852 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:01:04,852 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:01:04,852 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:01:04,992 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:01:04,992 - ArchivalOrchestrator - INFO - (0 rows affected)
+2025-10-16 21:01:05,138 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+
+(10 rows affected)
+2025-10-16 21:01:15,100 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:15,101 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:01:15,101 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:01:15,255 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:01:15,255 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:01:15,255 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:01:15,255 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:01:15,390 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:01:15,391 - ArchivalOrchestrator - INFO - (0 rows affected)
+2025-10-16 21:01:15,525 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+
+(10 rows affected)
+2025-10-16 21:13:34,217 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:13:34,217 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: f2f628b3-668b-4728-8440-f1fda9df4c20
+2025-10-16 21:13:34,218 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:13:34
+2025-10-16 21:13:34,218 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:13:34,363 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:13:34,363 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:13:34,363 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:13:34,363 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB1.Position
+2025-10-16 21:13:34,649 - ArchivalOrchestrator - INFO - Found 4 archival months: 202406, 202407, 202408, (3 rows affected)
+2025-10-16 21:13:34,650 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202406 to monthly archival table
+2025-10-16 21:13:34,794 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202407 to monthly archival table
+2025-10-16 21:13:34,953 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202408 to monthly archival table
+2025-10-16 21:13:35,121 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for (3 rows affected) to monthly archival table
+2025-10-16 21:13:35,264 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:13:35,264 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:13:35,264 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB2.Trade
+2025-10-16 21:13:35,549 - ArchivalOrchestrator - INFO - Found 3 archival months: 202406, 202407, (2 rows affected)
+2025-10-16 21:13:35,549 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for 202406 to monthly archival table
+2025-10-16 21:13:35,693 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for 202407 to monthly archival table
+2025-10-16 21:13:35,836 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for (2 rows affected) to monthly archival table
+2025-10-16 21:13:35,972 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:13:35,973 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:13:35,973 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB3.PriceHistory
+2025-10-16 21:13:36,248 - ArchivalOrchestrator - INFO - Found 3 archival months: 202506, 202507, (2 rows affected)
+2025-10-16 21:13:36,248 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for 202506 to monthly archival table
+2025-10-16 21:13:36,400 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for 202507 to monthly archival table
+2025-10-16 21:13:36,541 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for (2 rows affected) to monthly archival table
+2025-10-16 21:13:36,703 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:13:36,703 - ArchivalOrchestrator - INFO - Moving old monthly archival tables to archive_db
+2025-10-16 21:13:36,843 - ArchivalOrchestrator - INFO - Found 0 monthly tables ready to move to archive_db
+2025-10-16 21:13:36,843 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:13:36,843 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:13:36,843 - ArchivalOrchestrator - INFO - Batch ID: f2f628b3-668b-4728-8440-f1fda9df4c20
+2025-10-16 21:13:36,844 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:13:36
+2025-10-16 21:13:36,844 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:13:37,556 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:13:37,556 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:13:37,556 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:13:37,703 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:13:37,704 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:13:37,704 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:13:37,704 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:13:37,834 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:13:37,834 - ArchivalOrchestrator - INFO - (0 rows affected)
+2025-10-16 21:13:37,972 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+
+(10 rows affected)
+2025-10-16 21:18:37,056 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:37,056 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 6023e01f-2907-429a-9fa1-7c97a90205e3
+2025-10-16 21:18:37,056 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:18:37
+2025-10-16 21:18:37,056 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:37,210 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:18:37,210 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:18:37,210 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:18:37,210 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB1.Position
+2025-10-16 21:18:37,488 - ArchivalOrchestrator - INFO - Found 4 archival months: 202406, 202407, 202408, (3 rows affected)
+2025-10-16 21:18:37,488 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202406 to monthly archival table
+2025-10-16 21:18:37,685 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202407 to monthly archival table
+2025-10-16 21:18:37,856 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for 202408 to monthly archival table
+2025-10-16 21:18:38,034 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for (3 rows affected) to monthly archival table
+2025-10-16 21:18:38,180 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:18:38,181 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:18:38,181 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB2.Trade
+2025-10-16 21:18:38,451 - ArchivalOrchestrator - INFO - Found 3 archival months: 202406, 202407, (2 rows affected)
+2025-10-16 21:18:38,451 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for 202406 to monthly archival table
+2025-10-16 21:18:38,619 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for 202407 to monthly archival table
+2025-10-16 21:18:38,801 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for (2 rows affected) to monthly archival table
+2025-10-16 21:18:38,941 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:18:38,941 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:18:38,941 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB3.PriceHistory
+2025-10-16 21:18:39,210 - ArchivalOrchestrator - INFO - Found 3 archival months: 202506, 202507, (2 rows affected)
+2025-10-16 21:18:39,210 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for 202506 to monthly archival table
+2025-10-16 21:18:39,436 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for 202507 to monthly archival table
+2025-10-16 21:18:39,624 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for (2 rows affected) to monthly archival table
+2025-10-16 21:18:39,789 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:39,789 - ArchivalOrchestrator - INFO - Moving old monthly archival tables to archive_db
+2025-10-16 21:18:39,920 - ArchivalOrchestrator - INFO - Found 7 monthly tables ready to move to archive_db
+2025-10-16 21:18:39,920 - ArchivalOrchestrator - INFO - Step 3: Moving SourceDB1.Position for 202406 to archive_db
+2025-10-16 21:18:40,080 - ArchivalOrchestrator - INFO - Step 3: Moving SourceDB2.Trade for 202406 to archive_db
+2025-10-16 21:18:40,230 - ArchivalOrchestrator - INFO - Step 3: Moving SourceDB1.Position for 202407 to archive_db
+2025-10-16 21:18:40,384 - ArchivalOrchestrator - INFO - Step 3: Moving SourceDB2.Trade for 202407 to archive_db
+2025-10-16 21:18:40,530 - ArchivalOrchestrator - INFO - Step 3: Moving SourceDB1.Position for 202408 to archive_db
+2025-10-16 21:18:40,676 - ArchivalOrchestrator - INFO - Step 3: Moving SourceDB3.PriceHistory for 202506 to archive_db
+2025-10-16 21:18:40,837 - ArchivalOrchestrator - INFO - Step 3: Moving SourceDB3.PriceHistory for 202507 to archive_db
+2025-10-16 21:18:40,979 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:40,980 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:18:40,980 - ArchivalOrchestrator - INFO - Batch ID: 6023e01f-2907-429a-9fa1-7c97a90205e3
+2025-10-16 21:18:40,980 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:18:40
+2025-10-16 21:18:40,980 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:52,995 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:52,995 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: cbacdd4b-698d-4c8d-9ee9-6d5f40d816eb
+2025-10-16 21:18:52,996 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:18:52
+2025-10-16 21:18:52,996 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:53,136 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:18:53,136 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:18:53,136 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:18:53,136 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB1.Position
+2025-10-16 21:18:53,405 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:18:53,405 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for (0 rows affected) to monthly archival table
+2025-10-16 21:18:53,554 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:18:53,554 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:18:53,554 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB2.Trade
+2025-10-16 21:18:53,824 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:18:53,825 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for (0 rows affected) to monthly archival table
+2025-10-16 21:18:53,975 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:18:53,976 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:18:53,976 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB3.PriceHistory
+2025-10-16 21:18:54,266 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:18:54,266 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for (0 rows affected) to monthly archival table
+2025-10-16 21:18:54,438 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:54,438 - ArchivalOrchestrator - INFO - Moving old monthly archival tables to archive_db
+2025-10-16 21:18:54,577 - ArchivalOrchestrator - INFO - Found 0 monthly tables ready to move to archive_db
+2025-10-16 21:18:54,577 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:54,577 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:18:54,577 - ArchivalOrchestrator - INFO - Batch ID: cbacdd4b-698d-4c8d-9ee9-6d5f40d816eb
+2025-10-16 21:18:54,577 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:18:54
+2025-10-16 21:18:54,578 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:55,306 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:55,306 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:18:55,306 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:18:55,447 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:18:55,447 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:18:55,447 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:18:55,447 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:18:55,588 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:18:55,588 - ArchivalOrchestrator - INFO - SourceDB1 Position 202408 1 1
+SourceDB1 Position 202407 1 1
+SourceDB1 Position 202406 1 2
+SourceDB2 Trade 202407 1 1
+SourceDB2 Trade 202406 1 2
+SourceDB3 PriceHistory 202507 1 51
+SourceDB3 PriceHistory 202506 1 36
+
+(7 rows affected)
+2025-10-16 21:18:55,724 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+MOVE_TO_ARCHIVE_DB SourceDB3 PriceHistory 202507 1 SUCCESS 2025-10-17 01:18:40.957
+MOVE_TO_ARCHIVE_DB SourceDB3 PriceHistory 202506 1 SUCCESS 2025-10-17 01:18:40.817
+MOVE_TO_ARCHIVE_DB SourceDB1 Position 202408 1 SUCCESS 2025-10-17 01:18:40.657
+MOVE_TO_ARCHIVE_DB SourceDB2 Trade 202407 1 SUCCESS 2025-10-17 01:18:40.510
+
+(10 rows affected)
+2025-10-16 21:23:45,383 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:23:45,383 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 4499b523-051d-43a6-a66e-8317a9c1b00f
+2025-10-16 21:23:45,383 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:23:45
+2025-10-16 21:23:45,383 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:23:45,534 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:23:45,534 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:23:45,534 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:23:45,535 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB1.Position
+2025-10-16 21:23:45,791 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:23:45,791 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for (0 rows affected) to monthly archival table
+2025-10-16 21:23:45,934 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:23:45,934 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:23:45,934 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB2.Trade
+2025-10-16 21:23:46,207 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:23:46,207 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for (0 rows affected) to monthly archival table
+2025-10-16 21:23:46,360 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:23:46,360 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:23:46,360 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB3.PriceHistory
+2025-10-16 21:23:46,637 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:23:46,637 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for (0 rows affected) to monthly archival table
+2025-10-16 21:23:46,781 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:23:46,781 - ArchivalOrchestrator - INFO - Moving old monthly archival tables to archive_db
+2025-10-16 21:23:46,926 - ArchivalOrchestrator - INFO - Found 0 monthly tables ready to move to archive_db
+2025-10-16 21:23:46,927 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:23:46,927 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:23:46,927 - ArchivalOrchestrator - INFO - Batch ID: 4499b523-051d-43a6-a66e-8317a9c1b00f
+2025-10-16 21:23:46,927 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:23:46
+2025-10-16 21:23:46,927 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:23:47,644 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:23:47,644 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:23:47,644 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:23:47,784 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:23:47,784 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:23:47,784 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:23:47,784 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:23:47,917 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:23:47,917 - ArchivalOrchestrator - INFO - (0 rows affected)
+2025-10-16 21:23:48,052 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 1 SUCCESS 2025-10-17 01:23:41.317
+COMPLETE_ARCHIVAL SourceDB2 Trade NULL 1 SUCCESS 2025-10-17 01:23:40.960
+COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:23:27.050
+COMPLETE_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:23:26.607
+
+(10 rows affected)
+2025-10-16 21:25:03,510 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:03,510 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: caaa26cd-2485-4736-b36b-ca232c9f5d69
+2025-10-16 21:25:03,510 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:25:03
+2025-10-16 21:25:03,510 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:03,645 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:25:03,645 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:03,645 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:25:03,645 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB1.Position
+2025-10-16 21:25:03,931 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:25:03,932 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB1.Position data for (0 rows affected) to monthly archival table
+2025-10-16 21:25:04,077 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:04,077 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:25:04,077 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB2.Trade
+2025-10-16 21:25:04,357 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:25:04,357 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB2.Trade data for (0 rows affected) to monthly archival table
+2025-10-16 21:25:04,507 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:04,507 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:25:04,507 - ArchivalOrchestrator - INFO - Step 1: Marking records for archival in SourceDB3.PriceHistory
+2025-10-16 21:25:04,783 - ArchivalOrchestrator - INFO - Found 1 archival months: (0 rows affected)
+2025-10-16 21:25:04,783 - ArchivalOrchestrator - INFO - Step 2: Moving SourceDB3.PriceHistory data for (0 rows affected) to monthly archival table
+2025-10-16 21:25:04,928 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:04,928 - ArchivalOrchestrator - INFO - Moving old monthly archival tables to archive_db
+2025-10-16 21:25:05,068 - ArchivalOrchestrator - INFO - Found 0 monthly tables ready to move to archive_db
+2025-10-16 21:25:05,068 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:05,068 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:25:05,068 - ArchivalOrchestrator - INFO - Batch ID: caaa26cd-2485-4736-b36b-ca232c9f5d69
+2025-10-16 21:25:05,068 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:25:05
+2025-10-16 21:25:05,068 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:05,832 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:05,832 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:25:05,832 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:05,978 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:25:05,979 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:25:05,979 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:25:05,979 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:25:06,113 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:25:06,113 - ArchivalOrchestrator - INFO - (0 rows affected)
+2025-10-16 21:25:06,240 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+
+(10 rows affected)
+2025-10-16 21:25:48,676 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:48,676 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: f739f993-33db-48fb-8b0a-8036af868ed1
+2025-10-16 21:25:48,676 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:25:48
+2025-10-16 21:25:48,676 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:48,832 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:25:48,832 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:48,832 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:25:48,832 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB1.Position
+2025-10-16 21:25:48,979 - ArchivalOrchestrator - INFO - Successfully processed SourceDB1.Position
+2025-10-16 21:25:48,979 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:48,979 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:25:48,979 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB2.Trade
+2025-10-16 21:25:49,158 - ArchivalOrchestrator - INFO - Successfully processed SourceDB2.Trade
+2025-10-16 21:25:49,158 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:49,158 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:25:49,158 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB3.PriceHistory
+2025-10-16 21:25:49,290 - ArchivalOrchestrator - INFO - Successfully processed SourceDB3.PriceHistory
+2025-10-16 21:25:49,290 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:49,290 - ArchivalOrchestrator - INFO - Archival workflow completed - all data moved directly to archive_db
+2025-10-16 21:25:49,290 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:49,290 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:25:49,290 - ArchivalOrchestrator - INFO - Batch ID: f739f993-33db-48fb-8b0a-8036af868ed1
+2025-10-16 21:25:49,290 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:25:49
+2025-10-16 21:25:49,290 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:52,094 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:52,094 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: a66856ec-2045-4225-b49f-12e917f3c179
+2025-10-16 21:25:52,094 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:25:52
+2025-10-16 21:25:52,095 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:52,236 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:25:52,236 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:52,236 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:25:52,236 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB1.Position
+2025-10-16 21:25:52,375 - ArchivalOrchestrator - INFO - Successfully processed SourceDB1.Position
+2025-10-16 21:25:52,375 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:52,375 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:25:52,375 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB2.Trade
+2025-10-16 21:25:52,517 - ArchivalOrchestrator - INFO - Successfully processed SourceDB2.Trade
+2025-10-16 21:25:52,517 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:25:52,517 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:25:52,517 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB3.PriceHistory
+2025-10-16 21:25:52,657 - ArchivalOrchestrator - INFO - Successfully processed SourceDB3.PriceHistory
+2025-10-16 21:25:52,657 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:52,657 - ArchivalOrchestrator - INFO - Archival workflow completed - all data moved directly to archive_db
+2025-10-16 21:25:52,657 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:52,657 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:25:52,657 - ArchivalOrchestrator - INFO - Batch ID: a66856ec-2045-4225-b49f-12e917f3c179
+2025-10-16 21:25:52,657 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:25:52
+2025-10-16 21:25:52,657 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:53,432 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:53,432 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:25:53,432 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:25:53,573 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:25:53,573 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:25:53,573 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:25:53,573 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:25:53,711 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:25:53,711 - ArchivalOrchestrator - INFO - (0 rows affected)
+2025-10-16 21:25:53,851 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+2025-10-16 21:25:53,852 - ArchivalOrchestrator - INFO - COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:25:52.630
+COMPLETE_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:25:52.487
+COMPLETE_ARCHIVAL SourceDB1 Position NULL 0 SUCCESS 2025-10-17 01:25:52.340
+COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:25:49.260
+COMPLETE_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:25:49.130
+COMPLETE_ARCHIVAL SourceDB1 Position NULL 0 SUCCESS 2025-10-17 01:25:48.950
+
+(10 rows affected)
+2025-10-16 21:29:30,305 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:29:30,305 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 61ce6257-3fb6-49b6-85b9-679ecb63d112
+2025-10-16 21:29:30,305 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:29:30
+2025-10-16 21:29:30,305 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:29:30,452 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:29:30,452 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:29:30,452 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:29:30,452 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB1.Position
+2025-10-16 21:29:30,587 - ArchivalOrchestrator - INFO - Successfully processed SourceDB1.Position
+2025-10-16 21:29:30,587 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:29:30,587 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:29:30,588 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB2.Trade
+2025-10-16 21:29:30,726 - ArchivalOrchestrator - INFO - Successfully processed SourceDB2.Trade
+2025-10-16 21:29:30,726 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:29:30,726 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:29:30,726 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB3.PriceHistory
+2025-10-16 21:29:30,853 - ArchivalOrchestrator - INFO - Successfully processed SourceDB3.PriceHistory
+2025-10-16 21:29:30,853 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:29:30,853 - ArchivalOrchestrator - INFO - Archival workflow completed - all data moved directly to archive_db
+2025-10-16 21:29:30,853 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:29:30,853 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:29:30,853 - ArchivalOrchestrator - INFO - Batch ID: 61ce6257-3fb6-49b6-85b9-679ecb63d112
+2025-10-16 21:29:30,853 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:29:30
+2025-10-16 21:29:30,853 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:29:31,608 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:29:31,608 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:29:31,608 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:29:31,763 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:29:31,763 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:29:31,763 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:29:31,763 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:29:31,897 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:29:31,897 - ArchivalOrchestrator - INFO - (0 rows affected)
+2025-10-16 21:29:32,035 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+2025-10-16 21:29:32,035 - ArchivalOrchestrator - INFO - COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:29:30.837
+COMPLETE_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:29:30.707
+COMPLETE_ARCHIVAL SourceDB1 Position NULL 0 SUCCESS 2025-10-17 01:29:30.567
+COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:25:52.630
+COMPLETE_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:25:52.487
+COMPLETE_ARCHIVAL SourceDB1 Position NULL 0 SUCCESS 2025-10-17 01:25:52.340
+COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:25:49.260
+COMPLETE_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:25:49.130
+COMPLETE_ARCHIVAL SourceDB1 Position NULL 0 SUCCESS 2025-10-17 01:25:48.950
+
+(10 rows affected)
+2025-10-16 21:30:12,542 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:30:12,542 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: ccb4afd9-fcde-4fe7-bcdb-8daf2ce405fa
+2025-10-16 21:30:12,542 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:30:12
+2025-10-16 21:30:12,542 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:30:12,687 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:30:12,688 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:30:12,688 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:30:12,688 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB1.Position
+2025-10-16 21:30:12,815 - ArchivalOrchestrator - INFO - Successfully processed SourceDB1.Position
+2025-10-16 21:30:12,816 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:30:12,816 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:30:12,816 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB2.Trade
+2025-10-16 21:30:12,953 - ArchivalOrchestrator - INFO - Successfully processed SourceDB2.Trade
+2025-10-16 21:30:12,953 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:30:12,953 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:30:12,953 - ArchivalOrchestrator - INFO - Running complete archival workflow for SourceDB3.PriceHistory
+2025-10-16 21:30:13,098 - ArchivalOrchestrator - INFO - Successfully processed SourceDB3.PriceHistory
+2025-10-16 21:30:13,098 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:30:13,098 - ArchivalOrchestrator - INFO - Archival workflow completed - all data moved directly to archive_db
+2025-10-16 21:30:13,098 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:30:13,098 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:30:13,098 - ArchivalOrchestrator - INFO - Batch ID: ccb4afd9-fcde-4fe7-bcdb-8daf2ce405fa
+2025-10-16 21:30:13,098 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:30:13
+2025-10-16 21:30:13,098 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:07,534 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:07,534 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: bbacd719-37e0-4851-b80a-8ef0c312708f
+2025-10-16 21:50:07,534 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:50:07
+2025-10-16 21:50:07,534 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:07,690 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:50:07,690 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:50:07,690 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:50:07,690 - ArchivalOrchestrator - INFO - Running partition switch archival for SourceDB1.Position
+2025-10-16 21:50:07,836 - ArchivalOrchestrator - INFO - Successfully processed SourceDB1.Position using partition switching
+2025-10-16 21:50:07,836 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:50:07,836 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:50:07,836 - ArchivalOrchestrator - INFO - Running partition switch archival for SourceDB2.Trade
+2025-10-16 21:50:07,975 - ArchivalOrchestrator - INFO - Successfully processed SourceDB2.Trade using partition switching
+2025-10-16 21:50:07,975 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:50:07,975 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:50:07,975 - ArchivalOrchestrator - INFO - Running partition switch archival for SourceDB3.PriceHistory
+2025-10-16 21:50:08,104 - ArchivalOrchestrator - INFO - Successfully processed SourceDB3.PriceHistory using partition switching
+2025-10-16 21:50:08,105 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:08,105 - ArchivalOrchestrator - INFO - Archival workflow completed - all data moved using high-performance partition switching
+2025-10-16 21:50:08,105 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:08,105 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:50:08,105 - ArchivalOrchestrator - INFO - Batch ID: bbacd719-37e0-4851-b80a-8ef0c312708f
+2025-10-16 21:50:08,105 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:50:08
+2025-10-16 21:50:08,105 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:13,573 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:13,574 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW - Batch ID: 15dcbfd4-20c9-4fa6-aad5-5dd2623220d4
+2025-10-16 21:50:13,574 - ArchivalOrchestrator - INFO - Started: 2025-10-16 21:50:13
+2025-10-16 21:50:13,574 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:13,742 - ArchivalOrchestrator - INFO - Found 3 tables configured for archival
+2025-10-16 21:50:13,742 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:50:13,742 - ArchivalOrchestrator - INFO - Processing SourceDB1.Position
+2025-10-16 21:50:13,742 - ArchivalOrchestrator - INFO - Running partition switch archival for SourceDB1.Position
+2025-10-16 21:50:13,886 - ArchivalOrchestrator - INFO - Successfully processed SourceDB1.Position using partition switching
+2025-10-16 21:50:13,886 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:50:13,886 - ArchivalOrchestrator - INFO - Processing SourceDB2.Trade
+2025-10-16 21:50:13,886 - ArchivalOrchestrator - INFO - Running partition switch archival for SourceDB2.Trade
+2025-10-16 21:50:14,024 - ArchivalOrchestrator - INFO - Successfully processed SourceDB2.Trade using partition switching
+2025-10-16 21:50:14,024 - ArchivalOrchestrator - INFO - --------------------------------------------------------------------------------
+2025-10-16 21:50:14,024 - ArchivalOrchestrator - INFO - Processing SourceDB3.PriceHistory
+2025-10-16 21:50:14,024 - ArchivalOrchestrator - INFO - Running partition switch archival for SourceDB3.PriceHistory
+2025-10-16 21:50:14,163 - ArchivalOrchestrator - INFO - Successfully processed SourceDB3.PriceHistory using partition switching
+2025-10-16 21:50:14,163 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:14,163 - ArchivalOrchestrator - INFO - Archival workflow completed - all data moved using high-performance partition switching
+2025-10-16 21:50:14,163 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:14,163 - ArchivalOrchestrator - INFO - MONTHLY ARCHIVAL WORKFLOW COMPLETED
+2025-10-16 21:50:14,163 - ArchivalOrchestrator - INFO - Batch ID: 15dcbfd4-20c9-4fa6-aad5-5dd2623220d4
+2025-10-16 21:50:14,163 - ArchivalOrchestrator - INFO - Completed: 2025-10-16 21:50:14
+2025-10-16 21:50:14,163 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:14,882 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:14,882 - ArchivalOrchestrator - INFO - ARCHIVAL SYSTEM STATUS
+2025-10-16 21:50:14,882 - ArchivalOrchestrator - INFO - ================================================================================
+2025-10-16 21:50:15,018 - ArchivalOrchestrator - INFO - 
+Configured Tables: 3
+2025-10-16 21:50:15,019 - ArchivalOrchestrator - INFO -   - SourceDB1.Position
+2025-10-16 21:50:15,019 - ArchivalOrchestrator - INFO -   - SourceDB2.Trade
+2025-10-16 21:50:15,019 - ArchivalOrchestrator - INFO -   - SourceDB3.PriceHistory
+2025-10-16 21:50:15,152 - ArchivalOrchestrator - INFO - 
+Monthly Archival Tables:
+2025-10-16 21:50:15,152 - ArchivalOrchestrator - INFO - (0 rows affected)
+2025-10-16 21:50:15,302 - ArchivalOrchestrator - INFO - 
+Recent Executions:
+2025-10-16 21:50:15,303 - ArchivalOrchestrator - INFO - PARTITION_SWITCH_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:50:14.143
+PARTITION_SWITCH_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:50:14.007
+PARTITION_SWITCH_ARCHIVAL SourceDB1 Position NULL 0 SUCCESS 2025-10-17 01:50:13.867
+PARTITION_SWITCH_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:50:08.090
+PARTITION_SWITCH_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:50:07.957
+PARTITION_SWITCH_ARCHIVAL SourceDB1 Position NULL 0 SUCCESS 2025-10-17 01:50:07.820
+COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:30:13.080
+COMPLETE_ARCHIVAL SourceDB2 Trade NULL 0 SUCCESS 2025-10-17 01:30:12.933
+COMPLETE_ARCHIVAL SourceDB1 Position NULL 0 SUCCESS 2025-10-17 01:30:12.797
+COMPLETE_ARCHIVAL SourceDB3 PriceHistory NULL 0 SUCCESS 2025-10-17 01:29:30.837
+
+(10 rows affected)
