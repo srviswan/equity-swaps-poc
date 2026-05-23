@@ -1,0 +1,11 @@
+{
+  "tradeId": "T-001",
+  "productType": "EQUITY_SWAP",
+  "book": "EQ_SWAP",
+  "currency": "USD",
+  "clientTier": "TIER_1",
+  "source": "MANUAL",
+  "notional": 1000000,
+  "tradeDate": "2026-05-23",
+  "securityId": "US0378331005"
+}

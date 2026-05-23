@@ -1,0 +1,73 @@
+stages:
+  - verify
+  - test
+  - perf
+  - package
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MAVEN_CLI_OPTS: "-B -ntp"
+
+cache:
+  paths:
+    - .m2/repository
+
+verify:
+  stage: verify
+  image: eclipse-temurin:21-jdk
+  script:
+    - cd swap-rules-engine
+    - mvn $MAVEN_CLI_OPTS spotless:check
+    - mvn $MAVEN_CLI_OPTS verify -DskipITs=true -pl '!swap-rules-jmh,!swap-rules-loadtest'
+
+test-it:
+  stage: test
+  image: eclipse-temurin:21-jdk
+  services:
+    - name: mcr.microsoft.com/mssql/server:2022-latest
+      alias: mssql
+      variables:
+        ACCEPT_EULA: "Y"
+        MSSQL_SA_PASSWORD: Swap_rules_1!
+        MSSQL_PID: Developer
+    - name: redis:7-alpine
+      alias: redis
+  variables:
+    SPRING_PROFILES_ACTIVE: mssql
+    MSSQL_HOST: mssql
+    MSSQL_PORT: "1433"
+    MSSQL_DB: master
+    MSSQL_USER: sa
+    MSSQL_PASSWORD: Swap_rules_1!
+    SPRING_DATA_REDIS_HOST: redis
+  script:
+    - cd swap-rules-engine
+    - mvn $MAVEN_CLI_OPTS verify -Pit -DskipITs=false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
+
+perf-jmh:
+  stage: perf
+  image: eclipse-temurin:21-jdk
+  script:
+    - cd swap-rules-engine
+    - mvn $MAVEN_CLI_OPTS -pl swap-rules-jmh package
+    - java -jar swap-rules-jmh/target/benchmarks.jar -wi 2 -i 3 -f 1
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - when: manual
+
+package-admin:
+  stage: package
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - cd swap-rules-engine
+    - docker build -f swap-rules-admin/Dockerfile -t swap-rules-admin:$CI_COMMIT_SHORT_SHA .
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

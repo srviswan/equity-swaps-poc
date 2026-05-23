@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Swap Rules Engine</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="landing">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">SR</div>
+      <div>
+        <h1>Swap Rules Engine</h1>
+        <p class="subtitle">Equity swap enrichment platform</p>
+      </div>
+    </div>
+    <div class="snapshot-badge" id="snapshotBadge">
+      <span class="dot"></span>
+      <span id="snapshotText">loading…</span>
+    </div>
+  </header>
+
+  <main class="landing-main">
+    <div class="hero">
+      <h2>What would you like to do?</h2>
+      <p class="muted">Two focused workspaces for two distinct jobs.</p>
+    </div>
+
+    <div class="tile-grid">
+      <a class="tile" href="/enrich.html">
+        <div class="tile-icon enrich-icon">→</div>
+        <h3>Enrich a Trade</h3>
+        <p>Run a raw hedge trade through the published rule snapshot. See the enriched equity swap, the decision trace, and any unresolved targets.</p>
+        <ul class="bullets">
+          <li>Submit single trades</li>
+          <li>Explain every applied rule</li>
+          <li>Promote a near-miss into a draft rule</li>
+        </ul>
+        <span class="cta">Open Enrichment Console →</span>
+      </a>
+
+      <a class="tile" href="/studio.html">
+        <div class="tile-icon studio-icon">⚙</div>
+        <h3>Manage Rules</h3>
+        <p>Author, edit and publish rules, action templates, and criteria fragments. Compose rules visually, simulate before publishing, and broadcast a new snapshot.</p>
+        <ul class="bullets">
+          <li>Rule visual builder</li>
+          <li>Reusable templates &amp; fragments</li>
+          <li>Simulate &amp; publish snapshots</li>
+        </ul>
+        <span class="cta">Open Rule Studio →</span>
+      </a>
+    </div>
+
+    <div class="quick-stats" id="quickStats"></div>
+  </main>
+
+  <footer class="footer">
+    <span>Swap Rules Engine 1.0.0-SNAPSHOT</span>
+    <a href="/v3/api-docs" target="_blank">OpenAPI</a>
+    <a href="/actuator/health" target="_blank">Health</a>
+    <a href="/actuator/prometheus" target="_blank">Metrics</a>
+  </footer>
+
+  <script src="/common.js"></script>
+  <script>
+    refreshSnapshotBadge();
+    (async () => {
+      try {
+        const snap = await api("/snapshot");
+        const stats = document.getElementById("quickStats");
+        stats.innerHTML = `
+          <div class="stat-pill"><span class="label">Active snapshot</span><span class="value">${snap.snapshotId.substring(0,8)}…</span></div>
+          <div class="stat-pill"><span class="label">Rules</span><span class="value">${snap.totalRules}</span></div>
+          <div class="stat-pill"><span class="label">Buckets</span><span class="value">${snap.buckets.length}</span></div>
+          <div class="stat-pill"><span class="label">Checksum</span><span class="value">${snap.checksum}</span></div>
+        `;
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

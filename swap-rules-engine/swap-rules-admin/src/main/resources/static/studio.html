@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rule Studio · Swap Rules Engine</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a href="/" class="logo-link"><div class="logo">SR</div></a>
+      <div>
+        <h1>Rule Studio</h1>
+        <p class="subtitle">Author, edit, simulate and publish rules</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="snapshot-badge" id="snapshotBadge">
+        <span class="dot"></span>
+        <span id="snapshotText">loading…</span>
+      </div>
+      <div class="snapshot-badge" id="enumBadge" title="Active enumeration snapshot">
+        <span class="dot dot-amber"></span>
+        <span id="enumText">enums: loading…</span>
+      </div>
+      <button class="ghost" id="refreshEnumsBtn" title="Re-resolve all enumerations from their providers">↻ Refresh enums</button>
+      <a class="link-btn" href="/enrich.html">Enrich Console →</a>
+      <button class="primary" id="publishBtn">Publish snapshot</button>
+    </div>
+  </header>
+
+  <div class="studio-layout">
+    <aside class="sidebar">
+      <nav>
+        <a class="nav-item" data-view="snapshot">Snapshot</a>
+        <a class="nav-item active" data-view="rules">Rules</a>
+        <a class="nav-item" data-view="templates">Action Templates</a>
+        <a class="nav-item" data-view="fragments">Criteria Fragments</a>
+        <a class="nav-item" data-view="enumerations">Enumerations</a>
+        <a class="nav-item" data-view="simulate">Simulate</a>
+      </nav>
+      <div class="sidebar-info">
+        <div class="muted small">Tip: rules are composed from reusable<br/><strong>fragments</strong> (criteria) and <strong>templates</strong> (actions).</div>
+      </div>
+    </aside>
+
+    <main class="studio-main" id="studioMain">
+      <!-- view content injected by studio.js -->
+    </main>
+  </div>
+
+  <footer class="footer">
+    <span>Swap Rules Engine 1.0.0-SNAPSHOT</span>
+    <a href="/v3/api-docs" target="_blank">OpenAPI</a>
+  </footer>
+
+  <!-- TEMPLATE: rules view -->
+  <template id="tpl-rules-view">
+    <div class="view-header">
+      <div>
+        <h2>Rules</h2>
+        <p class="muted">Browse, create, edit. Each rule is a composition of fragments + templates plus optional inline criteria/actions.</p>
+      </div>
+      <div class="view-actions">
+        <select id="filterCategory"><option value="">All categories</option></select>
+        <select id="filterTarget"><option value="">All targets</option></select>
+        <button class="primary" id="newRuleBtn">+ New rule</button>
+      </div>
+    </div>
+    <div class="rules-list" id="rulesList">Loading…</div>
+  </template>
+
+  <!-- TEMPLATE: rule editor -->
+  <template id="tpl-rule-editor">
+    <div class="view-header">
+      <div>
+        <h2 id="ruleEditorTitle">New rule</h2>
+        <p class="muted" id="ruleEditorSubtitle"></p>
+      </div>
+      <div class="view-actions">
+        <button class="ghost" id="cancelRuleBtn">← Back</button>
+        <button class="ghost" id="simulateRuleBtn">Simulate</button>
+        <button class="primary" id="saveRuleBtn">Save rule</button>
+      </div>
+    </div>
+
+    <div class="editor-layout">
+      <form class="rule-form" id="ruleForm" onsubmit="return false;">
+        <fieldset>
+          <legend>Identification</legend>
+          <div class="grid-2">
+            <label>Rule ID<input type="text" name="id" required placeholder="ECON_USD_INTEREST_TIER1" /></label>
+            <label>Version<input type="number" name="version" required min="1" value="1" /></label>
+            <label class="col-span-2">Name<input type="text" name="name" placeholder="USD float interest - tier 1 override" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Classification</legend>
+          <div class="grid-3">
+            <label>Category<select name="category" id="ruleCategory"></select></label>
+            <label>Target<select name="target" id="ruleTarget"></select></label>
+            <label>Evaluation mode<select name="evaluationMode"><option value="">(default for category)</option></select></label>
+            <label>Priority<input type="number" name="priority" value="100" /></label>
+            <label>Specificity boost<input type="number" name="specificityBoost" step="0.1" placeholder="optional" /></label>
+            <label>Status<select name="status"></select></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Effective dates</legend>
+          <div class="grid-2">
+            <label>Effective from<input type="date" name="effectiveFrom" /></label>
+            <label>Effective to<input type="date" name="effectiveTo" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Compose with fragments (includes)</legend>
+          <p class="muted small">Reusable criteria bundles that must all match.</p>
+          <div class="chip-picker" id="fragmentPicker"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Compose with templates (apply)</legend>
+          <p class="muted small">Reusable action bundles run when the rule matches.</p>
+          <div class="chip-picker" id="templatePicker"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Inline criteria <span class="muted small">(optional, in addition to fragments)</span></legend>
+          <div class="row-list" id="criteriaRows"></div>
+          <button class="ghost small" id="addCriterionBtn">+ Add criterion</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Inline actions <span class="muted small">(optional, in addition to templates)</span></legend>
+          <div class="row-list" id="actionRows"></div>
+          <button class="ghost small" id="addActionBtn">+ Add action</button>
+        </fieldset>
+      </form>
+
+      <aside class="preview-panel">
+        <h3>Duplication check</h3>
+        <div id="ruleDuplicationStrip" class="duplication-strip"></div>
+        <h3>Live preview</h3>
+        <p class="muted small">This is the JSON that will be POSTed to the rules API.</p>
+        <pre id="rulePreview"></pre>
+        <h3>What this rule will do</h3>
+        <div id="ruleNarrative" class="narrative"></div>
+        <h3>Simulation</h3>
+        <div id="simulationOutput" class="muted small">Click <em>Simulate</em> to preview impact on the 4 sample trades.</div>
+      </aside>
+    </div>
+  </template>
+
+  <!-- TEMPLATE: snapshot view -->
+  <template id="tpl-snapshot-view">
+    <div class="view-header">
+      <div><h2>Active snapshot</h2><p class="muted">Compiled, indexed, and served by the runtime engine.</p></div>
+    </div>
+    <div class="summary" id="snapshotSummary"></div>
+    <div id="snapshotDuplicationStrip" class="duplication-strip"></div>
+    <div id="snapshotBuckets"></div>
+  </template>
+
+  <!-- TEMPLATE: templates view -->
+  <template id="tpl-templates-view">
+    <div class="view-header">
+      <div><h2>Action Templates</h2><p class="muted">Reusable bundles of mutation actions referenced by rules via <code>apply</code>.</p></div>
+      <div class="view-actions"><button class="primary" id="newTemplateBtn">+ New template</button></div>
+    </div>
+    <div id="templatesList">Loading…</div>
+  </template>
+
+  <!-- TEMPLATE: template editor -->
+  <template id="tpl-template-editor">
+    <div class="view-header">
+      <div><h2 id="tplTitle">New template</h2></div>
+      <div class="view-actions">
+        <button class="ghost" id="tplCancelBtn">← Back</button>
+        <button class="primary" id="tplSaveBtn">Save template</button>
+      </div>
+    </div>
+    <div class="editor-layout">
+      <form class="rule-form" id="tplForm" onsubmit="return false;">
+        <fieldset>
+          <legend>Identification</legend>
+          <div class="grid-3">
+            <label>Template ID<input type="text" name="id" required /></label>
+            <label>Version<input type="number" name="version" required min="1" value="1" /></label>
+            <label>Target<select name="target" id="tplTarget"></select></label>
+            <label>Status<select name="status" id="tplStatus"></select></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Actions</legend>
+          <div class="row-list" id="tplActionRows"></div>
+          <button class="ghost small" id="tplAddActionBtn">+ Add action</button>
+        </fieldset>
+      </form>
+      <aside class="preview-panel">
+        <h3>Duplication check</h3>
+        <div id="tplDuplicationStrip" class="duplication-strip"></div>
+        <h3>Live preview</h3>
+        <pre id="tplPreview"></pre>
+      </aside>
+    </div>
+  </template>
+
+  <!-- TEMPLATE: fragments view -->
+  <template id="tpl-fragments-view">
+    <div class="view-header">
+      <div><h2>Criteria Fragments</h2><p class="muted">Reusable predicates referenced by rules via <code>includes</code>.</p></div>
+      <div class="view-actions"><button class="primary" id="newFragmentBtn">+ New fragment</button></div>
+    </div>
+    <div id="fragmentsList">Loading…</div>
+  </template>
+
+  <template id="tpl-fragment-editor">
+    <div class="view-header">
+      <div><h2 id="fragTitle">New fragment</h2></div>
+      <div class="view-actions">
+        <button class="ghost" id="fragCancelBtn">← Back</button>
+        <button class="primary" id="fragSaveBtn">Save fragment</button>
+      </div>
+    </div>
+    <div class="editor-layout">
+      <form class="rule-form" id="fragForm" onsubmit="return false;">
+        <fieldset>
+          <legend>Identification</legend>
+          <div class="grid-2">
+            <label>Fragment ID<input type="text" name="id" required /></label>
+            <label>Version<input type="number" name="version" required min="1" value="1" /></label>
+            <label>Status<select name="status" id="fragStatus"></select></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Criteria</legend>
+          <div class="row-list" id="fragCriteriaRows"></div>
+          <button class="ghost small" id="fragAddBtn">+ Add criterion</button>
+        </fieldset>
+      </form>
+      <aside class="preview-panel">
+        <h3>Duplication check</h3>
+        <div id="fragDuplicationStrip" class="duplication-strip"></div>
+        <h3>Live preview</h3>
+        <pre id="fragPreview"></pre>
+      </aside>
+    </div>
+  </template>
+
+  <!-- TEMPLATE: enumerations view -->
+  <template id="tpl-enumerations-view">
+    <div class="view-header">
+      <div>
+        <h2>Enumerations</h2>
+        <p class="muted">Managed value sets used as dropdowns wherever a field declares an <code>enumRef</code>. Refresh re-fetches every enum through its provider and publishes a new snapshot.</p>
+      </div>
+      <div class="view-actions">
+        <button class="ghost" id="enumRefreshBtn">↻ Refresh snapshot</button>
+        <button class="primary" id="newEnumBtn">+ New enumeration</button>
+      </div>
+    </div>
+    <div class="enum-layout">
+      <div class="enum-list" id="enumList">Loading…</div>
+      <div class="enum-detail" id="enumDetail">
+        <div class="muted pad">Select an enumeration on the left to browse and edit values.</div>
+      </div>
+    </div>
+  </template>
+
+  <!-- TEMPLATE: enumeration editor -->
+  <template id="tpl-enumeration-editor">
+    <div class="enum-editor-header">
+      <h3 id="enumTitle"></h3>
+      <div class="enum-meta">
+        <span class="muted small" id="enumMetaProvider"></span>
+        <span class="muted small" id="enumMetaVersion"></span>
+      </div>
+    </div>
+    <form id="enumDefForm" onsubmit="return false;" class="enum-def-form">
+      <label>Display name<input type="text" name="displayName" /></label>
+      <label>Description<input type="text" name="description" /></label>
+      <label>Provider type<input type="text" name="providerType" value="DATABASE" /></label>
+      <label>Refresh policy
+        <select name="refreshPolicy">
+          <option value="MANUAL">MANUAL</option>
+          <option value="INTERVAL">INTERVAL</option>
+          <option value="TTL">TTL</option>
+          <option value="EVENT">EVENT</option>
+        </select>
+      </label>
+      <label>Refresh interval (seconds)<input type="number" name="refreshIntervalSeconds" /></label>
+      <label class="col-span-2">Source config (JSON)<textarea name="sourceConfig" rows="3" spellcheck="false"></textarea></label>
+      <div class="btn-row col-span-2">
+        <button class="ghost" id="enumSaveDefBtn">Save definition</button>
+        <button class="danger" id="enumDeleteBtn">Delete enumeration</button>
+      </div>
+    </form>
+
+    <h4>Values</h4>
+    <table class="enum-values">
+      <thead><tr><th>Code</th><th>Label</th><th>Sort</th><th>Active</th><th></th></tr></thead>
+      <tbody id="enumValuesBody"></tbody>
+    </table>
+    <div class="btn-row">
+      <button class="ghost small" id="enumAddValueBtn">+ Add value</button>
+    </div>
+  </template>
+
+  <!-- TEMPLATE: simulate view -->
+  <template id="tpl-simulate-view">
+    <div class="view-header">
+      <div><h2>Simulate a draft</h2><p class="muted">Pick a DRAFT rule and pre-loaded sample trades to see its impact before publishing.</p></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Pick draft rule</h3>
+        <select id="simDraftSelect"></select>
+        <h3>Trades</h3>
+        <div class="preset-row" id="simPresetRow"></div>
+        <textarea id="simTradesInput" rows="14" spellcheck="false"></textarea>
+        <div class="btn-row"><button class="primary" id="simRunBtn">Run simulation</button></div>
+      </div>
+      <div class="card">
+        <h3>Diff vs current snapshot</h3>
+        <div id="simResults" class="muted">No simulation yet.</div>
+      </div>
+    </div>
+  </template>
+
+  <script src="/common.js"></script>
+  <script src="/studio.js"></script>
+</body>
+</html>

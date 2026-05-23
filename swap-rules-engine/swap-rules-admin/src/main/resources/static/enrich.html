@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trade Enrichment · Swap Rules Engine</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a href="/" class="logo-link"><div class="logo">SR</div></a>
+      <div>
+        <h1>Trade Enrichment Console</h1>
+        <p class="subtitle">Submit a raw hedge trade, see the enriched equity swap</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="snapshot-badge" id="snapshotBadge">
+        <span class="dot"></span>
+        <span id="snapshotText">loading…</span>
+      </div>
+      <a class="link-btn" href="/studio.html">Rule Studio →</a>
+    </div>
+  </header>
+
+  <main class="enrich-main">
+    <section class="card input-card">
+      <div class="card-head">
+        <h2>1. Trade input</h2>
+        <span class="muted">Pick a preset or edit the JSON</span>
+      </div>
+      <div class="preset-row" id="presetRow"></div>
+      <div class="quick-form" id="quickForm"></div>
+      <details class="json-toggle">
+        <summary>Edit raw JSON</summary>
+        <textarea id="rawTradeInput" spellcheck="false" rows="14"></textarea>
+      </details>
+      <div class="btn-row">
+        <button class="primary big" id="enrichBtn">▶ Run Enrichment</button>
+        <span id="enrichTiming" class="timing"></span>
+      </div>
+    </section>
+
+    <section class="card result-card" id="resultCard" style="display:none;">
+      <div class="card-head">
+        <h2>2. Enriched equity swap</h2>
+        <div class="result-meta" id="resultMeta"></div>
+      </div>
+      <div class="swap-grid" id="swapGrid"></div>
+    </section>
+
+    <section class="card trace-card" id="traceCard" style="display:none;">
+      <div class="card-head">
+        <h2>3. Decision trace <span class="muted">(why this happened)</span></h2>
+        <span id="traceCount" class="muted"></span>
+      </div>
+      <div id="traceTimeline" class="timeline"></div>
+    </section>
+
+    <section class="card unresolved-card" id="unresolvedCard" style="display:none;">
+      <div class="card-head">
+        <h2>4. Unresolved targets</h2>
+        <span class="muted">No rule matched — close the gap by promoting a near-miss into a draft.</span>
+      </div>
+      <div id="unresolvedGroup" class="unresolved-grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Swap Rules Engine 1.0.0-SNAPSHOT</span>
+    <a href="/v3/api-docs" target="_blank">OpenAPI</a>
+    <a href="/actuator/health" target="_blank">Health</a>
+  </footer>
+
+  <script src="/common.js"></script>
+  <script src="/enrich.js"></script>
+</body>
+</html>
