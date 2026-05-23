@@ -550,6 +550,7 @@ function showTemplatesList() {
     });
     const actions = el("div", { cls: "rc-actions" });
     actions.appendChild(el("button", { cls: "ghost small", text: "Edit", onClick: () => openTemplateEditor(t) }));
+    actions.appendChild(el("button", { cls: "ghost small", text: "Clone", onClick: () => openTemplateEditor({ ...t, id: t.id + "_COPY", version: 1 }) }));
     card.appendChild(actions);
     list.appendChild(card);
   });
@@ -624,6 +625,7 @@ function showFragmentsList() {
     });
     const actions = el("div", { cls: "rc-actions" });
     actions.appendChild(el("button", { cls: "ghost small", text: "Edit", onClick: () => openFragmentEditor(f) }));
+    actions.appendChild(el("button", { cls: "ghost small", text: "Clone", onClick: () => openFragmentEditor({ ...f, id: f.id + "_COPY", version: 1 }) }));
     card.appendChild(actions);
     list.appendChild(card);
   });
