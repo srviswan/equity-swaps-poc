@@ -671,3 +671,131 @@ These items extend the admin/authoring experience without changing the runtime p
 | **Developer UI** | `studio.html` retains full JSON-oriented editor; links from simple UI. |
 
 See also: [perf-baseline.md](perf-baseline.md), [integration-trade-capture.md](integration-trade-capture.md).
+
+---
+
+## Dynamic schema (`@SchemaField`)
+
+The admin and simple UIs do **not** hard-code field lists. Metadata is declared on Java records in `swap-rules-core` and exposed at runtime via `SchemaService`.
+
+### Annotation model
+
+`@SchemaField` on record components (`RawHedgeTrade`, `EnrichedEquitySwap`, nested legs):
+
+| Attribute | Purpose |
+|-----------|---------|
+| `enumRef` | Code of a managed enumeration (e.g. `CURRENCY`, `DAY_COUNT`) — drives dropdowns for criteria/action values |
+| `description` | Human label for tooltips and completeness messages |
+| `writable` | `false` = read-only on the swap/trade (e.g. `tradeId`, trade-side match fields) |
+| `required` | `true` = mandatory leaf for **completeness validation** (per-rule target slice + rule-book union) |
+
+### `SchemaService` and `FieldDescriptor`
+
+- Walks nested **records** recursively and emits dot-paths (`interestLeg.dayCount`, `swapContract.productType`).
+- Infers **type** (`STRING`, `DECIMAL`, `DATE`, `BOOLEAN`, `OBJECT`, …) and **operators** per type (enums get `EQ`/`IN`/…; strings also `CONTAINS`/`REGEX`).
+- Caches descriptors per root class (`ConcurrentHashMap`).
+- Lives in `swap-rules-core` so runtime and admin share one definition.
+
+`FieldDescriptor` JSON shape: `path`, `type`, `enumRef`, `nullable`, `writable`, `required`, `description`, `operators`.
+
+### REST API
+
+| Endpoint | Returns |
+|----------|---------|
+| `GET /api/v1/schema/trade` | Schema for `RawHedgeTrade` (criteria / match side) |
+| `GET /api/v1/schema/swap` | Schema for `EnrichedEquitySwap` (action targets) |
+| `GET /api/v1/schema` | Both descriptors |
+
+Frontend (`common.js`): `loadSchemas()` caches `META.trade` and `META.swap`; `fieldPathSelect` / `valueInputFor` render paths and enum-backed dropdowns.
+
+### Trade schema (match criteria)
+
+Annotated on `RawHedgeTrade` — typically **writable = false** (rules match on captured trade, they do not mutate trade fields):
+
+| Path | enumRef | Notes |
+|------|---------|-------|
+| `tradeId` | — | Read-only |
+| `productType` | `PRODUCT_TYPE` | Read-only |
+| `book` | `BOOK` | Read-only |
+| `currency` | `CURRENCY` | Read-only |
+| `clientTier` | `CLIENT_TIER` | Read-only |
+| `source` | `TRADE_SOURCE` | Read-only |
+| `notional`, `tradeDate`, `securityId` | — | Read-only |
+
+### Swap schema (action targets + mandatory fields)
+
+Annotated on `EnrichedEquitySwap` and nested records. **Required** leaves (used by completeness validators):
+
+| Section | Path | enumRef |
+|---------|------|---------|
+| Swap contract | `swapContract.productType` | `PRODUCT_TYPE` |
+| Swap contract | `swapContract.startDate` | — (DATE) |
+| Interest leg | `interestLeg.dayCount` | `DAY_COUNT` |
+| Interest leg | `interestLeg.rateType` | `RATE_TYPE` |
+| Interest leg | `interestLeg.index` | `RATE_INDEX` |
+| Equity leg | `equityLeg.returnType` | `RETURN_TYPE` |
+| Equity leg | `equityLeg.feeType` | `FEE_TYPE` |
+| Schedule | `schedule.paymentFrequency` | `PAYMENT_FREQUENCY` |
+| Schedule | `schedule.rollConvention` | `ROLL_CONVENTION` |
+| Dividends | `divPassthrough.percent` | — (DECIMAL) |
+| Dividends | `divPassthrough.timing` | `DIV_TIMING` |
+| Top-level | `legalEntity` | `LEGAL_ENTITY` |
+| Top-level | `workflowStatus` | `WORKFLOW_STATUS` |
+| Top-level | `routingDestination` | `ROUTING_DESTINATION` |
+
+Optional / non-required examples: `swapContract.contractId`, `swapContract.endDate`, `interestLeg.spreadBps`, `interestLeg.fixedRate`.
+
+```mermaid
+flowchart LR
+  Records["Java records + @SchemaField"]
+  SS[SchemaService]
+  API["GET /api/v1/schema/*"]
+  UI["Studio + simple UI dropdowns"]
+  Val["RuleCompleteness + RuleBookCompleteness"]
+  Records --> SS --> API --> UI
+  SS --> Val
+```
+
+---
+
+## Managed enumerations
+
+Valid values for enum-backed schema fields are **data-driven**, not baked into the UI.
+
+### Persistence (Flyway `V2__enumerations.sql`)
+
+| Table | Role |
+|-------|------|
+| `enumeration` | Definition: `code`, display name, `provider_type` (`DATABASE`), refresh policy |
+| `enumeration_value` | Rows per code: `value_code`, `display_label`, `sort_order`, `active`, optional validity dates |
+
+### Runtime registry
+
+- `EnumerationRegistry` — in-memory versioned snapshot refreshed on startup and after admin writes.
+- `DatabaseEnumerationProvider` — loads active values from JPA.
+- `EnumerationSeeder` (`@Order(0)`, before `SampleDataSeeder`) — seeds **16** enumerations on first boot:
+
+`CURRENCY`, `BOOK`, `PRODUCT_TYPE`, `CLIENT_TIER`, `TRADE_SOURCE`, `DAY_COUNT`, `RATE_TYPE`, `RATE_INDEX`, `RETURN_TYPE`, `FEE_TYPE`, `PAYMENT_FREQUENCY`, `ROLL_CONVENTION`, `DIV_TIMING`, `LEGAL_ENTITY`, `WORKFLOW_STATUS`, `ROUTING_DESTINATION`.
+
+Each `enumRef` on `@SchemaField` must match an enumeration `code` so studio/wizard value pickers resolve.
+
+### REST API
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/v1/enumerations` | List all enumerations with values (live snapshot) |
+| `GET /api/v1/enumerations/{code}` | One enumeration |
+| `GET /api/v1/enumerations/snapshot` | Snapshot metadata (`snapshotId`, `publishedAt`, `codes`) |
+| `POST /api/v1/enumerations/refresh` | Reload from DB |
+| `POST /api/v1/enumerations` | Upsert definition |
+| `POST /api/v1/enumerations/{code}/values` | Add/update values |
+| `PUT` / `DELETE` | Admin maintenance |
+
+Frontend: `loadEnums()` in `common.js` builds `META.enumIdx` for `valueInputFor()` — criteria and action rows show selects when `field.enumRef` is set.
+
+### Binding schema ↔ enumerations
+
+1. Author adds `@SchemaField(enumRef = "DAY_COUNT")` on `InterestLeg.dayCount`.
+2. `SchemaService` emits `FieldDescriptor` with `enumRef: "DAY_COUNT"`.
+3. UI loads `/schema/swap` + `/enumerations`, joins on `enumRef`, renders allowed day-count codes.
+4. Completeness validators use the same schema list of `required` paths — no duplicate field list in SQL or JSON config.
