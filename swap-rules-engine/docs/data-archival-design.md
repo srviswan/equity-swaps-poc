@@ -566,7 +566,18 @@ One fat jar. Criteria/table changes are data, not deploys.
    (e.g. `DimBasket`), classifying TERMINATED / NEEDS_REVIEW (terminated but undated) / ACTIVE and
    never overwriting already-archived baskets; the Orchestrator refreshes it before selecting each
    run's worklist.
-7. **Stats/plan post-steps + observability (Prometheus) + alerting + restore**.
+7. **Stats/plan post-steps + observability + alerting + restore**. ✅ — after a successful run
+   `StatsMaintainer` runs `UPDATE STATISTICS` on every in-scope source table (gated by
+   `archive_job.update_stats_after`, V003) so the now-smaller tables don't carry stale stats into
+   BAU plans; failures are logged, never fail the committed archive. The Orchestrator emits a single
+   structured `ARCHIVE_SUMMARY run=… status=… chunks=… copied=… deleted=… duration_ms=… halt=…`
+   line per run (scrape-friendly for a log exporter / Prometheus textfile collector — no in-process
+   HTTP server in a batch job), and prefixes PAUSED/FAILED/restore-failure lines with `ALERT` for
+   log-based alerting. `RestoreService` is the reverse pipeline: located by lineage
+   (`archive_batch_id` = the archive `run_id`, optionally resolved from a basket key), it restores in
+   **parent → child** order into a **separate investigation DB** (guarded against the live source
+   unless `restore.allow-restore-to-source`), auto-creating the investigation table from the archive
+   shape, idempotent per batch, every restore audited in `archive_restore_log`.
 8. **Perf test on the 1 TB table, dry-run, staged prod rollout**.
 
 ---

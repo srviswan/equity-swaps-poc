@@ -56,10 +56,16 @@ public record ArchiverProperties(
             String clientCertAlias,
             @DefaultValue("300") int cacheTtlSeconds) {}
 
-    /** Restore (investigation) settings. */
+    /**
+     * Restore (investigation) settings. Scope is given as a CSV of {@code baskets} (resolved to the
+     * batch(es) that archived them) and/or {@code batchIds} ({@code archive_batch_id} = the archive
+     * {@code run_id}). At least one must be set for a RESTORE run.
+     */
     public record Restore(
             @DefaultValue("archive_investigation") String targetDb,
-            @DefaultValue("false") boolean allowRestoreToSource) {}
+            @DefaultValue("false") boolean allowRestoreToSource,
+            String baskets,
+            String batchIds) {}
 
     /** Pacing knobs for the adaptive controller. */
     public record Throttle(

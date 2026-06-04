@@ -39,6 +39,7 @@ public class Orchestrator {
     private final AdaptiveController adaptive;
     private final IndexManager indexManager;
     private final BasketStateRefresher basketState;
+    private final StatsMaintainer statsMaintainer;
     private final RestoreService restore;
     private final StopController stop;
 
@@ -52,6 +53,7 @@ public class Orchestrator {
             AdaptiveController adaptive,
             IndexManager indexManager,
             BasketStateRefresher basketState,
+            StatsMaintainer statsMaintainer,
             RestoreService restore,
             StopController stop) {
         this.props = props;
@@ -63,6 +65,7 @@ public class Orchestrator {
         this.adaptive = adaptive;
         this.indexManager = indexManager;
         this.basketState = basketState;
+        this.statsMaintainer = statsMaintainer;
         this.restore = restore;
         this.stop = stop;
     }
@@ -94,11 +97,7 @@ public class Orchestrator {
                 yield 0;
             }
             case "ARCHIVE" -> archive();
-            case "RESTORE" -> {
-                // TODO(phase 7): reverse pipeline into the investigation DB.
-                log.info("RESTORE: pre-flight passed; restore not yet implemented (phase 7).");
-                yield 0;
-            }
+            case "RESTORE" -> restore();
             default -> throw new IllegalArgumentException("Unknown mode: " + mode);
         };
     }
@@ -138,6 +137,8 @@ public class Orchestrator {
         stop.markRunning(true);
         long copied = 0;
         long deleted = 0;
+        int chunks = 0;
+        long runStart = System.currentTimeMillis();
         boolean indexesDisabled = false;
         String haltReason = null;
         try {
@@ -174,6 +175,7 @@ public class Orchestrator {
                 worklist.markChunkArchived(chunk);
                 copied += result.rowsCopied();
                 deleted += result.rowsDeleted();
+                chunks++;
 
                 rowsPerBasket = updateRowsPerBasket(rowsPerBasket, result.rowsCopied(), chunk.basketKeys().size());
                 boolean pressure =
@@ -197,17 +199,26 @@ public class Orchestrator {
 
             String status = haltReason == null ? "DONE" : "PAUSED";
             worklist.completeRun(runId, status, copied, deleted, haltReason);
+            long durationMs = System.currentTimeMillis() - runStart;
+            // Single structured line for log-based dashboards/alerts (Prometheus via log exporter or
+            // a textfile collector can scrape these key=value pairs without an in-process HTTP server).
+            log.info(
+                    "ARCHIVE_SUMMARY run={} status={} chunks={} copied={} deleted={} duration_ms={} halt={}",
+                    runId, status, chunks, copied, deleted, durationMs, haltReason == null ? "-" : haltReason);
             if (haltReason == null) {
                 log.info("ARCHIVE run {} DONE: copied {} / deleted {} row(s)", runId, copied, deleted);
+                runStatsMaintenance();
             } else {
                 log.warn(
-                        "ARCHIVE run {} PAUSED ({}): copied {} / deleted {} so far; resumable on restart.",
+                        "ALERT ARCHIVE run {} PAUSED ({}): copied {} / deleted {} so far; resumable on restart.",
                         runId, haltReason, copied, deleted);
             }
             return 0;
         } catch (RuntimeException e) {
             worklist.completeRun(runId, "FAILED", copied, deleted, e.getMessage());
-            log.error("ARCHIVE run {} FAILED after copying {} / deleting {}; resumable on restart.", runId, copied, deleted, e);
+            log.error(
+                    "ALERT ARCHIVE run {} FAILED after copying {} / deleting {}; resumable on restart.",
+                    runId, copied, deleted, e);
             return 4;
         } finally {
             // Rebuild on every path (success, halt, failure) and clean up any indexes a prior crashed
@@ -218,6 +229,32 @@ public class Orchestrator {
                 log.error("Failed to rebuild target indexes; check archive_index_state for leftovers.", e);
             }
             stop.markRunning(false);
+        }
+    }
+
+    /** Refresh source statistics after a successful run; never let it fail the archive outcome. */
+    private void runStatsMaintenance() {
+        try {
+            int refreshed = statsMaintainer.updateStatsAfterArchive(props.jobName());
+            if (refreshed > 0) {
+                log.info("Post-archive stats maintenance refreshed {} source table(s)", refreshed);
+            }
+        } catch (RuntimeException e) {
+            log.warn("Post-archive stats maintenance failed; continuing: {}", e.getMessage());
+        }
+    }
+
+    /** RESTORE mode: pull the configured baskets/batches back into the investigation DB. */
+    private int restore() {
+        try {
+            RestoreService.RestoreSummary summary = restore.restore(props.jobName());
+            log.info(
+                    "RESTORE DONE: {} row(s) across {} table(s) for batches {} → {}",
+                    summary.rowsRestored(), summary.tables(), summary.batchIds(), summary.targetDb());
+            return 0;
+        } catch (RuntimeException e) {
+            log.error("ALERT RESTORE failed: {}", e.getMessage(), e);
+            return 5;
         }
     }
 

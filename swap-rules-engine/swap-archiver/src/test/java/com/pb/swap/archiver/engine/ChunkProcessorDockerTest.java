@@ -15,6 +15,8 @@ import com.pb.swap.archiver.copy.CopyStrategy;
 import com.pb.swap.archiver.copy.CrossDbCopyStrategy;
 import com.pb.swap.archiver.copy.CrossServerBulkCopyStrategy;
 import com.pb.swap.archiver.copy.SameDbCopyStrategy;
+import com.pb.swap.archiver.config.ArchiverProperties.Restore;
+import com.pb.swap.archiver.restore.RestoreService;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -49,6 +51,7 @@ class ChunkProcessorDockerTest {
         exec("master", "IF DB_ID('archive_control') IS NULL CREATE DATABASE [archive_control]");
         exec("master", "IF DB_ID('dw') IS NULL CREATE DATABASE [dw]");
         exec("master", "IF DB_ID('archive') IS NULL CREATE DATABASE [archive]");
+        exec("master", "IF DB_ID('archive_investigation') IS NULL CREATE DATABASE [archive_investigation]");
         Flyway.configure()
                 .dataSource(url("archive_control"), mssql.getUsername(), mssql.getPassword())
                 .schemas("dbo")
@@ -84,9 +87,13 @@ class ChunkProcessorDockerTest {
                 "CREATE TABLE dbo.Trades_Archive (trade_id INT NOT NULL, basket_key BIGINT NOT NULL, amount INT,"
                         + " archive_batch_id BIGINT, archived_at_utc DATETIME2, archived_period_key INT)");
 
+        // Fresh investigation table per test so restore round-trips start clean.
+        exec("archive_investigation", "DROP TABLE IF EXISTS dbo.Trades_Archive");
+
         JdbcTemplate control = controlJdbc();
         control.update("DELETE FROM archive_chunk_log");
         control.update("DELETE FROM archive_worklist");
+        control.update("DELETE FROM archive_restore_log");
         control.update("DELETE FROM archive_run");
         control.update("DELETE FROM archive_window");
         control.update("DELETE FROM archive_index_state");
@@ -474,6 +481,66 @@ class ChunkProcessorDockerTest {
     }
 
     @Test
+    void restoreRoundTripsArchivedRowsIntoInvestigationDb() {
+        JdbcTemplate control = controlJdbc();
+        // Archive eligible baskets first; markChunkArchived stamps archive_batch_id = runId.
+        runOnce(new WorklistProvider(control), newProcessor(control), control);
+        assertEquals(3, count("dw", "SELECT COUNT(*) FROM dbo.Trades_Archive"), "rows archived");
+
+        // Restore by basket key — RestoreService resolves the batch(es) that archived 100/101.
+        ArchiverProperties p =
+                propsWithRestore("dw", "dw", new Restore("archive_investigation", false, "100,101", null));
+        RestoreService restore = new RestoreService(new ConnectionFactory(p), p, control);
+        RestoreService.RestoreSummary summary = restore.restore(JOB);
+
+        assertEquals(1, summary.tables(), "one restorable table");
+        assertEquals(3, summary.rowsRestored(), "all archived rows for the baskets restored");
+        assertEquals(
+                3,
+                count("archive_investigation", "SELECT COUNT(*) FROM dbo.Trades_Archive"),
+                "rows landed in the investigation DB");
+        assertEquals(
+                1,
+                count("archive_control", "SELECT COUNT(*) FROM archive_restore_log WHERE status = 'DONE'"),
+                "restore audited");
+
+        // Idempotent: a second restore of the same scope does not duplicate rows.
+        restore.restore(JOB);
+        assertEquals(
+                3,
+                count("archive_investigation", "SELECT COUNT(*) FROM dbo.Trades_Archive"),
+                "re-running restore is idempotent");
+    }
+
+    @Test
+    void restoreRefusesToTargetLiveSourceUnlessOverridden() {
+        JdbcTemplate control = controlJdbc();
+        runOnce(new WorklistProvider(control), newProcessor(control), control);
+
+        // Investigation DB == source DB (dw) with the override off → must refuse.
+        ArchiverProperties p = propsWithRestore("dw", "dw", new Restore("dw", false, "100,101", null));
+        RestoreService restore = new RestoreService(new ConnectionFactory(p), p, control);
+        try {
+            restore.restore(JOB);
+            org.junit.jupiter.api.Assertions.fail("expected restore-to-source guard to trip");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage().contains("live source"), "guard explains the refusal");
+        }
+    }
+
+    @Test
+    void statsMaintainerRefreshesSourceTablesWhenEnabled() {
+        JdbcTemplate control = controlJdbc();
+        StatsMaintainer stats = new StatsMaintainer(control, connectionFactory(), props());
+
+        // V003 defaults update_stats_after = 1, one in-scope source table (dbo.Trades).
+        assertEquals(1, stats.updateStatsAfterArchive(JOB), "stats refreshed on the one source table");
+
+        control.update("UPDATE archive_job SET update_stats_after = 0 WHERE job_name = ?", JOB);
+        assertEquals(0, stats.updateStatsAfterArchive(JOB), "no-op when the flag is off");
+    }
+
+    @Test
     void monitorSampleReadsDmvs() {
         LogAndAgMonitor monitor = new LogAndAgMonitor(connectionFactory(), props());
         LogAndAgMonitor.Reading reading = monitor.sample();
@@ -516,6 +583,11 @@ class ChunkProcessorDockerTest {
     private static ArchiverProperties props(String srcDb, String tgtDb) {
         return new ArchiverProperties(
                 JOB, "ARCHIVE", null, null, sqlEndpoint(srcDb), sqlEndpoint(tgtDb), null, null);
+    }
+
+    private static ArchiverProperties propsWithRestore(String srcDb, String tgtDb, Restore restore) {
+        return new ArchiverProperties(
+                JOB, "RESTORE", null, null, sqlEndpoint(srcDb), sqlEndpoint(tgtDb), restore, null);
     }
 
     private static long count(String db, String sql) {

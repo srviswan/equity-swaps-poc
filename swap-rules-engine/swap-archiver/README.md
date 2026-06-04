@@ -43,7 +43,18 @@ not code), so criteria/table changes need no redeploy.
   mapping table). Pre-flight fails a BRIDGE whose mapping table isn't indexed on its basket column.
   `BasketStateRefresher` builds `basket_archive_state` from a configured source dimension
   (TERMINATED / NEEDS_REVIEW / ACTIVE), run before each archive selects its worklist.
-- Phases 7+ (stats/plan post-steps, observability, restore) per the design doc.
+- **Phase 7 (done):** stats post-steps + observability + alerting + restore. After a successful run
+  `StatsMaintainer` runs `UPDATE STATISTICS` on every in-scope source table (gated by
+  `archive_job.update_stats_after`) so the now-smaller tables don't push stale stats into BAU plans.
+  Each run emits one structured `ARCHIVE_SUMMARY run=… status=… chunks=… copied=… deleted=…
+  duration_ms=… halt=…` line (scrape-friendly for a log exporter / Prometheus textfile collector),
+  and PAUSED/FAILED lines are prefixed `ALERT`. `mode=RESTORE` runs the reverse pipeline:
+  `RestoreService` locates archived rows by lineage (`archiver.restore.batchIds` and/or
+  `archiver.restore.baskets`, resolved to their `archive_batch_id`) and restores them in parent →
+  child order into a separate investigation DB (`archiver.restore.targetDb`, refusing the live source
+  unless `archiver.restore.allowRestoreToSource`), auto-creating the investigation table, idempotent
+  per batch, audited in `archive_restore_log`.
+- Phase 8 (next): perf test on the 1 TB table, dry-run, staged prod rollout.
 
 ## Local dev with Docker SQL Server
 
@@ -82,6 +93,22 @@ docker exec swap-rules-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P
 
 Re-running `ARCHIVE` is idempotent — the archived baskets are no longer eligible, so a second run
 moves nothing.
+
+### Phase 7 demo (restore for investigation)
+
+```bash
+# Restore the rows archived for baskets 100,101 into the investigation DB (not the live source).
+# The engine resolves each basket's archive_batch_id and copies its rows back, parent → child.
+TGT_DB=dw ARCHIVER_MODE=RESTORE RESTORE_BASKETS=100,101 mvn -pl swap-archiver spring-boot:run
+
+# Verify: the rows land in archive_investigation, and the restore is audited.
+docker exec swap-rules-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Swap_rules_1!' -C -No \
+  -d archive_investigation -Q "SELECT 'restored'=COUNT(*) FROM dbo.Trades_Archive"
+```
+
+You can also restore by run id directly with `RESTORE_BATCH_IDS=<runId>`. Restore is idempotent
+(prior rows for the same batch are cleared first) and refuses to write into the live source DB
+unless `archiver.restore.allow-restore-to-source=true`.
 
 ## Emergency stop (break-glass)
 

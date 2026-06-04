@@ -53,7 +53,9 @@ archiver:
   # --- Restore (investigations) ---
   restore:
     target-db: ${RESTORE_DB:archive_investigation}
-    allow-restore-to-source: false
+    allow-restore-to-source: ${RESTORE_TO_SOURCE:false}
+    baskets: ${RESTORE_BASKETS:}        # CSV of basket keys to restore (resolved to their batch)
+    batch-ids: ${RESTORE_BATCH_IDS:}    # CSV of archive_batch_id (= archive run_id) to restore
 
   # --- Throttling / pacing ---
   throttle:
