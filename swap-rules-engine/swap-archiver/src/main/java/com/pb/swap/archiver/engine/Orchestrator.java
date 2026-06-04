@@ -37,6 +37,7 @@ public class Orchestrator {
     private final WindowScheduler windows;
     private final LogAndAgMonitor monitor;
     private final AdaptiveController adaptive;
+    private final IndexManager indexManager;
     private final RestoreService restore;
     private final StopController stop;
 
@@ -48,6 +49,7 @@ public class Orchestrator {
             WindowScheduler windows,
             LogAndAgMonitor monitor,
             AdaptiveController adaptive,
+            IndexManager indexManager,
             RestoreService restore,
             StopController stop) {
         this.props = props;
@@ -57,6 +59,7 @@ public class Orchestrator {
         this.windows = windows;
         this.monitor = monitor;
         this.adaptive = adaptive;
+        this.indexManager = indexManager;
         this.restore = restore;
         this.stop = stop;
     }
@@ -128,6 +131,7 @@ public class Orchestrator {
         stop.markRunning(true);
         long copied = 0;
         long deleted = 0;
+        boolean indexesDisabled = false;
         String haltReason = null;
         try {
             while (true) {
@@ -149,6 +153,12 @@ public class Orchestrator {
                 WorklistProvider.Chunk chunk = worklist.nextChunk(runId, batchBaskets);
                 if (chunk == null) {
                     break; // no work left → DONE
+                }
+
+                // Disable target indexes once, only when there is actually work to load.
+                if (!indexesDisabled) {
+                    indexManager.disableForJob(props.jobName());
+                    indexesDisabled = true;
                 }
 
                 long start = System.currentTimeMillis();
@@ -193,6 +203,13 @@ public class Orchestrator {
             log.error("ARCHIVE run {} FAILED after copying {} / deleting {}; resumable on restart.", runId, copied, deleted, e);
             return 4;
         } finally {
+            // Rebuild on every path (success, halt, failure) and clean up any indexes a prior crashed
+            // run left disabled. Never let an exception here mask the run outcome.
+            try {
+                indexManager.rebuildForJob(props.jobName());
+            } catch (RuntimeException e) {
+                log.error("Failed to rebuild target indexes; check archive_index_state for leftovers.", e);
+            }
             stop.markRunning(false);
         }
     }

@@ -21,6 +21,7 @@ CREATE TABLE dbo.Trades_Archive (
     archived_at_utc     DATETIME2,
     archived_period_key INT
 );
+CREATE INDEX ix_arch_basket ON dbo.Trades_Archive (basket_key);  -- disabled before load, rebuilt after (phase 4)
 GO
 INSERT INTO dbo.Trades VALUES (1,100,10),(2,100,20),(3,101,30),(4,200,40);
 GO
@@ -37,9 +38,9 @@ GO
 INSERT INTO archive_job (job_name, topology, retention_months) VALUES ('basket-archive','SAME_DB',13);
 INSERT INTO archive_table
     (job_name, source_schema, source_table, target_schema, target_table,
-     dependency_level, join_columns, key_resolution, copy_strategy)
+     dependency_level, join_columns, key_resolution, copy_strategy, disable_target_indexes, checksum_verify)
 VALUES
-    ('basket-archive','dbo','Trades','dbo','Trades_Archive', 0, 'basket_key', 'DIRECT', 'SAME_DB');
+    ('basket-archive','dbo','Trades','dbo','Trades_Archive', 0, 'basket_key', 'DIRECT', 'SAME_DB', 1, 1);
 -- Baskets 100 & 101 terminated > 13 months ago (eligible); 200 still active.
 INSERT INTO basket_archive_state (basket_key, termination_date, status) VALUES
     (100, '2020-01-01', 'TERMINATED'),

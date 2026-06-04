@@ -22,8 +22,15 @@ not code), so criteria/table changes need no redeploy.
   pauses on pressure (fails soft when a DMV is unreadable / not an AG); `WindowScheduler` gates each
   chunk on the per-day `archive_window` and stops cleanly when the window closes. `IN_PROGRESS`
   chunks are reclaimed on restart.
-- Phases 4+ (index mgmt + checksums, cross-DB / cross-server, multi-table FK ordering +
-  `DimBasket` refresh, restore) per the design doc.
+- **Phase 4 (done):** index management + verification. Per-table `disable_target_indexes` disables
+  the target's plain non-clustered indexes before the load and rebuilds them on every exit path
+  (success, halt, failure) and on restart, tracked in the checkpointed `archive_index_state` table
+  (PK/unique-constraint and clustered indexes are never touched). With `checksum_verify` on, each
+  chunk requires an order-independent `CHECKSUM_AGG` over the source slice to equal the
+  just-inserted target slice **before** the delete is allowed; both checksums are recorded in
+  `archive_chunk_log`.
+- Phases 5+ (cross-DB / cross-server, multi-table FK ordering + `DimBasket` refresh, restore) per
+  the design doc.
 
 ## Local dev with Docker SQL Server
 

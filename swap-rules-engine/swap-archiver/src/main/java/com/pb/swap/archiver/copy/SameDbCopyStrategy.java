@@ -61,6 +61,24 @@ public class SameDbCopyStrategy implements CopyStrategy {
             stageKeys(conn, ctx, t.keyColumn());
 
             long rowsCopied = insertSelect(conn, ctx, t, dataColumns, lineageColumns);
+
+            // Content verification BEFORE the delete: a column-aware CHECKSUM_AGG over the source
+            // slice must equal the just-inserted target slice, so we never delete an imperfect copy.
+            // Skipped when nothing was copied (rowsCopied==0): a restart re-running an already-moved
+            // chunk finds no source rows, and one local transaction keeps source/target disjoint.
+            boolean hasBatchLineage = lineageColumns.contains("archive_batch_id");
+            Long sourceChecksum = null;
+            Long targetChecksum = null;
+            if (t.checksumVerify() && rowsCopied > 0) {
+                sourceChecksum = checksum(conn, ctx, t, dataColumns, false, hasBatchLineage);
+                targetChecksum = checksum(conn, ctx, t, dataColumns, true, hasBatchLineage);
+                if (!java.util.Objects.equals(sourceChecksum, targetChecksum)) {
+                    throw new SQLException(
+                            "checksum mismatch on " + t.sourceName() + ": source=" + sourceChecksum
+                                    + " target=" + targetChecksum + " (delete blocked)");
+                }
+            }
+
             long rowsDeleted = deleteSource(conn, ctx, t);
             if (rowsCopied != rowsDeleted) {
                 throw new SQLException(
@@ -71,7 +89,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
             committed = true;
             log.debug(
                     "SAME_DB chunk {} table {} moved {} rows", ctx.chunkNo(), t.sourceName(), rowsCopied);
-            return new MoveResult(rowsCopied, rowsDeleted);
+            return new MoveResult(rowsCopied, rowsDeleted, sourceChecksum, targetChecksum);
         } catch (SQLException | RuntimeException e) {
             safeRollback(conn);
             throw e;
@@ -136,6 +154,46 @@ public class SameDbCopyStrategy implements CopyStrategy {
                 ps.setObject(i + 1, binds.get(i));
             }
             return runCancellable(ctx, ps);
+        }
+    }
+
+    /**
+     * Order-independent content hash of the chunk's data columns. {@code CHECKSUM_AGG(CHECKSUM(...))}
+     * over either the source slice (joined to the staged keys) or the just-inserted target slice
+     * (this run's lineage), so the two are comparable before the source rows are deleted.
+     */
+    private Long checksum(
+            Connection conn,
+            MoveContext ctx,
+            TableConfig t,
+            List<String> dataColumns,
+            boolean target,
+            boolean hasBatchLineage)
+            throws SQLException {
+        StringBuilder cols = new StringBuilder();
+        for (String c : dataColumns) {
+            if (cols.length() > 0) {
+                cols.append(", ");
+            }
+            cols.append("x.").append(q(c));
+        }
+        String tableName = target ? qName(t.targetSchema(), t.targetTable()) : qName(t.sourceSchema(), t.sourceTable());
+        boolean filterByBatch = target && hasBatchLineage;
+        String sql =
+                "SELECT CHECKSUM_AGG(CHECKSUM(" + cols + ")) FROM " + tableName + " x JOIN #archive_keys k ON x."
+                        + q(t.keyColumn()) + " = k." + q(t.keyColumn())
+                        + (filterByBatch ? " WHERE x." + q("archive_batch_id") + " = ?" : "");
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (filterByBatch) {
+                ps.setLong(1, ctx.runId());
+            }
+            ctx.stop().register(ps);
+            try (ResultSet rs = ps.executeQuery()) {
+                long v = rs.next() ? rs.getLong(1) : 0L;
+                return rs.wasNull() ? Long.valueOf(0L) : v;
+            } finally {
+                ctx.stop().clear(ps);
+            }
         }
     }
 

@@ -79,6 +79,7 @@ class ChunkProcessorDockerTest {
         control.update("DELETE FROM archive_worklist");
         control.update("DELETE FROM archive_run");
         control.update("DELETE FROM archive_window");
+        control.update("DELETE FROM archive_index_state");
         control.update("DELETE FROM archive_table");
         control.update("DELETE FROM basket_archive_state");
         control.update("DELETE FROM archive_job");
@@ -116,6 +117,19 @@ class ChunkProcessorDockerTest {
                 "eligible baskets flagged archived");
         assertEquals(
                 1, count("archive_control", "SELECT COUNT(*) FROM archive_run WHERE status = 'DONE'"), "run done");
+        assertEquals(
+                0,
+                count(
+                        "archive_control",
+                        "SELECT COUNT(*) FROM archive_chunk_log WHERE state = 'DONE'"
+                                + " AND (source_checksum IS NULL OR target_checksum IS NULL)"),
+                "checksums recorded for verified copy");
+        assertEquals(
+                0,
+                count(
+                        "archive_control",
+                        "SELECT COUNT(*) FROM archive_chunk_log WHERE source_checksum <> target_checksum"),
+                "source and target checksums match");
 
         // Restart: nothing eligible now → a new run finds zero rows, no duplicates.
         long copiedAgain = runOnce(worklist, processor, control);
@@ -207,6 +221,42 @@ class ChunkProcessorDockerTest {
         assertFalse(
                 scheduler.canStartChunk(LocalDateTime.of(2026, 6, 6, 4, 59, 30), 60_000).allowed(),
                 "estimated chunk exceeds remaining window");
+    }
+
+    @Test
+    void indexManagerDisablesThenRebuildsTargetIndexes() {
+        JdbcTemplate control = controlJdbc();
+        exec("dw", "CREATE INDEX ix_arch_basket ON dbo.Trades_Archive (basket_key)");
+        control.update(
+                "UPDATE archive_table SET disable_target_indexes = 1 WHERE job_name = ? AND source_table = 'Trades'",
+                JOB);
+        IndexManager indexManager = new IndexManager(control, connectionFactory(), props());
+
+        indexManager.disableForJob(JOB);
+        assertEquals(
+                1,
+                count(
+                        "dw",
+                        "SELECT COUNT(*) FROM sys.indexes WHERE object_id = OBJECT_ID('dbo.Trades_Archive')"
+                                + " AND name = 'ix_arch_basket' AND is_disabled = 1"),
+                "non-clustered index disabled before load");
+        assertEquals(
+                1,
+                count("archive_control", "SELECT COUNT(*) FROM archive_index_state WHERE index_name = 'ix_arch_basket'"),
+                "disabled index checkpointed");
+
+        indexManager.rebuildForJob(JOB);
+        assertEquals(
+                0,
+                count(
+                        "dw",
+                        "SELECT COUNT(*) FROM sys.indexes WHERE object_id = OBJECT_ID('dbo.Trades_Archive')"
+                                + " AND name = 'ix_arch_basket' AND is_disabled = 1"),
+                "index rebuilt (re-enabled)");
+        assertEquals(
+                0,
+                count("archive_control", "SELECT COUNT(*) FROM archive_index_state"),
+                "index-state checkpoint cleared after rebuild");
     }
 
     @Test

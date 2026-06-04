@@ -154,10 +154,13 @@ public class ChunkProcessor {
 
     private void checkpointDone(long runId, int chunkNo, String table, MoveResult result, long durationMs) {
         controlJdbc.update(
-                "UPDATE archive_chunk_log SET state = 'DONE', rows_copied = ?, rows_deleted = ?, duration_ms = ?,"
-                        + " updated_at_utc = SYSUTCDATETIME() WHERE run_id = ? AND chunk_no = ? AND source_table = ?",
+                "UPDATE archive_chunk_log SET state = 'DONE', rows_copied = ?, rows_deleted = ?,"
+                        + " source_checksum = ?, target_checksum = ?, duration_ms = ?, updated_at_utc = SYSUTCDATETIME()"
+                        + " WHERE run_id = ? AND chunk_no = ? AND source_table = ?",
                 result.rowsCopied(),
                 result.rowsDeleted(),
+                result.sourceChecksum(),
+                result.targetChecksum(),
                 durationMs,
                 runId,
                 chunkNo,

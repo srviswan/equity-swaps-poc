@@ -159,6 +159,18 @@ CREATE TABLE archive_chunk_log (
 );
 
 -- ---------------------------------------------------------------------------
+-- Indexes the engine has DISABLED on a target table before a bulk load. The row
+-- exists only while the index is disabled; rebuild (success or failure path, and
+-- on restart) re-enables it and clears the row, so leftover rows = work to undo.
+-- ---------------------------------------------------------------------------
+CREATE TABLE archive_index_state (
+    target_table     VARCHAR(256)  NOT NULL,
+    index_name       VARCHAR(256)  NOT NULL,
+    disabled_at_utc  DATETIME2     NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT pk_archive_index_state PRIMARY KEY (target_table, index_name)
+);
+
+-- ---------------------------------------------------------------------------
 -- Audit of automatic (additive) target schema changes.
 -- ---------------------------------------------------------------------------
 CREATE TABLE archive_schema_audit (

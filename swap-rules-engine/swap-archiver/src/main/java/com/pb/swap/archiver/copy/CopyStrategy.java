@@ -60,6 +60,10 @@ public interface CopyStrategy {
         }
     }
 
-    /** Outcome of a move; rows copied to the archive and rows deleted from source for the chunk. */
-    record MoveResult(long rowsCopied, long rowsDeleted) {}
+    /**
+     * Outcome of a move. {@code sourceChecksum}/{@code targetChecksum} are the {@code CHECKSUM_AGG}
+     * over the copied data columns when {@code checksumVerify} is on (else {@code null}); they are
+     * recorded for audit and were compared <em>before</em> the delete was allowed.
+     */
+    record MoveResult(long rowsCopied, long rowsDeleted, Long sourceChecksum, Long targetChecksum) {}
 }

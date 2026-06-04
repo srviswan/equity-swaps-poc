@@ -536,7 +536,15 @@ One fat jar. Criteria/table changes are data, not deploys.
    is unreadable / not an AG) and pauses on pressure; `WindowScheduler` gates each chunk on the
    per-day `archive_window` and stops cleanly when the window closes. Crash-reclaim of `IN_PROGRESS`
    chunks on restart.
-4. **Index management + verification/checksums**.
+4. **Index management + verification/checksums**. ✅ — optional per-table `disable_target_indexes`
+   disables the *target's* plain non-clustered indexes before the load and rebuilds them after, on
+   every exit path (success, halt, failure) and on restart, via the checkpointed
+   `archive_index_state` table (leftover rows = indexes still to rebuild; PK/unique-constraint and
+   clustered indexes are never touched). When `checksum_verify` is on, each chunk computes an
+   order-independent `CHECKSUM_AGG(CHECKSUM(<data cols>))` over the source slice and the
+   just-inserted target slice and requires them to match **before** the delete is allowed (skipped
+   when a restart re-runs an already-moved chunk, i.e. `rowsCopied = 0`); both checksums are
+   persisted to `archive_chunk_log` for audit. Index disable/rebuild runs only when there is work.
 5. **Cross-DB + cross-server (`SQLServerBulkCopy`)**.
 6. **Multi-table orchestration + FK ordering (all 20) + `BasketArchiveState` build**.
 7. **Stats/plan post-steps + observability (Prometheus) + alerting + restore**.
