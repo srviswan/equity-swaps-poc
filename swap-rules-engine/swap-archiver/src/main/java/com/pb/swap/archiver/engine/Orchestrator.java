@@ -51,10 +51,30 @@ public class Orchestrator {
     public int run() {
         String mode = props.mode() == null ? "ARCHIVE" : props.mode().toUpperCase();
         log.info("Orchestrator mode={}", mode);
-        // TODO(phase 1+): wire the flow described in the class javadoc. Skeleton returns success so
-        // the application context boots; real behaviour is implemented per phase.
+
+        // Phase 1: always run pre-flight first. It gates every mode.
+        PreflightReport report = preflight.validate();
+        log.info("\n{}", report.render());
+        if (!report.ok()) {
+            log.error("Pre-flight failed; aborting before any data operation.");
+            return 2;
+        }
+
         return switch (mode) {
-            case "ARCHIVE", "DRY_RUN", "RESTORE" -> 0;
+            case "DRY_RUN" -> {
+                log.info("DRY_RUN: pre-flight passed; no data changes performed.");
+                yield 0;
+            }
+            case "ARCHIVE" -> {
+                // TODO(phase 2+): refresh basket state, build/resume worklist, process chunks.
+                log.info("ARCHIVE: pre-flight passed; archival loop not yet implemented (phase 2+).");
+                yield 0;
+            }
+            case "RESTORE" -> {
+                // TODO(phase 7): reverse pipeline into the investigation DB.
+                log.info("RESTORE: pre-flight passed; restore not yet implemented (phase 7).");
+                yield 0;
+            }
             default -> throw new IllegalArgumentException("Unknown mode: " + mode);
         };
     }

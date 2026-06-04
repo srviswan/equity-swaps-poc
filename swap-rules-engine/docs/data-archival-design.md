@@ -456,7 +456,7 @@ are the limiters, not the engine. **Measure on the 1 TB table first** before com
 swap-archiver/
 ├── pom.xml
 ├── src/main/resources/
-│   ├── application-archiver.yml          # runtime knobs only
+│   ├── application.yml                    # runtime knobs only
 │   └── db/archive/V001__archive_control.sql
 └── src/main/java/com/pb/swap/archiver/
     ├── ArchiverApplication.java          # CLI entrypoint

@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: swap-archiver
+  main:
+    web-application-type: none        # CLI batch job, no web server
+
+  # --- Control DB: holds the archive.* control tables; Flyway + JdbcTemplate target. ---
+  # Dev defaults point at the Docker SQL Server (see docker-compose.yml). For prod, override the
+  # URL with Kerberos params (authenticationScheme=JavaKerberos) and drop username/password.
+  datasource:
+    url: jdbc:sqlserver://${CTL_HOST:localhost}:${CTL_PORT:1433};databaseName=${CTL_DB:archive_control};encrypt=false;trustServerCertificate=true
+    username: ${CTL_USER:sa}
+    password: ${CTL_PASSWORD:Swap_rules_1!}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  flyway:
+    enabled: true
+    locations: classpath:db/archive
+    default-schema: dbo
+
+archiver:
+  job-name: ${ARCHIVER_JOB:basket-archive}
+  mode: ${ARCHIVER_MODE:DRY_RUN}      # ARCHIVE | RESTORE | DRY_RUN
+  as-of-date: ${ARCHIVER_AS_OF:}      # defaults to today when blank
+
+  # --- Source DW (prod: FULL recovery, Availability Group, Kerberos) ---
+  source:
+    url: jdbc:sqlserver://${SRC_HOST:localhost}:${SRC_PORT:1433};databaseName=${SRC_DB:dw};encrypt=false;trustServerCertificate=true
+    auth: ${SRC_AUTH:sql}             # prod: kerberos
+    credential:
+      provider: ${SRC_CRED:env}       # prod: ambient-kerberos
+      keytab: ${SRC_KEYTAB:}
+      env:
+        username: ${SRC_USER:sa}
+        password: ${SRC_PASSWORD:Swap_rules_1!}
+
+  # --- Archive target (recommend SIMPLE recovery, outside the AG) ---
+  target:
+    url: jdbc:sqlserver://${TGT_HOST:localhost}:${TGT_PORT:1433};databaseName=${TGT_DB:archive};encrypt=false;trustServerCertificate=true
+    auth: ${TGT_AUTH:sql}             # prod phase B/C: sql via CyberArk
+    credential:
+      provider: ${TGT_CRED:env}       # prod: cyberark-ccp
+      env:
+        username: ${TGT_USER:sa}
+        password: ${TGT_PASSWORD:Swap_rules_1!}
+      cyberark:
+        base-url: ${CCP_URL:}
+        app-id: SWAP_ARCHIVER
+        safe: ${CCP_SAFE:}
+        object-name: ${CCP_OBJECT:}
+        client-cert-alias: archiver-mtls
+        cache-ttl-seconds: 300
+
+  # --- Restore (investigations) ---
+  restore:
+    target-db: ${RESTORE_DB:archive_investigation}
+    allow-restore-to-source: false
+
+  # --- Throttling / pacing ---
+  throttle:
+    target-chunk-millis: 30000
+    poll-pause-millis: 5000
+
+logging:
+  level:
+    com.pb.swap.archiver: INFO

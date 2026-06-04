@@ -24,7 +24,13 @@ public record ArchiverProperties(
 
     /** How to obtain credentials for an endpoint. */
     public record Credential(
-            @DefaultValue("ambient-kerberos") String provider, String keytab, CyberArk cyberark) {}
+            @DefaultValue("ambient-kerberos") String provider,
+            String keytab,
+            CyberArk cyberark,
+            Env env) {}
+
+    /** Plain username/password from config/env. Dev and CI only — never production secrets. */
+    public record Env(String username, String password) {}
 
     /** CyberArk Central Credential Provider (REST) settings; used only for SQL auth. */
     public record CyberArk(
