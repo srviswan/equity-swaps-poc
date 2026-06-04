@@ -20,6 +20,7 @@
         <module>swap-rules-jmh</module>
         <module>swap-rules-loadtest</module>
         <module>swap-rules-archtest</module>
+        <module>swap-archiver</module>
     </modules>
 
     <properties>
