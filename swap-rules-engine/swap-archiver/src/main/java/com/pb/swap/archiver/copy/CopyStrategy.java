@@ -44,14 +44,25 @@ public interface CopyStrategy {
             List<Long> basketKeys,
             String priorState) {}
 
-    /** Per-table archival configuration resolved from {@code archive_table}. */
+    /**
+     * Per-table archival configuration resolved from {@code archive_table}.
+     *
+     * <p>{@code joinColumns} are the source columns this table matches against the per-chunk key set.
+     * For {@code DIRECT} the fact carries the basket key (one column, any name). For {@code BRIDGE}
+     * the fact is keyed by something else (e.g. {@code swap_key}); eligible baskets are resolved to
+     * this fact's keys through {@code bridgeTable(bridgeBasketColumn → bridgeJoinColumns)} and then
+     * the fact joins on its own {@code joinColumns} (arity must match {@code bridgeJoinColumns}).
+     */
     record TableConfig(
             String sourceSchema,
             String sourceTable,
             String targetSchema,
             String targetTable,
-            String keyColumn,
+            List<String> joinColumns,
             String keyResolution,
+            String bridgeTable,
+            String bridgeBasketColumn,
+            List<String> bridgeJoinColumns,
             String topology,
             int dependencyLevel,
             boolean checksumVerify) {
@@ -62,6 +73,10 @@ public interface CopyStrategy {
 
         public String targetName() {
             return targetSchema + "." + targetTable;
+        }
+
+        public boolean isBridge() {
+            return "BRIDGE".equalsIgnoreCase(keyResolution);
         }
     }
 

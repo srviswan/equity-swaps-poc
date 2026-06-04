@@ -62,13 +62,14 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
                 Connection tgt = ctx.connections().open(ctx.props().target())) {
             src.setAutoCommit(true);
             tgt.setAutoCommit(true);
-            String keyType = SameDbCopyStrategy.columnTypeDdl(src, t.sourceSchema(), t.sourceTable(), t.keyColumn());
+            ChunkKeys keys = new ChunkKeys(t, ctx.basketKeys());
+            keys.resolveOnSource(src);
 
             // Resume: the target is already verified (COPIED). Only finish the source delete; never
             // re-clean or re-copy, which would destroy the trusted archive copy.
             if ("COPIED".equals(ctx.priorState())) {
-                stageKeys(src, ctx, t.keyColumn(), keyType);
-                long deleted = deleteSource(src, ctx, t, srcName);
+                keys.stage(src);
+                long deleted = deleteSource(src, ctx, srcName, keys);
                 long copied = readRowsCopied(ctx);
                 log.info(
                         "CROSS_SERVER chunk {} table {} resume@COPIED: deleted {} source row(s)",
@@ -78,8 +79,10 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
 
             Set<String> srcCols = SameDbCopyStrategy.columns(src, null, t.sourceSchema(), t.sourceTable());
             Set<String> tgtCols = SameDbCopyStrategy.columns(tgt, null, t.targetSchema(), t.targetTable());
-            if (!srcCols.stream().anyMatch(c -> c.equalsIgnoreCase(t.keyColumn()))) {
-                throw new SQLException("key column '" + t.keyColumn() + "' not found on " + t.sourceName());
+            for (String jc : t.joinColumns()) {
+                if (!srcCols.stream().anyMatch(c -> c.equalsIgnoreCase(jc))) {
+                    throw new SQLException("join column '" + jc + "' not found on " + t.sourceName());
+                }
             }
             List<String> dataColumns = SameDbCopyStrategy.dataColumns(srcCols, tgtCols);
             if (dataColumns.isEmpty()) {
@@ -88,14 +91,14 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
             List<String> lineageColumns = SameDbCopyStrategy.lineageColumns(srcCols, tgtCols);
             boolean hasBatchLineage = lineageColumns.contains("archive_batch_id");
 
-            stageKeys(src, ctx, t.keyColumn(), keyType);
-            stageKeys(tgt, ctx, t.keyColumn(), keyType);
+            keys.stage(src);
+            keys.stage(tgt);
 
-            cleanupTarget(tgt, ctx, t, tgtName, hasBatchLineage);
+            cleanupTarget(tgt, ctx, tgtName, hasBatchLineage, keys);
 
-            long srcCount = countJoined(src, ctx, t, srcName, false, false);
-            bulkCopy(src, tgt, ctx, t, tgtName, dataColumns, lineageColumns);
-            long tgtCount = countJoined(tgt, ctx, t, tgtName, true, hasBatchLineage);
+            long srcCount = countJoined(src, ctx, srcName, false, false, keys);
+            bulkCopy(src, tgt, ctx, t, tgtName, dataColumns, lineageColumns, keys);
+            long tgtCount = countJoined(tgt, ctx, tgtName, true, hasBatchLineage, keys);
             if (srcCount != tgtCount) {
                 throw new SQLException(
                         "cross-server row mismatch on " + t.sourceName() + ": source=" + srcCount
@@ -105,8 +108,8 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
             Long sourceChecksum = null;
             Long targetChecksum = null;
             if (t.checksumVerify() && srcCount > 0) {
-                sourceChecksum = checksum(src, ctx, t, dataColumns, srcName, false, false);
-                targetChecksum = checksum(tgt, ctx, t, dataColumns, tgtName, true, hasBatchLineage);
+                sourceChecksum = checksum(src, ctx, dataColumns, srcName, false, false, keys);
+                targetChecksum = checksum(tgt, ctx, dataColumns, tgtName, true, hasBatchLineage, keys);
                 if (!Objects.equals(sourceChecksum, targetChecksum)) {
                     throw new SQLException(
                             "cross-server checksum mismatch on " + t.sourceName() + ": source=" + sourceChecksum
@@ -118,7 +121,7 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
             // via the delete-only branch above instead of re-copying.
             markCopied(ctx, srcCount, sourceChecksum, targetChecksum);
 
-            long rowsDeleted = deleteSource(src, ctx, t, srcName);
+            long rowsDeleted = deleteSource(src, ctx, srcName, keys);
             log.info(
                     "CROSS_SERVER chunk {} table {} copied {} / deleted {} row(s)",
                     ctx.chunkNo(), t.sourceName(), srcCount, rowsDeleted);
@@ -126,26 +129,11 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
         }
     }
 
-    private void stageKeys(Connection conn, MoveContext ctx, String keyColumn, String keyType) throws SQLException {
-        try (Statement st = conn.createStatement()) {
-            st.execute("IF OBJECT_ID('tempdb..#archive_keys') IS NOT NULL DROP TABLE #archive_keys");
-            st.execute("CREATE TABLE #archive_keys (" + q(keyColumn) + " " + keyType + " NOT NULL PRIMARY KEY)");
-        }
-        try (PreparedStatement ps =
-                conn.prepareStatement("INSERT INTO #archive_keys (" + q(keyColumn) + ") VALUES (?)")) {
-            for (Long key : ctx.basketKeys()) {
-                ps.setLong(1, key);
-                ps.addBatch();
-            }
-            ps.executeBatch();
-        }
-    }
-
-    private void cleanupTarget(Connection tgt, MoveContext ctx, TableConfig t, String tgtName, boolean byBatch)
+    private void cleanupTarget(Connection tgt, MoveContext ctx, String tgtName, boolean byBatch, ChunkKeys keys)
             throws SQLException {
         String sql =
-                "DELETE x FROM " + tgtName + " x JOIN #archive_keys k ON x." + q(t.keyColumn()) + " = k."
-                        + q(t.keyColumn()) + (byBatch ? " WHERE x." + q("archive_batch_id") + " = ?" : "");
+                "DELETE x FROM " + tgtName + " x" + keys.joinClause("x")
+                        + (byBatch ? " WHERE x." + q("archive_batch_id") + " = ?" : "");
         try (PreparedStatement ps = tgt.prepareStatement(sql)) {
             if (byBatch) {
                 ps.setLong(1, ctx.runId());
@@ -166,7 +154,8 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
             TableConfig t,
             String tgtName,
             List<String> dataColumns,
-            List<String> lineageColumns)
+            List<String> lineageColumns,
+            ChunkKeys keys)
             throws SQLException {
         StringBuilder select = new StringBuilder();
         for (String c : dataColumns) {
@@ -182,7 +171,7 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
         }
         String sql =
                 "SELECT " + select + " FROM " + SameDbCopyStrategy.qName(t.sourceSchema(), t.sourceTable())
-                        + " s JOIN #archive_keys k ON s." + q(t.keyColumn()) + " = k." + q(t.keyColumn());
+                        + " s" + keys.joinClause("s");
         try (PreparedStatement ps = src.prepareStatement(sql)) {
             ctx.stop().register(ps);
             try (ResultSet rs = ps.executeQuery();
@@ -206,11 +195,10 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
     }
 
     private long countJoined(
-            Connection conn, MoveContext ctx, TableConfig t, String tableName, boolean target, boolean byBatch)
+            Connection conn, MoveContext ctx, String tableName, boolean target, boolean byBatch, ChunkKeys keys)
             throws SQLException {
         String sql =
-                "SELECT COUNT_BIG(*) FROM " + tableName + " x JOIN #archive_keys k ON x." + q(t.keyColumn())
-                        + " = k." + q(t.keyColumn())
+                "SELECT COUNT_BIG(*) FROM " + tableName + " x" + keys.joinClause("x")
                         + (target && byBatch ? " WHERE x." + q("archive_batch_id") + " = ?" : "");
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (target && byBatch) {
@@ -225,11 +213,11 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
     private Long checksum(
             Connection conn,
             MoveContext ctx,
-            TableConfig t,
             List<String> dataColumns,
             String tableName,
             boolean target,
-            boolean byBatch)
+            boolean byBatch,
+            ChunkKeys keys)
             throws SQLException {
         StringBuilder cols = new StringBuilder();
         for (String c : dataColumns) {
@@ -240,8 +228,7 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
         }
         boolean filterByBatch = target && byBatch;
         String sql =
-                "SELECT CHECKSUM_AGG(CHECKSUM(" + cols + ")) FROM " + tableName + " x JOIN #archive_keys k ON x."
-                        + q(t.keyColumn()) + " = k." + q(t.keyColumn())
+                "SELECT CHECKSUM_AGG(CHECKSUM(" + cols + ")) FROM " + tableName + " x" + keys.joinClause("x")
                         + (filterByBatch ? " WHERE x." + q("archive_batch_id") + " = ?" : "");
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (filterByBatch) {
@@ -254,10 +241,8 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
         }
     }
 
-    private long deleteSource(Connection src, MoveContext ctx, TableConfig t, String srcName) throws SQLException {
-        String sql =
-                "DELETE s FROM " + srcName + " s JOIN #archive_keys k ON s." + q(t.keyColumn()) + " = k."
-                        + q(t.keyColumn());
+    private long deleteSource(Connection src, MoveContext ctx, String srcName, ChunkKeys keys) throws SQLException {
+        String sql = "DELETE s FROM " + srcName + " s" + keys.joinClause("s");
         try (PreparedStatement ps = src.prepareStatement(sql)) {
             ctx.stop().register(ps);
             try {

@@ -380,6 +380,100 @@ class ChunkProcessorDockerTest {
     }
 
     @Test
+    void multiTableDirectAndBridgeArchive() {
+        JdbcTemplate control = controlJdbc();
+        // Parent fact carries the basket key (DIRECT); child fact is keyed by swap_key and resolves
+        // eligible baskets through a DimSwap bridge (BRIDGE). Both move the same basket set per chunk.
+        exec("dw", "DROP TABLE IF EXISTS dbo.Swaps");
+        exec("dw", "DROP TABLE IF EXISTS dbo.Swaps_Archive");
+        exec("dw", "DROP TABLE IF EXISTS dbo.Positions");
+        exec("dw", "DROP TABLE IF EXISTS dbo.Positions_Archive");
+        exec("dw", "DROP TABLE IF EXISTS dbo.DimSwap");
+        exec("dw", "CREATE TABLE dbo.Swaps (swap_id INT PRIMARY KEY, basket_key BIGINT NOT NULL, notional INT)");
+        exec("dw", "CREATE INDEX ix_swaps_basket ON dbo.Swaps (basket_key)");
+        exec(
+                "dw",
+                "CREATE TABLE dbo.Swaps_Archive (swap_id INT, basket_key BIGINT, notional INT,"
+                        + " archive_batch_id BIGINT, archived_at_utc DATETIME2, archived_period_key INT)");
+        exec("dw", "CREATE TABLE dbo.Positions (position_id INT PRIMARY KEY, swap_key BIGINT NOT NULL, qty INT)");
+        exec("dw", "CREATE INDEX ix_pos_swap ON dbo.Positions (swap_key)");
+        exec(
+                "dw",
+                "CREATE TABLE dbo.Positions_Archive (position_id INT, swap_key BIGINT, qty INT,"
+                        + " archive_batch_id BIGINT, archived_at_utc DATETIME2, archived_period_key INT)");
+        exec("dw", "CREATE TABLE dbo.DimSwap (swap_key BIGINT PRIMARY KEY, basket_key BIGINT NOT NULL)");
+        exec("dw", "CREATE INDEX ix_dimswap_basket ON dbo.DimSwap (basket_key)");
+        exec("dw", "INSERT INTO dbo.Swaps VALUES (1,100,10),(2,100,20),(3,101,30),(4,200,40)");
+        exec("dw", "INSERT INTO dbo.DimSwap VALUES (1000,100),(1001,100),(1002,101),(1003,200)");
+        exec("dw", "INSERT INTO dbo.Positions VALUES (1,1000,5),(2,1001,6),(3,1002,7),(4,1003,8)");
+
+        control.update("DELETE FROM archive_table WHERE job_name = ?", JOB);
+        control.update(
+                "INSERT INTO archive_table (job_name, source_schema, source_table, target_schema, target_table,"
+                        + " dependency_level, join_columns, key_resolution, copy_strategy)"
+                        + " VALUES (?, 'dbo','Swaps','dbo','Swaps_Archive', 0, 'basket_key', 'DIRECT', 'SAME_DB')",
+                JOB);
+        control.update(
+                "INSERT INTO archive_table (job_name, source_schema, source_table, target_schema, target_table,"
+                        + " dependency_level, join_columns, key_resolution, bridge_table, bridge_basket_column,"
+                        + " bridge_join_columns, copy_strategy)"
+                        + " VALUES (?, 'dbo','Positions','dbo','Positions_Archive', 1, 'swap_key', 'BRIDGE',"
+                        + " 'dbo.DimSwap', 'basket_key', 'swap_key', 'SAME_DB')",
+                JOB);
+
+        long copied = runOnce(new WorklistProvider(control), newProcessor(control), control);
+
+        assertEquals(6, copied, "3 swaps (DIRECT) + 3 positions (BRIDGE) for eligible baskets 100/101");
+        assertEquals(3, count("dw", "SELECT COUNT(*) FROM dbo.Swaps_Archive"), "parent rows archived");
+        assertEquals(1, count("dw", "SELECT COUNT(*) FROM dbo.Swaps WHERE basket_key = 200"), "active basket stays");
+        assertEquals(3, count("dw", "SELECT COUNT(*) FROM dbo.Positions_Archive"), "child rows resolved via bridge");
+        assertEquals(
+                1,
+                count("dw", "SELECT COUNT(*) FROM dbo.Positions WHERE swap_key = 1003"),
+                "position for active basket's swap stays");
+        assertEquals(
+                0,
+                count("dw", "SELECT COUNT(*) FROM dbo.Positions_Archive WHERE archive_batch_id IS NULL"),
+                "bridge-resolved rows carry lineage");
+    }
+
+    @Test
+    void basketStateRefreshClassifiesFromSourceDimension() {
+        JdbcTemplate control = controlJdbc();
+        exec("dw", "DROP TABLE IF EXISTS dbo.DimBasket");
+        exec(
+                "dw",
+                "CREATE TABLE dbo.DimBasket (basket_key BIGINT PRIMARY KEY, status VARCHAR(16), termination_date DATE)");
+        exec(
+                "dw",
+                "INSERT INTO dbo.DimBasket VALUES (300,'TERMINATED','2021-01-01'),(301,'TERMINATED',NULL),"
+                        + "(302,'ACTIVE',NULL)");
+        control.update(
+                "UPDATE archive_job SET basket_source_table = 'dbo.DimBasket', basket_key_column = 'basket_key',"
+                        + " basket_status_column = 'status', basket_termination_column = 'termination_date',"
+                        + " basket_terminated_value = 'TERMINATED' WHERE job_name = ?",
+                JOB);
+        control.update("DELETE FROM basket_archive_state");
+
+        BasketStateRefresher refresher = new BasketStateRefresher(control, connectionFactory(), props());
+        int n = refresher.refresh(JOB);
+
+        assertEquals(3, n, "all DimBasket rows upserted");
+        assertEquals(
+                "TERMINATED",
+                control.queryForObject("SELECT status FROM basket_archive_state WHERE basket_key = 300", String.class),
+                "terminated with date");
+        assertEquals(
+                "NEEDS_REVIEW",
+                control.queryForObject("SELECT status FROM basket_archive_state WHERE basket_key = 301", String.class),
+                "terminated but undated is quarantined");
+        assertEquals(
+                "ACTIVE",
+                control.queryForObject("SELECT status FROM basket_archive_state WHERE basket_key = 302", String.class),
+                "still live");
+    }
+
+    @Test
     void monitorSampleReadsDmvs() {
         LogAndAgMonitor monitor = new LogAndAgMonitor(connectionFactory(), props());
         LogAndAgMonitor.Reading reading = monitor.sample();

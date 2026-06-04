@@ -555,7 +555,17 @@ One fat jar. Criteria/table changes are data, not deploys.
    verifies target row-count (+ optional `CHECKSUM_AGG`) against the source slice, persists the
    `COPIED` checkpoint, then deletes the source. A crash after `COPIED` resumes via a delete-only
    branch so the verified archive is never re-cleaned or re-copied (no data loss, no duplicates).
-6. **Multi-table orchestration + FK ordering (all 20) + `BasketArchiveState` build**.
+6. **Multi-table orchestration + FK ordering (all 20) + `BasketArchiveState` build**. ✅ — each chunk
+   moves the same eligible-basket set across every in-scope table in `dependency_level` order
+   (children → parents). A shared `ChunkKeys` helper stages the per-chunk key set into an indexed
+   `#archive_keys` temp table and builds the seekable join for both resolutions: **DIRECT** (the fact
+   carries the basket key) and **BRIDGE** (a fact keyed by e.g. `swap_key` resolves eligible baskets
+   to its own keys through a mapping table with `DISTINCT`, then joins on its own `join_columns`).
+   Pre-flight now also fails a BRIDGE table whose bridge mapping isn't indexed on its basket column.
+   `BasketStateRefresher` builds `basket_archive_state` from a configured source dimension
+   (e.g. `DimBasket`), classifying TERMINATED / NEEDS_REVIEW (terminated but undated) / ACTIVE and
+   never overwriting already-archived baskets; the Orchestrator refreshes it before selecting each
+   run's worklist.
 7. **Stats/plan post-steps + observability (Prometheus) + alerting + restore**.
 8. **Perf test on the 1 TB table, dry-run, staged prod rollout**.
 

@@ -99,31 +99,58 @@ public class ChunkProcessor {
     private List<TableConfig> loadTables(String jobName) {
         return controlJdbc.query(
                 "SELECT source_schema, source_table, target_schema, target_table, join_columns, key_resolution,"
-                        + " copy_strategy, dependency_level, checksum_verify FROM archive_table"
-                        + " WHERE job_name = ? AND enabled = 1 ORDER BY dependency_level DESC",
+                        + " bridge_table, bridge_basket_column, bridge_join_columns, copy_strategy, dependency_level,"
+                        + " checksum_verify FROM archive_table WHERE job_name = ? AND enabled = 1"
+                        + " ORDER BY dependency_level DESC",
                 (rs, i) -> {
-                    String joinColumns = rs.getString("join_columns");
                     String keyResolution = rs.getString("key_resolution");
-                    List<String> cols =
-                            Arrays.stream(joinColumns.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
-                    if (!"DIRECT".equalsIgnoreCase(keyResolution) || cols.size() != 1) {
+                    List<String> joinCols = splitColumns(rs.getString("join_columns"));
+                    String table = rs.getString("source_table");
+                    List<String> bridgeCols = splitColumns(rs.getString("bridge_join_columns"));
+                    if ("DIRECT".equalsIgnoreCase(keyResolution)) {
+                        if (joinCols.size() != 1) {
+                            throw new UnsupportedOperationException(
+                                    "DIRECT requires exactly one basket key column (the worklist is basket-grain);"
+                                            + " got " + joinCols + " on " + table + " — use BRIDGE for composite keys");
+                        }
+                    } else if ("BRIDGE".equalsIgnoreCase(keyResolution)) {
+                        if (rs.getString("bridge_table") == null
+                                || rs.getString("bridge_basket_column") == null
+                                || bridgeCols.isEmpty()) {
+                            throw new IllegalStateException(
+                                    "BRIDGE on " + table + " needs bridge_table, bridge_basket_column, bridge_join_columns");
+                        }
+                        if (bridgeCols.size() != joinCols.size()) {
+                            throw new IllegalStateException(
+                                    "BRIDGE on " + table + ": join_columns " + joinCols
+                                            + " and bridge_join_columns " + bridgeCols + " must have equal arity");
+                        }
+                    } else {
                         throw new UnsupportedOperationException(
-                                "only DIRECT single-column join is supported so far; got "
-                                        + keyResolution + " " + cols + " on " + rs.getString("source_table")
-                                        + " (BRIDGE/composite is phase 6)");
+                                "unknown key_resolution '" + keyResolution + "' on " + table);
                     }
                     return new TableConfig(
                             rs.getString("source_schema"),
                             rs.getString("source_table"),
                             rs.getString("target_schema"),
                             rs.getString("target_table"),
-                            cols.get(0),
+                            joinCols,
                             keyResolution,
+                            rs.getString("bridge_table"),
+                            rs.getString("bridge_basket_column"),
+                            bridgeCols,
                             rs.getString("copy_strategy"),
                             rs.getInt("dependency_level"),
                             rs.getBoolean("checksum_verify"));
                 },
                 jobName);
+    }
+
+    private static List<String> splitColumns(String csv) {
+        if (csv == null) {
+            return List.of();
+        }
+        return Arrays.stream(csv.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
     }
 
     /** Last recorded state for this table+chunk, or {@code null} if it has never started. */

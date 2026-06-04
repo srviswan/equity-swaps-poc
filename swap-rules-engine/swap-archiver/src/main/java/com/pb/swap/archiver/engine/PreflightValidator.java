@@ -74,8 +74,9 @@ public class PreflightValidator {
         try {
             List<Map<String, Object>> rows =
                     controlJdbc.queryForList(
-                            "SELECT source_schema, source_table, target_schema, target_table, join_columns "
-                                    + "FROM archive_table WHERE job_name = ? AND enabled = 1",
+                            "SELECT source_schema, source_table, target_schema, target_table, join_columns,"
+                                    + " key_resolution, bridge_table, bridge_basket_column"
+                                    + " FROM archive_table WHERE job_name = ? AND enabled = 1",
                             props.jobName());
             report.pass("control.config", rows.size() + " table(s) configured for job " + props.jobName());
             return rows;
@@ -245,6 +246,44 @@ public class PreflightValidator {
             } catch (SQLException e) {
                 report.warn(name, err(e));
             }
+            checkBridgeIndex(report, source, t);
+        }
+    }
+
+    /**
+     * BRIDGE tables resolve eligible baskets to their own keys through a mapping table; that bridge
+     * must be indexed on its basket column, else the per-chunk resolution scans the mapping table.
+     */
+    private void checkBridgeIndex(PreflightReport report, Connection source, Map<String, Object> t) {
+        if (!"BRIDGE".equalsIgnoreCase(String.valueOf(t.get("key_resolution")))) {
+            return;
+        }
+        String bridge = String.valueOf(t.get("bridge_table"));
+        String basketCol = String.valueOf(t.get("bridge_basket_column"));
+        String name = "source.bridge_index(" + bridge + ")";
+        if ("null".equals(bridge) || "null".equals(basketCol)) {
+            report.fail(name, "BRIDGE table missing bridge_table/bridge_basket_column config");
+            return;
+        }
+        String[] parts = bridge.split("\\.", 2);
+        String bSchema = parts.length == 2 ? parts[0] : "dbo";
+        String bTable = parts.length == 2 ? parts[1] : parts[0];
+        try {
+            if (connections.scalar(source, "SELECT OBJECT_ID('" + bSchema + "." + bTable + "')") == null) {
+                report.warn(name, "bridge table missing; index check deferred");
+                return;
+            }
+            List<String> basketCols = List.of(basketCol.toLowerCase());
+            boolean supported =
+                    leadingKeyColumns(source, bSchema, bTable).values().stream()
+                            .anyMatch(keys -> leadingCovers(keys, basketCols));
+            if (supported) {
+                report.pass(name, "bridge indexed on " + basketCol);
+            } else {
+                report.fail(name, "no index leads with " + basketCol + "; basket→key resolution would scan");
+            }
+        } catch (SQLException e) {
+            report.warn(name, err(e));
         }
     }
 

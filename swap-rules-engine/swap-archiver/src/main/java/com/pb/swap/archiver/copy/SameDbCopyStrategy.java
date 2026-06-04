@@ -59,8 +59,10 @@ public class SameDbCopyStrategy implements CopyStrategy {
 
             Set<String> srcCols = columns(conn, null, t.sourceSchema(), t.sourceTable());
             Set<String> tgtCols = columns(conn, targetDb, t.targetSchema(), t.targetTable());
-            if (!containsIgnoreCase(srcCols, t.keyColumn())) {
-                throw new SQLException("key column '" + t.keyColumn() + "' not found on " + t.sourceName());
+            for (String jc : t.joinColumns()) {
+                if (!containsIgnoreCase(srcCols, jc)) {
+                    throw new SQLException("join column '" + jc + "' not found on " + t.sourceName());
+                }
             }
             List<String> dataColumns = dataColumns(srcCols, tgtCols);
             if (dataColumns.isEmpty()) {
@@ -68,9 +70,11 @@ public class SameDbCopyStrategy implements CopyStrategy {
             }
             List<String> lineageColumns = lineageColumns(srcCols, tgtCols);
 
-            stageKeys(conn, ctx, t.keyColumn());
+            ChunkKeys keys = new ChunkKeys(t, ctx.basketKeys());
+            keys.resolveOnSource(conn);
+            keys.stage(conn);
 
-            long rowsCopied = insertSelect(conn, ctx, t, targetDb, dataColumns, lineageColumns);
+            long rowsCopied = insertSelect(conn, ctx, t, targetDb, dataColumns, lineageColumns, keys);
 
             // Content verification BEFORE the delete: a column-aware CHECKSUM_AGG over the source
             // slice must equal the just-inserted target slice, so we never delete an imperfect copy.
@@ -80,8 +84,8 @@ public class SameDbCopyStrategy implements CopyStrategy {
             Long sourceChecksum = null;
             Long targetChecksum = null;
             if (t.checksumVerify() && rowsCopied > 0) {
-                sourceChecksum = checksum(conn, ctx, t, null, dataColumns, false, hasBatchLineage);
-                targetChecksum = checksum(conn, ctx, t, targetDb, dataColumns, true, hasBatchLineage);
+                sourceChecksum = checksum(conn, ctx, t, null, dataColumns, false, hasBatchLineage, keys);
+                targetChecksum = checksum(conn, ctx, t, targetDb, dataColumns, true, hasBatchLineage, keys);
                 if (!java.util.Objects.equals(sourceChecksum, targetChecksum)) {
                     throw new SQLException(
                             "checksum mismatch on " + t.sourceName() + ": source=" + sourceChecksum
@@ -89,7 +93,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
                 }
             }
 
-            long rowsDeleted = deleteSource(conn, ctx, t);
+            long rowsDeleted = deleteSource(conn, ctx, t, keys);
             if (rowsCopied != rowsDeleted) {
                 throw new SQLException(
                         "row mismatch on " + t.sourceName() + ": copied=" + rowsCopied + " deleted=" + rowsDeleted);
@@ -108,31 +112,14 @@ public class SameDbCopyStrategy implements CopyStrategy {
         }
     }
 
-    /** Stage the chunk's basket keys into an indexed temp table for seekable joins. */
-    private void stageKeys(Connection conn, MoveContext ctx, String keyColumn) throws SQLException {
-        String keyType = columnTypeDdl(conn, ctx.table().sourceSchema(), ctx.table().sourceTable(), keyColumn);
-        try (Statement st = conn.createStatement()) {
-            st.execute("IF OBJECT_ID('tempdb..#archive_keys') IS NOT NULL DROP TABLE #archive_keys");
-            st.execute(
-                    "CREATE TABLE #archive_keys (" + q(keyColumn) + " " + keyType + " NOT NULL PRIMARY KEY)");
-        }
-        try (PreparedStatement ps =
-                conn.prepareStatement("INSERT INTO #archive_keys (" + q(keyColumn) + ") VALUES (?)")) {
-            for (Long key : ctx.basketKeys()) {
-                ps.setLong(1, key);
-                ps.addBatch();
-            }
-            ps.executeBatch();
-        }
-    }
-
     private long insertSelect(
             Connection conn,
             MoveContext ctx,
             TableConfig t,
             String targetDb,
             List<String> dataColumns,
-            List<String> lineageColumns)
+            List<String> lineageColumns,
+            ChunkKeys keys)
             throws SQLException {
         StringBuilder cols = new StringBuilder();
         StringBuilder exprs = new StringBuilder();
@@ -158,8 +145,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
         }
         String sql =
                 "INSERT INTO " + qName(targetDb, t.targetSchema(), t.targetTable()) + " (" + cols + ") SELECT " + exprs
-                        + " FROM " + qName(t.sourceSchema(), t.sourceTable()) + " s "
-                        + "JOIN #archive_keys k ON s." + q(t.keyColumn()) + " = k." + q(t.keyColumn());
+                        + " FROM " + qName(t.sourceSchema(), t.sourceTable()) + " s" + keys.joinClause("s");
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             for (int i = 0; i < binds.size(); i++) {
                 ps.setObject(i + 1, binds.get(i));
@@ -180,7 +166,8 @@ public class SameDbCopyStrategy implements CopyStrategy {
             String targetDb,
             List<String> dataColumns,
             boolean target,
-            boolean hasBatchLineage)
+            boolean hasBatchLineage,
+            ChunkKeys keys)
             throws SQLException {
         StringBuilder cols = new StringBuilder();
         for (String c : dataColumns) {
@@ -193,8 +180,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
                 target ? qName(targetDb, t.targetSchema(), t.targetTable()) : qName(t.sourceSchema(), t.sourceTable());
         boolean filterByBatch = target && hasBatchLineage;
         String sql =
-                "SELECT CHECKSUM_AGG(CHECKSUM(" + cols + ")) FROM " + tableName + " x JOIN #archive_keys k ON x."
-                        + q(t.keyColumn()) + " = k." + q(t.keyColumn())
+                "SELECT CHECKSUM_AGG(CHECKSUM(" + cols + ")) FROM " + tableName + " x" + keys.joinClause("x")
                         + (filterByBatch ? " WHERE x." + q("archive_batch_id") + " = ?" : "");
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (filterByBatch) {
@@ -210,10 +196,8 @@ public class SameDbCopyStrategy implements CopyStrategy {
         }
     }
 
-    private long deleteSource(Connection conn, MoveContext ctx, TableConfig t) throws SQLException {
-        String sql =
-                "DELETE s FROM " + qName(t.sourceSchema(), t.sourceTable()) + " s "
-                        + "JOIN #archive_keys k ON s." + q(t.keyColumn()) + " = k." + q(t.keyColumn());
+    private long deleteSource(Connection conn, MoveContext ctx, TableConfig t, ChunkKeys keys) throws SQLException {
+        String sql = "DELETE s FROM " + qName(t.sourceSchema(), t.sourceTable()) + " s" + keys.joinClause("s");
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             return runCancellable(ctx, ps);
         }

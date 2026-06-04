@@ -38,6 +38,7 @@ public class Orchestrator {
     private final LogAndAgMonitor monitor;
     private final AdaptiveController adaptive;
     private final IndexManager indexManager;
+    private final BasketStateRefresher basketState;
     private final RestoreService restore;
     private final StopController stop;
 
@@ -50,6 +51,7 @@ public class Orchestrator {
             LogAndAgMonitor monitor,
             AdaptiveController adaptive,
             IndexManager indexManager,
+            BasketStateRefresher basketState,
             RestoreService restore,
             StopController stop) {
         this.props = props;
@@ -60,6 +62,7 @@ public class Orchestrator {
         this.monitor = monitor;
         this.adaptive = adaptive;
         this.indexManager = indexManager;
+        this.basketState = basketState;
         this.restore = restore;
         this.stop = stop;
     }
@@ -118,6 +121,10 @@ public class Orchestrator {
                 (props.asOfDate() == null || props.asOfDate().isBlank())
                         ? LocalDate.now()
                         : LocalDate.parse(props.asOfDate());
+        // Refresh basket lifecycle from the source dimension before selecting eligible baskets
+        // (no-op when the job has no basket source configured — basket_archive_state is seeded).
+        basketState.refresh(props.jobName());
+
         long runId = worklist.openRun(props.jobName(), "ARCHIVE", asOf);
         worklist.buildWorklist(runId, props.jobName(), asOf);
 

@@ -36,8 +36,14 @@ not code), so criteria/table changes need no redeploy.
   partial target rows for the batch, bulk-copies, verifies row-count (+ optional checksum), records
   `COPIED`, then deletes the source — and a crash after `COPIED` resumes delete-only, so the
   verified copy is never duplicated or lost.
-- Phases 6+ (multi-table FK ordering across all 20 + `DimBasket` refresh, restore) per the design
-  doc.
+- **Phase 6 (done):** multi-table orchestration + generic key resolution + basket-state build. Each
+  chunk moves the same basket set across all in-scope tables in `dependency_level` order. A shared
+  `ChunkKeys` helper stages the per-chunk key set and builds seekable joins for **DIRECT** (fact
+  carries the basket key) and **BRIDGE** (fact keyed by e.g. `swap_key`, resolved to its keys via a
+  mapping table). Pre-flight fails a BRIDGE whose mapping table isn't indexed on its basket column.
+  `BasketStateRefresher` builds `basket_archive_state` from a configured source dimension
+  (TERMINATED / NEEDS_REVIEW / ACTIVE), run before each archive selects its worklist.
+- Phases 7+ (stats/plan post-steps, observability, restore) per the design doc.
 
 ## Local dev with Docker SQL Server
 

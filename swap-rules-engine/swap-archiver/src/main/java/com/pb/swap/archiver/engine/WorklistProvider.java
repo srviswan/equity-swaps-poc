@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
  * {@code IN_PROGRESS} rows that the next run reclaims first.
  *
  * <p>Eligibility ({@code status='TERMINATED' AND archived=0 AND termination_date < as_of -
- * retention_months}) is read from {@code basket_archive_state}, which an operator/test seeds for now
- * (the automatic {@code DimBasket} refresh is phase 6).
+ * retention_months}) is read from {@code basket_archive_state}, which {@link BasketStateRefresher}
+ * populates from the source basket dimension (or an operator/ETL seeds directly).
  */
 @Component
 public class WorklistProvider {
@@ -41,11 +41,6 @@ public class WorklistProvider {
             int maxBatchSize,
             int logUsedPctPause,
             long agRedoQueuePause) {}
-
-    public void refreshBasketState() {
-        // TODO(phase 6): light upsert from DimBasket -> basket_archive_state.
-        throw new UnsupportedOperationException("scaffold: basket-state refresh not yet implemented (phase 6)");
-    }
 
     public JobConfig loadJob(String jobName) {
         return controlJdbc.queryForObject(
