@@ -54,7 +54,10 @@ not code), so criteria/table changes need no redeploy.
   child order into a separate investigation DB (`archiver.restore.targetDb`, refusing the live source
   unless `archiver.restore.allowRestoreToSource`), auto-creating the investigation table, idempotent
   per batch, audited in `archive_restore_log`.
-- Phase 8 (next): perf test on the 1 TB table, dry-run, staged prod rollout.
+- **Phase 8 (runbook):** perf test, dry-run, and staged prod rollout — execution/validation against
+  real infrastructure (no new engine code). See [`../docs/data-archival-rollout.md`](../docs/data-archival-rollout.md)
+  for the perf-test + tuning loop, dry-run/break-glass/restore drills, staged go/no-go rollout,
+  monitoring/alerting, and abort/rollback. Generate local volume with `dev/perf-seed.sql`.
 
 ## Local dev with Docker SQL Server
 

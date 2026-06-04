@@ -578,7 +578,11 @@ One fat jar. Criteria/table changes are data, not deploys.
    **parent → child** order into a **separate investigation DB** (guarded against the live source
    unless `restore.allow-restore-to-source`), auto-creating the investigation table from the archive
    shape, idempotent per batch, every restore audited in `archive_restore_log`.
-8. **Perf test on the 1 TB table, dry-run, staged prod rollout**.
+8. **Perf test on the 1 TB table, dry-run, staged prod rollout**. — execution/validation against
+   real infrastructure (no new engine code). The full operational guide — perf-test harness and
+   tuning loop, dry-run + break-glass + restore drills, staged go/no-go rollout, monitoring/alerting,
+   abort/rollback, and purge cadence — is in [`data-archival-rollout.md`](./data-archival-rollout.md).
+   A local volume generator for the perf smoke is `swap-archiver/dev/perf-seed.sql`.
 
 ---
 
