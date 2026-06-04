@@ -529,7 +529,13 @@ One fat jar. Criteria/table changes are data, not deploys.
    eligibility from `basket_archive_state`, per-chunk staged-key `INSERT…SELECT`+`DELETE` in one
    transaction with lineage columns, `archive_chunk_log` checkpointing (idempotent restart), basket
    archived-marking, and break-glass halt at chunk boundaries.
-3. **Adaptive batch sizing + log/AG monitor + scheduling windows**.
+3. **Adaptive batch sizing + log/AG monitor + scheduling windows**. ✅ — chunks are formed at
+   runtime (lazy `nextChunk`) so the AIMD `AdaptiveController` resizes the row target each chunk
+   (converted to a basket count via an EMA of observed rows/basket); `LogAndAgMonitor` samples
+   `sys.dm_db_log_space_usage` + `log_reuse_wait_desc` + AG redo/send queues (fails soft when a DMV
+   is unreadable / not an AG) and pauses on pressure; `WindowScheduler` gates each chunk on the
+   per-day `archive_window` and stops cleanly when the window closes. Crash-reclaim of `IN_PROGRESS`
+   chunks on restart.
 4. **Index management + verification/checksums**.
 5. **Cross-DB + cross-server (`SQLServerBulkCopy`)**.
 6. **Multi-table orchestration + FK ordering (all 20) + `BasketArchiveState` build**.

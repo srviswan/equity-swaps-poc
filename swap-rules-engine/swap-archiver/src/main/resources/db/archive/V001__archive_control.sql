@@ -120,18 +120,21 @@ CREATE TABLE archive_run (
 );
 
 -- ---------------------------------------------------------------------------
--- Worklist: eligible baskets assigned to chunks for a run. Drives restart.
+-- Worklist: eligible baskets for a run. chunk_no is assigned at RUNTIME when a
+-- basket enters a chunk, so the adaptive controller can resize chunks mid-run.
+-- A crash leaves IN_PROGRESS rows that the next run reclaims first (restart).
 -- ---------------------------------------------------------------------------
 CREATE TABLE archive_worklist (
     run_id           BIGINT        NOT NULL,
-    chunk_no         INT           NOT NULL,
     basket_key       BIGINT        NOT NULL,
+    chunk_no         INT           NULL,                -- assigned when the basket enters a chunk
     worker_id        INT           NOT NULL DEFAULT 0,  -- shard owner when max_parallel_workers > 1
     status           VARCHAR(12)   NOT NULL DEFAULT 'PENDING', -- PENDING|IN_PROGRESS|DONE|FAILED
-    CONSTRAINT pk_archive_worklist PRIMARY KEY (run_id, chunk_no, basket_key),
+    CONSTRAINT pk_archive_worklist PRIMARY KEY (run_id, basket_key),
     CONSTRAINT fk_worklist_run FOREIGN KEY (run_id) REFERENCES archive_run (run_id)
 );
-CREATE INDEX ix_worklist_resume ON archive_worklist (run_id, worker_id, status, chunk_no);
+CREATE INDEX ix_worklist_next  ON archive_worklist (run_id, status, basket_key);
+CREATE INDEX ix_worklist_chunk ON archive_worklist (run_id, chunk_no);
 
 -- ---------------------------------------------------------------------------
 -- Per-chunk-per-table audit + checkpoint. State machine for cross-server safety.

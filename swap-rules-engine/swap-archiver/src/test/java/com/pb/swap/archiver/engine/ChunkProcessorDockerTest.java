@@ -1,6 +1,9 @@
 package com.pb.swap.archiver.engine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.pb.swap.archiver.auth.ConnectionFactory;
@@ -14,6 +17,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
@@ -74,6 +78,7 @@ class ChunkProcessorDockerTest {
         control.update("DELETE FROM archive_chunk_log");
         control.update("DELETE FROM archive_worklist");
         control.update("DELETE FROM archive_run");
+        control.update("DELETE FROM archive_window");
         control.update("DELETE FROM archive_table");
         control.update("DELETE FROM basket_archive_state");
         control.update("DELETE FROM archive_job");
@@ -119,26 +124,31 @@ class ChunkProcessorDockerTest {
     }
 
     @Test
-    void resumesFromCheckpointAfterPartialFailure() {
+    void reclaimsInProgressChunkOnRestart() {
         JdbcTemplate control = controlJdbc();
         WorklistProvider worklist = new WorklistProvider(control);
         ChunkProcessor processor = newProcessor(control);
 
         long runId = worklist.openRun(JOB, "ARCHIVE", LocalDate.now());
-        List<WorklistProvider.Chunk> chunks = worklist.buildOrResume(runId, JOB, LocalDate.now(), 1);
-        assertEquals(2, chunks.size(), "1 basket per chunk → 2 chunks for baskets 100 & 101");
+        worklist.buildWorklist(runId, JOB, LocalDate.now());
 
-        // Process only the first chunk + mark it, simulating a crash before the second.
-        processor.process(JOB, chunks.get(0));
-        worklist.markChunkArchived(chunks.get(0));
+        // Claim one chunk (1 basket) but "crash" before processing it.
+        WorklistProvider.Chunk claimed = worklist.nextChunk(runId, 1);
+        assertEquals(1, claimed.basketKeys().size(), "1 basket per chunk");
 
-        // Resume the same RUNNING run: only the unfinished chunk remains.
-        long resumedRun = worklist.openRun(JOB, "ARCHIVE", LocalDate.now());
-        assertEquals(runId, resumedRun, "resumes the in-progress run");
-        List<WorklistProvider.Chunk> remaining = worklist.buildOrResume(resumedRun, JOB, LocalDate.now(), 1);
-        assertEquals(1, remaining.size(), "one pending chunk left");
-        processor.process(JOB, remaining.get(0));
-        worklist.markChunkArchived(remaining.get(0));
+        // Restart: same RUNNING run, and nextChunk reclaims the IN_PROGRESS chunk before any new work.
+        long resumed = worklist.openRun(JOB, "ARCHIVE", LocalDate.now());
+        assertEquals(runId, resumed, "resumes the in-progress run");
+        WorklistProvider.Chunk reclaimed = worklist.nextChunk(resumed, 1);
+        assertEquals(claimed.chunkNo(), reclaimed.chunkNo(), "reclaims the same chunk");
+        assertEquals(claimed.basketKeys(), reclaimed.basketKeys(), "same baskets");
+
+        processor.process(JOB, reclaimed);
+        worklist.markChunkArchived(reclaimed);
+        WorklistProvider.Chunk next = worklist.nextChunk(resumed, 1);
+        processor.process(JOB, next);
+        worklist.markChunkArchived(next);
+        assertNull(worklist.nextChunk(resumed, 1), "no work left");
 
         assertEquals(3, count("dw", "SELECT COUNT(*) FROM dbo.Trades_Archive"), "all eligible rows archived");
         assertEquals(1, count("dw", "SELECT COUNT(*) FROM dbo.Trades"), "only basket 200 remains");
@@ -154,31 +164,66 @@ class ChunkProcessorDockerTest {
                         List.<CopyStrategy>of(new SameDbCopyStrategy()), connectionFactory(), props(), stop, control);
 
         long runId = worklist.openRun(JOB, "ARCHIVE", LocalDate.now());
-        List<WorklistProvider.Chunk> chunks = worklist.buildOrResume(runId, JOB, LocalDate.now(), 1);
+        worklist.buildWorklist(runId, JOB, LocalDate.now());
 
         long copied = 0;
         boolean halted = false;
-        for (int i = 0; i < chunks.size(); i++) {
+        while (true) {
             if (stop.shouldHalt()) {
                 halted = true;
                 break;
             }
-            copied += processor.process(JOB, chunks.get(i)).rowsCopied();
-            worklist.markChunkArchived(chunks.get(i));
+            WorklistProvider.Chunk chunk = worklist.nextChunk(runId, 1);
+            if (chunk == null) {
+                break;
+            }
+            copied += processor.process(JOB, chunk).rowsCopied();
+            worklist.markChunkArchived(chunk);
             stop.requestLocalStop("drill after first chunk"); // trip the brake for the next boundary
         }
 
-        org.junit.jupiter.api.Assertions.assertTrue(halted, "should halt before processing all chunks");
-        org.junit.jupiter.api.Assertions.assertTrue(
+        assertTrue(halted, "should halt before processing all chunks");
+        assertTrue(
                 count("dw", "SELECT COUNT(*) FROM dbo.Trades") > 1,
                 "halt leaves some eligible rows un-archived (resumable)");
-        org.junit.jupiter.api.Assertions.assertTrue(copied > 0, "first chunk still committed before halt");
+        assertTrue(copied > 0, "first chunk still committed before halt");
+    }
+
+    @Test
+    void schedulingWindowGatesChunks() {
+        JdbcTemplate control = controlJdbc();
+        WindowScheduler scheduler = new WindowScheduler(control, props());
+
+        // No windows configured → run unrestricted.
+        assertTrue(scheduler.canStartChunk(LocalDateTime.of(2026, 6, 6, 3, 0), 1000).allowed());
+
+        // Saturday (2026-06-06) window 01:00–05:00 (SQL DATEPART weekday: Sat = 7).
+        control.update(
+                "INSERT INTO archive_window (job_name, day_of_week, start_time, end_time) VALUES (?, 7, '01:00', '05:00')",
+                JOB);
+        assertTrue(scheduler.canStartChunk(LocalDateTime.of(2026, 6, 6, 3, 0), 1000).allowed(), "inside Sat window");
+        assertFalse(scheduler.canStartChunk(LocalDateTime.of(2026, 6, 6, 6, 0), 1000).allowed(), "after window end");
+        assertFalse(scheduler.canStartChunk(LocalDateTime.of(2026, 6, 5, 3, 0), 1000).allowed(), "Friday has no window");
+        assertFalse(
+                scheduler.canStartChunk(LocalDateTime.of(2026, 6, 6, 4, 59, 30), 60_000).allowed(),
+                "estimated chunk exceeds remaining window");
+    }
+
+    @Test
+    void monitorSampleReadsDmvs() {
+        LogAndAgMonitor monitor = new LogAndAgMonitor(connectionFactory(), props());
+        LogAndAgMonitor.Reading reading = monitor.sample();
+        assertTrue(reading.logUsedPct() >= 0, "sa can read log space usage");
+        assertEquals(0L, reading.agRedoQueueKb(), "non-AG container reports no redo queue");
+        assertFalse(monitor.shouldPause(reading, 70, 5_000_000L), "healthy single-node should not pause");
     }
 
     private long runOnce(WorklistProvider worklist, ChunkProcessor processor, JdbcTemplate control) {
         long runId = worklist.openRun(JOB, "ARCHIVE", LocalDate.now());
+        worklist.buildWorklist(runId, JOB, LocalDate.now());
         long copied = 0;
-        for (WorklistProvider.Chunk chunk : worklist.buildOrResume(runId, JOB, LocalDate.now(), 1000)) {
+        WorklistProvider.Chunk chunk;
+        while ((chunk = worklist.nextChunk(runId, 1000)) != null) {
             copied += processor.process(JOB, chunk).rowsCopied();
             worklist.markChunkArchived(chunk);
         }

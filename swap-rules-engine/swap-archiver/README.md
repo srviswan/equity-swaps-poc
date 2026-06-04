@@ -16,8 +16,14 @@ not code), so criteria/table changes need no redeploy.
   (`INSERT…SELECT` + `DELETE` in one transaction, keys staged in an indexed temp table, lineage
   columns populated), checkpointing each table to `archive_chunk_log`. Restart skips `DONE` work;
   break-glass halts cleanly at the next chunk boundary. See the demo below.
-- Phases 3+ (adaptive batch + log/AG throttling + windows, index mgmt + checksums, cross-DB /
-  cross-server, multi-table FK ordering + `DimBasket` refresh, restore) per the design doc.
+- **Phase 3 (done):** runtime adaptive chunking. Chunks are formed lazily (`nextChunk`), so the
+  AIMD controller resizes the row target each chunk (converted to baskets via an EMA of observed
+  rows/basket). `LogAndAgMonitor` samples log-space + `log_reuse_wait` + AG redo/send queues and
+  pauses on pressure (fails soft when a DMV is unreadable / not an AG); `WindowScheduler` gates each
+  chunk on the per-day `archive_window` and stops cleanly when the window closes. `IN_PROGRESS`
+  chunks are reclaimed on restart.
+- Phases 4+ (index mgmt + checksums, cross-DB / cross-server, multi-table FK ordering +
+  `DimBasket` refresh, restore) per the design doc.
 
 ## Local dev with Docker SQL Server
 

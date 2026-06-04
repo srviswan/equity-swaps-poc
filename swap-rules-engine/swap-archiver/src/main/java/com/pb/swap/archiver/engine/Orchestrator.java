@@ -3,7 +3,7 @@ package com.pb.swap.archiver.engine;
 import com.pb.swap.archiver.config.ArchiverProperties;
 import com.pb.swap.archiver.restore.RestoreService;
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -22,10 +22,13 @@ public class Orchestrator {
     private static final Logger log = LoggerFactory.getLogger(Orchestrator.class);
 
     /**
-     * Baskets per chunk for the phase-2 single-stream path. Phase 3 replaces this with an adaptive,
-     * row-estimate-driven size; keeping it a constant keeps phase 2 honest about its scope.
+     * Initial rows-per-basket guess used to convert the row-based adaptive batch target into a basket
+     * count for the first chunk. It is then continuously refined from observed chunks (EMA), so the
+     * seed only matters until the first chunk completes.
      */
-    private static final int BASKETS_PER_CHUNK = 1000;
+    private static final double INITIAL_ROWS_PER_BASKET = 1_000.0;
+
+    private static final double ROWS_PER_BASKET_EMA_ALPHA = 0.3;
 
     private final ArchiverProperties props;
     private final PreflightValidator preflight;
@@ -95,9 +98,11 @@ public class Orchestrator {
     }
 
     /**
-     * Phase 2 archive loop: open (or resume) a run, build/resume the chunk worklist, and move each
-     * chunk's tables (copy → delete, checkpointed). Honours the break-glass stop at each chunk
-     * boundary, leaving a restartable, consistent state. Phase 3 adds window + log/AG throttling here.
+     * Phase 3 archive loop: open (or resume) a run, materialise the worklist, then repeatedly form a
+     * chunk (sized adaptively), gate it on the scheduling window and log/AG pressure, move its tables
+     * (copy → delete, checkpointed), mark baskets archived, and adapt the next batch size. Honours the
+     * break-glass stop and a closing window by stopping cleanly at the last committed boundary —
+     * always leaving a restartable, consistent state.
      */
     private int archive() {
         StopController.Signal signal = stop.current();
@@ -111,34 +116,77 @@ public class Orchestrator {
                         ? LocalDate.now()
                         : LocalDate.parse(props.asOfDate());
         long runId = worklist.openRun(props.jobName(), "ARCHIVE", asOf);
+        worklist.buildWorklist(runId, props.jobName(), asOf);
+
+        WorklistProvider.JobConfig job = worklist.loadJob(props.jobName());
+        long targetChunkMillis = props.throttle().targetChunkMillis();
+        long pollPauseMillis = props.throttle().pollPauseMillis();
+        int targetRows = job.defaultBatchSize();
+        double rowsPerBasket = INITIAL_ROWS_PER_BASKET;
+        long lastChunkMillis = targetChunkMillis;
+
         stop.markRunning(true);
         long copied = 0;
         long deleted = 0;
-        boolean halted = false;
+        String haltReason = null;
         try {
-            List<WorklistProvider.Chunk> chunks =
-                    worklist.buildOrResume(runId, props.jobName(), asOf, BASKETS_PER_CHUNK);
-            log.info("ARCHIVE run {}: {} chunk(s) to process", runId, chunks.size());
-            for (WorklistProvider.Chunk chunk : chunks) {
+            while (true) {
                 if (stop.shouldHalt()) {
-                    halted = true;
-                    log.warn("Break-glass halt before chunk {}; stopping cleanly.", chunk.chunkNo());
+                    haltReason = "break-glass stop signalled";
                     break;
                 }
+                WindowScheduler.Decision window = windows.canStartChunk(LocalDateTime.now(), lastChunkMillis);
+                if (!window.allowed()) {
+                    haltReason = "scheduling window: " + window.reason();
+                    break;
+                }
+                if (pressurePauseExceedsBoundary(job, pollPauseMillis, lastChunkMillis)) {
+                    haltReason = "halted while waiting on log/AG pressure";
+                    break;
+                }
+
+                int batchBaskets = Math.max(1, (int) Math.round(targetRows / Math.max(1.0, rowsPerBasket)));
+                WorklistProvider.Chunk chunk = worklist.nextChunk(runId, batchBaskets);
+                if (chunk == null) {
+                    break; // no work left → DONE
+                }
+
+                long start = System.currentTimeMillis();
                 ChunkProcessor.ChunkResult result = chunkProcessor.process(props.jobName(), chunk);
+                lastChunkMillis = System.currentTimeMillis() - start;
                 worklist.markChunkArchived(chunk);
                 copied += result.rowsCopied();
                 deleted += result.rowsDeleted();
+
+                rowsPerBasket = updateRowsPerBasket(rowsPerBasket, result.rowsCopied(), chunk.basketKeys().size());
+                boolean pressure =
+                        monitor.shouldPause(monitor.sample(), job.logUsedPctPause(), job.agRedoQueuePause());
+                int prevTarget = targetRows;
+                targetRows =
+                        adaptive.nextBatchSize(
+                                targetRows, lastChunkMillis, targetChunkMillis, pressure, job.minBatchSize(),
+                                job.maxBatchSize());
                 log.info(
-                        "chunk {} done: {} baskets, +{} archived / -{} deleted",
+                        "chunk {} done in {}ms: {} baskets, +{} / -{} rows; batch target {}→{} rows{}",
                         chunk.chunkNo(),
+                        lastChunkMillis,
                         chunk.basketKeys().size(),
                         result.rowsCopied(),
-                        result.rowsDeleted());
+                        result.rowsDeleted(),
+                        prevTarget,
+                        targetRows,
+                        pressure ? " (pressure)" : "");
             }
-            String status = halted ? "PAUSED" : "DONE";
-            worklist.completeRun(runId, status, copied, deleted, null);
-            log.info("ARCHIVE run {} {}: copied {} / deleted {} row(s)", runId, status, copied, deleted);
+
+            String status = haltReason == null ? "DONE" : "PAUSED";
+            worklist.completeRun(runId, status, copied, deleted, haltReason);
+            if (haltReason == null) {
+                log.info("ARCHIVE run {} DONE: copied {} / deleted {} row(s)", runId, copied, deleted);
+            } else {
+                log.warn(
+                        "ARCHIVE run {} PAUSED ({}): copied {} / deleted {} so far; resumable on restart.",
+                        runId, haltReason, copied, deleted);
+            }
             return 0;
         } catch (RuntimeException e) {
             worklist.completeRun(runId, "FAILED", copied, deleted, e.getMessage());
@@ -147,5 +195,37 @@ public class Orchestrator {
         } finally {
             stop.markRunning(false);
         }
+    }
+
+    /**
+     * Wait while log/AG pressure is high, re-sampling each poll interval. Returns true if we must
+     * stop before the next chunk (break-glass tripped or the window closed during the wait).
+     */
+    private boolean pressurePauseExceedsBoundary(
+            WorklistProvider.JobConfig job, long pollPauseMillis, long estimatedChunkMillis) {
+        while (monitor.shouldPause(monitor.sample(), job.logUsedPctPause(), job.agRedoQueuePause())) {
+            if (stop.shouldHalt()) {
+                return true;
+            }
+            if (!windows.canStartChunk(LocalDateTime.now(), estimatedChunkMillis).allowed()) {
+                return true;
+            }
+            log.info("Log/AG pressure high; pausing {}ms before re-checking.", pollPauseMillis);
+            try {
+                Thread.sleep(pollPauseMillis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static double updateRowsPerBasket(double current, long rowsCopied, int baskets) {
+        if (baskets <= 0 || rowsCopied <= 0) {
+            return current;
+        }
+        double observed = (double) rowsCopied / baskets;
+        return ROWS_PER_BASKET_EMA_ALPHA * observed + (1 - ROWS_PER_BASKET_EMA_ALPHA) * current;
     }
 }

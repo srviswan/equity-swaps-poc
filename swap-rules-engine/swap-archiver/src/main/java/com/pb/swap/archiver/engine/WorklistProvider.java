@@ -3,7 +3,6 @@ package com.pb.swap.archiver.engine;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,12 +12,13 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 /**
- * Owns the run header and the eligible-basket worklist that drives chunking and restart.
+ * Owns the run header and the eligible-basket worklist. Chunks are formed at <em>runtime</em> by
+ * {@link #nextChunk}, so the {@link AdaptiveController} can resize them mid-run; a crash leaves
+ * {@code IN_PROGRESS} rows that the next run reclaims first.
  *
  * <p>Eligibility ({@code status='TERMINATED' AND archived=0 AND termination_date < as_of -
  * retention_months}) is read from {@code basket_archive_state}, which an operator/test seeds for now
- * (the automatic {@code DimBasket} refresh is phase 6). Eligible baskets are grouped into chunks and
- * persisted to {@code archive_worklist}; on restart we resume the chunks not yet {@code DONE}.
+ * (the automatic {@code DimBasket} refresh is phase 6).
  */
 @Component
 public class WorklistProvider {
@@ -34,14 +34,37 @@ public class WorklistProvider {
     /** A chunk of eligible baskets to process across all in-scope tables. */
     public record Chunk(long runId, int chunkNo, List<Long> basketKeys) {}
 
+    /** Pacing knobs read from {@code archive_job}. */
+    public record JobConfig(
+            int defaultBatchSize,
+            int minBatchSize,
+            int maxBatchSize,
+            int logUsedPctPause,
+            long agRedoQueuePause) {}
+
     public void refreshBasketState() {
         // TODO(phase 6): light upsert from DimBasket -> basket_archive_state.
         throw new UnsupportedOperationException("scaffold: basket-state refresh not yet implemented (phase 6)");
     }
 
+    public JobConfig loadJob(String jobName) {
+        return controlJdbc.queryForObject(
+                "SELECT default_batch_size, min_batch_size, max_batch_size, log_used_pct_pause, ag_redo_queue_pause"
+                        + " FROM archive_job WHERE job_name = ?",
+                (rs, i) ->
+                        new JobConfig(
+                                rs.getInt("default_batch_size"),
+                                rs.getInt("min_batch_size"),
+                                rs.getInt("max_batch_size"),
+                                rs.getInt("log_used_pct_pause"),
+                                rs.getLong("ag_redo_queue_pause")),
+                jobName);
+    }
+
     /**
      * Resume the newest still-RUNNING ARCHIVE run for the job (crash/pause recovery), or start a new
-     * one. Returning the same run id means {@link #buildOrResume} will replay its pending chunks.
+     * one. The same run id means {@link #buildWorklist} is a no-op and {@link #nextChunk} replays the
+     * pending/in-progress baskets.
      */
     public long openRun(String jobName, String mode, LocalDate asOf) {
         List<Long> running =
@@ -75,41 +98,16 @@ public class WorklistProvider {
         return runId;
     }
 
-    /** Build a fresh worklist for the run, or return the pending chunks of an existing one. */
-    public List<Chunk> buildOrResume(long runId, String jobName, LocalDate asOf, int basketsPerChunk) {
-        boolean hasWorklist =
+    /** Materialise eligible baskets for the run (idempotent: a populated worklist is left as-is). */
+    public void buildWorklist(long runId, String jobName, LocalDate asOf) {
+        boolean populated =
                 !controlJdbc
-                        .queryForList("SELECT TOP 1 chunk_no FROM archive_worklist WHERE run_id = ?", Integer.class, runId)
+                        .queryForList("SELECT TOP 1 basket_key FROM archive_worklist WHERE run_id = ?", Long.class, runId)
                         .isEmpty();
-        if (hasWorklist) {
-            return resumePendingChunks(runId);
+        if (populated) {
+            log.info("Run {} already has a worklist; resuming.", runId);
+            return;
         }
-        return buildFresh(runId, jobName, asOf, basketsPerChunk);
-    }
-
-    private List<Chunk> resumePendingChunks(long runId) {
-        List<Integer> chunkNos =
-                controlJdbc.queryForList(
-                        "SELECT DISTINCT chunk_no FROM archive_worklist WHERE run_id = ? AND status <> 'DONE'"
-                                + " ORDER BY chunk_no",
-                        Integer.class,
-                        runId);
-        List<Chunk> chunks = new ArrayList<>();
-        for (int chunkNo : chunkNos) {
-            List<Long> keys =
-                    controlJdbc.queryForList(
-                            "SELECT basket_key FROM archive_worklist WHERE run_id = ? AND chunk_no = ? AND status <> 'DONE'"
-                                    + " ORDER BY basket_key",
-                            Long.class,
-                            runId,
-                            chunkNo);
-            chunks.add(new Chunk(runId, chunkNo, keys));
-        }
-        log.info("Resumed run {} with {} pending chunk(s)", runId, chunks.size());
-        return chunks;
-    }
-
-    private List<Chunk> buildFresh(long runId, String jobName, LocalDate asOf, int basketsPerChunk) {
         int retentionMonths =
                 controlJdbc.queryForObject(
                         "SELECT retention_months FROM archive_job WHERE job_name = ?", Integer.class, jobName);
@@ -121,25 +119,57 @@ public class WorklistProvider {
                         Long.class,
                         -retentionMonths,
                         Date.valueOf(asOf));
-
-        List<Chunk> chunks = new ArrayList<>();
-        int chunkNo = 0;
-        for (int i = 0; i < eligible.size(); i += basketsPerChunk) {
-            List<Long> slice = eligible.subList(i, Math.min(i + basketsPerChunk, eligible.size()));
-            persistChunk(runId, chunkNo, slice);
-            chunks.add(new Chunk(runId, chunkNo, new ArrayList<>(slice)));
-            chunkNo++;
-        }
+        controlJdbc.batchUpdate(
+                "INSERT INTO archive_worklist (run_id, basket_key, status) VALUES (?, ?, 'PENDING')",
+                eligible.stream().map(k -> new Object[] {runId, k}).toList());
         controlJdbc.update(
                 "UPDATE archive_run SET baskets_selected = ? WHERE run_id = ?", eligible.size(), runId);
-        log.info("Built worklist for run {}: {} eligible basket(s) in {} chunk(s)", runId, eligible.size(), chunks.size());
-        return chunks;
+        log.info("Built worklist for run {}: {} eligible basket(s)", runId, eligible.size());
     }
 
-    private void persistChunk(long runId, int chunkNo, List<Long> basketKeys) {
-        controlJdbc.batchUpdate(
-                "INSERT INTO archive_worklist (run_id, chunk_no, basket_key, status) VALUES (?, ?, ?, 'PENDING')",
-                basketKeys.stream().map(k -> new Object[] {runId, chunkNo, k}).toList());
+    /**
+     * Form the next chunk: reclaim an existing {@code IN_PROGRESS} chunk first (crash recovery), else
+     * claim up to {@code batchBaskets} pending baskets into a new chunk. Returns {@code null} when no
+     * work remains.
+     */
+    public Chunk nextChunk(long runId, int batchBaskets) {
+        List<Integer> inProgress =
+                controlJdbc.queryForList(
+                        "SELECT DISTINCT chunk_no FROM archive_worklist WHERE run_id = ? AND status = 'IN_PROGRESS'"
+                                + " ORDER BY chunk_no",
+                        Integer.class,
+                        runId);
+        if (!inProgress.isEmpty()) {
+            int chunkNo = inProgress.get(0);
+            List<Long> keys =
+                    controlJdbc.queryForList(
+                            "SELECT basket_key FROM archive_worklist WHERE run_id = ? AND chunk_no = ?"
+                                    + " AND status = 'IN_PROGRESS' ORDER BY basket_key",
+                            Long.class,
+                            runId,
+                            chunkNo);
+            log.info("Reclaiming in-progress chunk {} ({} basket(s)) for run {}", chunkNo, keys.size(), runId);
+            return new Chunk(runId, chunkNo, keys);
+        }
+
+        int batch = Math.max(1, batchBaskets);
+        int chunkNo =
+                controlJdbc.queryForObject(
+                        "SELECT ISNULL(MAX(chunk_no), -1) + 1 FROM archive_worklist WHERE run_id = ?",
+                        Integer.class,
+                        runId);
+        List<Long> keys =
+                controlJdbc.queryForList(
+                        "WITH c AS (SELECT TOP (" + batch + ") basket_key, chunk_no, status FROM archive_worklist"
+                                + " WHERE run_id = ? AND status = 'PENDING' ORDER BY basket_key)"
+                                + " UPDATE c SET chunk_no = ?, status = 'IN_PROGRESS' OUTPUT inserted.basket_key",
+                        Long.class,
+                        runId,
+                        chunkNo);
+        if (keys.isEmpty()) {
+            return null;
+        }
+        return new Chunk(runId, chunkNo, keys);
     }
 
     /** All tables for the chunk are moved: mark the worklist done and flag the baskets archived. */
