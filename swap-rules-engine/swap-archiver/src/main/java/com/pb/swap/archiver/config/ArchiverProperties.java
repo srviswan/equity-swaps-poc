@@ -20,7 +20,22 @@ public record ArchiverProperties(
         Throttle throttle) {
 
     /** A database endpoint plus how to authenticate to it. */
-    public record Endpoint(String url, @DefaultValue("kerberos") String auth, Credential credential) {}
+    public record Endpoint(String url, @DefaultValue("kerberos") String auth, Credential credential) {
+
+        /** The {@code databaseName} from the JDBC URL — needed for cross-DB 3-part naming. */
+        public String databaseName() {
+            if (url == null) {
+                return null;
+            }
+            for (String part : url.split(";")) {
+                int eq = part.indexOf('=');
+                if (eq > 0 && "databaseName".equalsIgnoreCase(part.substring(0, eq).trim())) {
+                    return part.substring(eq + 1).trim();
+                }
+            }
+            return null;
+        }
+    }
 
     /** How to obtain credentials for an endpoint. */
     public record Credential(

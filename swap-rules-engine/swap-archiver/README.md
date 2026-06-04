@@ -29,8 +29,15 @@ not code), so criteria/table changes need no redeploy.
   chunk requires an order-independent `CHECKSUM_AGG` over the source slice to equal the
   just-inserted target slice **before** the delete is allowed; both checksums are recorded in
   `archive_chunk_log`.
-- Phases 5+ (cross-DB / cross-server, multi-table FK ordering + `DimBasket` refresh, restore) per
-  the design doc.
+- **Phase 5 (done):** cross-DB and cross-server topologies. `CROSS_DB` keeps the single local
+  transaction but writes the target via a 3-part `[db].[schema].[table]` name (target DB taken from
+  the endpoint URL). `CROSS_SERVER` streams source→target with `SQLServerBulkCopy` over two
+  connections and drives a checkpointed **copy → verify → delete** state machine: it cleans any
+  partial target rows for the batch, bulk-copies, verifies row-count (+ optional checksum), records
+  `COPIED`, then deletes the source — and a crash after `COPIED` resumes delete-only, so the
+  verified copy is never duplicated or lost.
+- Phases 6+ (multi-table FK ordering across all 20 + `DimBasket` refresh, restore) per the design
+  doc.
 
 ## Local dev with Docker SQL Server
 

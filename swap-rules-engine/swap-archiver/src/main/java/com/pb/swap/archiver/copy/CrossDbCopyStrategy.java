@@ -3,12 +3,17 @@ package com.pb.swap.archiver.copy;
 import org.springframework.stereotype.Component;
 
 /**
- * Same server, different database: 3-part name {@code db.schema.table}. Still a single local
- * transaction because both databases are on the same instance. Recommended steady-state target
- * (archive DB in SIMPLE recovery, outside the AG) to avoid shipping the copy across the AG.
+ * Same server, different database: the archive table is referenced by a 3-part name
+ * {@code [db].[schema].[table]} against the <em>source</em> connection. Both databases live on the
+ * same instance, so the copy + delete still run in one local transaction (crash → rollback → the
+ * chunk re-runs), identical in shape to {@link SameDbCopyStrategy}; only the target gets a database
+ * qualifier (taken from the target endpoint's JDBC URL).
+ *
+ * <p>This is the recommended steady-state target: an archive DB in SIMPLE recovery, outside the AG,
+ * so the copy is not shipped across the Availability Group.
  */
 @Component
-public class CrossDbCopyStrategy implements CopyStrategy {
+public class CrossDbCopyStrategy extends SameDbCopyStrategy {
 
     @Override
     public String topology() {
@@ -16,9 +21,11 @@ public class CrossDbCopyStrategy implements CopyStrategy {
     }
 
     @Override
-    public MoveResult move(MoveContext ctx) {
-        // TODO(phase 5): INSERT INTO archiveDb.schema.target SELECT ... FROM sourceDb.schema.source
-        // (3-part names, single local transaction), then DELETE — same shape as SAME_DB.
-        throw new UnsupportedOperationException("scaffold: CROSS_DB move not yet implemented (phase 5)");
+    protected String targetDatabase(MoveContext ctx) {
+        String db = ctx.props().target().databaseName();
+        if (db == null) {
+            throw new IllegalStateException("CROSS_DB requires a target databaseName in the target endpoint URL");
+        }
+        return db;
     }
 }

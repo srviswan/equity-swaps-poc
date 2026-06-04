@@ -58,11 +58,12 @@ public class ChunkProcessor {
         long deleted = 0;
         for (TableConfig table : loadTables(jobName)) {
             String tableName = table.sourceName();
-            if (isDone(chunk.runId(), chunk.chunkNo(), tableName)) {
+            String state = stateOf(chunk.runId(), chunk.chunkNo(), tableName);
+            if ("DONE".equals(state)) {
                 log.debug("chunk {} table {} already DONE; skipping", chunk.chunkNo(), tableName);
                 continue;
             }
-            checkpointPending(chunk.runId(), chunk.chunkNo(), tableName);
+            checkpointStart(chunk.runId(), chunk.chunkNo(), tableName, state);
             long started = System.currentTimeMillis();
             try {
                 CopyStrategy strategy = strategyFor(table.topology());
@@ -76,7 +77,8 @@ public class ChunkProcessor {
                                         chunk.runId(),
                                         chunk.chunkNo(),
                                         periodKey,
-                                        chunk.basketKeys()));
+                                        chunk.basketKeys(),
+                                        state));
                 checkpointDone(
                         chunk.runId(),
                         chunk.chunkNo(),
@@ -106,7 +108,7 @@ public class ChunkProcessor {
                             Arrays.stream(joinColumns.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
                     if (!"DIRECT".equalsIgnoreCase(keyResolution) || cols.size() != 1) {
                         throw new UnsupportedOperationException(
-                                "phase 2 supports DIRECT single-column join only; got "
+                                "only DIRECT single-column join is supported so far; got "
                                         + keyResolution + " " + cols + " on " + rs.getString("source_table")
                                         + " (BRIDGE/composite is phase 6)");
                     }
@@ -124,7 +126,8 @@ public class ChunkProcessor {
                 jobName);
     }
 
-    private boolean isDone(long runId, int chunkNo, String table) {
+    /** Last recorded state for this table+chunk, or {@code null} if it has never started. */
+    private String stateOf(long runId, int chunkNo, String table) {
         List<String> states =
                 controlJdbc.queryForList(
                         "SELECT state FROM archive_chunk_log WHERE run_id = ? AND chunk_no = ? AND source_table = ?",
@@ -132,20 +135,25 @@ public class ChunkProcessor {
                         runId,
                         chunkNo,
                         table);
-        return !states.isEmpty() && "DONE".equals(states.get(0));
+        return states.isEmpty() ? null : states.get(0);
     }
 
-    private void checkpointPending(long runId, int chunkNo, String table) {
-        int updated =
-                controlJdbc.update(
-                        "UPDATE archive_chunk_log SET state = 'PENDING', error_text = NULL, updated_at_utc = SYSUTCDATETIME()"
-                                + " WHERE run_id = ? AND chunk_no = ? AND source_table = ?",
-                        runId,
-                        chunkNo,
-                        table);
-        if (updated == 0) {
+    /**
+     * Mark the table+chunk as started. A {@code COPIED} checkpoint (cross-server: target verified,
+     * source not yet deleted) is preserved untouched so its delete-only resume path survives restart;
+     * any other state is (re)set to {@code PENDING}.
+     */
+    private void checkpointStart(long runId, int chunkNo, String table, String state) {
+        if (state == null) {
             controlJdbc.update(
                     "INSERT INTO archive_chunk_log (run_id, chunk_no, source_table, state) VALUES (?, ?, ?, 'PENDING')",
+                    runId,
+                    chunkNo,
+                    table);
+        } else if (!"COPIED".equals(state)) {
+            controlJdbc.update(
+                    "UPDATE archive_chunk_log SET state = 'PENDING', error_text = NULL, updated_at_utc = SYSUTCDATETIME()"
+                            + " WHERE run_id = ? AND chunk_no = ? AND source_table = ?",
                     runId,
                     chunkNo,
                     table);

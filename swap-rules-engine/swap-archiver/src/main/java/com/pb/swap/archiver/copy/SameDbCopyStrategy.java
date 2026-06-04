@@ -39,16 +39,26 @@ public class SameDbCopyStrategy implements CopyStrategy {
         return "SAME_DB";
     }
 
+    /**
+     * Database that qualifies the <em>target</em> table name. {@code null} for SAME_DB (target lives
+     * in the connected DB); CROSS_DB overrides this to emit {@code [db].[schema].[table]} 3-part
+     * names against the same instance.
+     */
+    protected String targetDatabase(MoveContext ctx) {
+        return null;
+    }
+
     @Override
     public MoveResult move(MoveContext ctx) throws SQLException {
         TableConfig t = ctx.table();
+        String targetDb = targetDatabase(ctx);
         Connection conn = ctx.connections().open(ctx.props().source());
         boolean committed = false;
         try {
             conn.setAutoCommit(false);
 
-            Set<String> srcCols = columns(conn, t.sourceSchema(), t.sourceTable());
-            Set<String> tgtCols = columns(conn, t.targetSchema(), t.targetTable());
+            Set<String> srcCols = columns(conn, null, t.sourceSchema(), t.sourceTable());
+            Set<String> tgtCols = columns(conn, targetDb, t.targetSchema(), t.targetTable());
             if (!containsIgnoreCase(srcCols, t.keyColumn())) {
                 throw new SQLException("key column '" + t.keyColumn() + "' not found on " + t.sourceName());
             }
@@ -60,7 +70,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
 
             stageKeys(conn, ctx, t.keyColumn());
 
-            long rowsCopied = insertSelect(conn, ctx, t, dataColumns, lineageColumns);
+            long rowsCopied = insertSelect(conn, ctx, t, targetDb, dataColumns, lineageColumns);
 
             // Content verification BEFORE the delete: a column-aware CHECKSUM_AGG over the source
             // slice must equal the just-inserted target slice, so we never delete an imperfect copy.
@@ -70,8 +80,8 @@ public class SameDbCopyStrategy implements CopyStrategy {
             Long sourceChecksum = null;
             Long targetChecksum = null;
             if (t.checksumVerify() && rowsCopied > 0) {
-                sourceChecksum = checksum(conn, ctx, t, dataColumns, false, hasBatchLineage);
-                targetChecksum = checksum(conn, ctx, t, dataColumns, true, hasBatchLineage);
+                sourceChecksum = checksum(conn, ctx, t, null, dataColumns, false, hasBatchLineage);
+                targetChecksum = checksum(conn, ctx, t, targetDb, dataColumns, true, hasBatchLineage);
                 if (!java.util.Objects.equals(sourceChecksum, targetChecksum)) {
                     throw new SQLException(
                             "checksum mismatch on " + t.sourceName() + ": source=" + sourceChecksum
@@ -120,6 +130,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
             Connection conn,
             MoveContext ctx,
             TableConfig t,
+            String targetDb,
             List<String> dataColumns,
             List<String> lineageColumns)
             throws SQLException {
@@ -146,7 +157,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
             }
         }
         String sql =
-                "INSERT INTO " + qName(t.targetSchema(), t.targetTable()) + " (" + cols + ") SELECT " + exprs
+                "INSERT INTO " + qName(targetDb, t.targetSchema(), t.targetTable()) + " (" + cols + ") SELECT " + exprs
                         + " FROM " + qName(t.sourceSchema(), t.sourceTable()) + " s "
                         + "JOIN #archive_keys k ON s." + q(t.keyColumn()) + " = k." + q(t.keyColumn());
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -166,6 +177,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
             Connection conn,
             MoveContext ctx,
             TableConfig t,
+            String targetDb,
             List<String> dataColumns,
             boolean target,
             boolean hasBatchLineage)
@@ -177,7 +189,8 @@ public class SameDbCopyStrategy implements CopyStrategy {
             }
             cols.append("x.").append(q(c));
         }
-        String tableName = target ? qName(t.targetSchema(), t.targetTable()) : qName(t.sourceSchema(), t.sourceTable());
+        String tableName =
+                target ? qName(targetDb, t.targetSchema(), t.targetTable()) : qName(t.sourceSchema(), t.sourceTable());
         boolean filterByBatch = target && hasBatchLineage;
         String sql =
                 "SELECT CHECKSUM_AGG(CHECKSUM(" + cols + ")) FROM " + tableName + " x JOIN #archive_keys k ON x."
@@ -216,7 +229,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
         }
     }
 
-    private static List<String> dataColumns(Set<String> srcCols, Set<String> tgtCols) {
+    static List<String> dataColumns(Set<String> srcCols, Set<String> tgtCols) {
         Set<String> tgtLower = lower(tgtCols);
         List<String> out = new ArrayList<>();
         for (String c : srcCols) {
@@ -228,7 +241,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
         return out;
     }
 
-    private static List<String> lineageColumns(Set<String> srcCols, Set<String> tgtCols) {
+    static List<String> lineageColumns(Set<String> srcCols, Set<String> tgtCols) {
         Set<String> srcLower = lower(srcCols);
         Set<String> tgtLower = lower(tgtCols);
         List<String> out = new ArrayList<>();
@@ -240,11 +253,13 @@ public class SameDbCopyStrategy implements CopyStrategy {
         return out;
     }
 
-    private static Set<String> columns(Connection conn, String schema, String table) throws SQLException {
+    /** Columns of a table; {@code db} qualifies {@code INFORMATION_SCHEMA} for cross-DB lookups. */
+    static Set<String> columns(Connection conn, String db, String schema, String table) throws SQLException {
         Set<String> cols = new LinkedHashSet<>();
+        String infoSchema = (db == null ? "" : q(db) + ".") + "INFORMATION_SCHEMA.COLUMNS";
         String sql =
-                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS "
-                        + "WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION";
+                "SELECT COLUMN_NAME FROM " + infoSchema
+                        + " WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, schema);
             ps.setString(2, table);
@@ -258,7 +273,7 @@ public class SameDbCopyStrategy implements CopyStrategy {
     }
 
     /** Build a DDL type string for one column so the staged temp key matches the source type. */
-    private static String columnTypeDdl(Connection conn, String schema, String table, String column)
+    static String columnTypeDdl(Connection conn, String schema, String table, String column)
             throws SQLException {
         String sql =
                 "SELECT DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE "
@@ -304,11 +319,16 @@ public class SameDbCopyStrategy implements CopyStrategy {
         sb.append(token);
     }
 
-    private static String qName(String schema, String table) {
+    static String qName(String schema, String table) {
         return q(schema) + "." + q(table);
     }
 
-    private static String q(String identifier) {
+    /** Two- or three-part quoted name; {@code db} non-null emits {@code [db].[schema].[table]}. */
+    static String qName(String db, String schema, String table) {
+        return (db == null ? "" : q(db) + ".") + q(schema) + "." + q(table);
+    }
+
+    static String q(String identifier) {
         return "[" + identifier.replace("]", "]]") + "]";
     }
 

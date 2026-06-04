@@ -545,7 +545,16 @@ One fat jar. Criteria/table changes are data, not deploys.
    just-inserted target slice and requires them to match **before** the delete is allowed (skipped
    when a restart re-runs an already-moved chunk, i.e. `rowsCopied = 0`); both checksums are
    persisted to `archive_chunk_log` for audit. Index disable/rebuild runs only when there is work.
-5. **Cross-DB + cross-server (`SQLServerBulkCopy`)**.
+5. **Cross-DB + cross-server (`SQLServerBulkCopy`)**. ✅ — `CROSS_DB` reuses the single-transaction
+   `INSERT…SELECT`+`DELETE` path but qualifies the target with a 3-part `[db].[schema].[table]`
+   name (target DB parsed from the endpoint URL), so an archive DB in SIMPLE recovery outside the AG
+   gets the copy off AG shipping while staying atomic. `CROSS_SERVER` streams the source slice into
+   the target via `SQLServerBulkCopy` (two direct connections, batch sized for columnstore
+   rowgroups) and — since no transaction spans instances — runs a checkpointed **copy → verify →
+   delete** state machine: copy first cleans any partial target rows for the batch (idempotent),
+   verifies target row-count (+ optional `CHECKSUM_AGG`) against the source slice, persists the
+   `COPIED` checkpoint, then deletes the source. A crash after `COPIED` resumes via a delete-only
+   branch so the verified archive is never re-cleaned or re-copied (no data loss, no duplicates).
 6. **Multi-table orchestration + FK ordering (all 20) + `BasketArchiveState` build**.
 7. **Stats/plan post-steps + observability (Prometheus) + alerting + restore**.
 8. **Perf test on the 1 TB table, dry-run, staged prod rollout**.

@@ -12,6 +12,8 @@ import com.pb.swap.archiver.config.ArchiverProperties.Credential;
 import com.pb.swap.archiver.config.ArchiverProperties.Endpoint;
 import com.pb.swap.archiver.config.ArchiverProperties.Env;
 import com.pb.swap.archiver.copy.CopyStrategy;
+import com.pb.swap.archiver.copy.CrossDbCopyStrategy;
+import com.pb.swap.archiver.copy.CrossServerBulkCopyStrategy;
 import com.pb.swap.archiver.copy.SameDbCopyStrategy;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -46,6 +48,7 @@ class ChunkProcessorDockerTest {
         mssql.start();
         exec("master", "IF DB_ID('archive_control') IS NULL CREATE DATABASE [archive_control]");
         exec("master", "IF DB_ID('dw') IS NULL CREATE DATABASE [dw]");
+        exec("master", "IF DB_ID('archive') IS NULL CREATE DATABASE [archive]");
         Flyway.configure()
                 .dataSource(url("archive_control"), mssql.getUsername(), mssql.getPassword())
                 .schemas("dbo")
@@ -73,6 +76,13 @@ class ChunkProcessorDockerTest {
                 "CREATE TABLE dbo.Trades_Archive (trade_id INT NOT NULL, basket_key BIGINT NOT NULL, amount INT,"
                         + " archive_batch_id BIGINT, archived_at_utc DATETIME2, archived_period_key INT)");
         exec("dw", "INSERT INTO dbo.Trades VALUES (1,100,10),(2,100,20),(3,101,30),(4,200,40)");
+
+        // Archive-side copy of the target table in a separate DB, for CROSS_DB / CROSS_SERVER tests.
+        exec("archive", "DROP TABLE IF EXISTS dbo.Trades_Archive");
+        exec(
+                "archive",
+                "CREATE TABLE dbo.Trades_Archive (trade_id INT NOT NULL, basket_key BIGINT NOT NULL, amount INT,"
+                        + " archive_batch_id BIGINT, archived_at_utc DATETIME2, archived_period_key INT)");
 
         JdbcTemplate control = controlJdbc();
         control.update("DELETE FROM archive_chunk_log");
@@ -260,6 +270,116 @@ class ChunkProcessorDockerTest {
     }
 
     @Test
+    void crossDbMovesAcrossDatabasesOnSameInstance() {
+        JdbcTemplate control = controlJdbc();
+        control.update(
+                "UPDATE archive_table SET copy_strategy = 'CROSS_DB' WHERE job_name = ? AND source_table = 'Trades'",
+                JOB);
+        ArchiverProperties cross = props("dw", "archive");
+        WorklistProvider worklist = new WorklistProvider(control);
+        ChunkProcessor processor =
+                new ChunkProcessor(
+                        List.<CopyStrategy>of(new CrossDbCopyStrategy()),
+                        new ConnectionFactory(cross),
+                        cross,
+                        new StopController(control, cross),
+                        control);
+
+        long copied = runOnce(worklist, processor, control);
+        assertEquals(3, copied, "3 trades moved to the archive DB");
+        assertEquals(3, count("archive", "SELECT COUNT(*) FROM dbo.Trades_Archive"), "rows landed in archive DB");
+        assertEquals(1, count("dw", "SELECT COUNT(*) FROM dbo.Trades"), "deleted from source DB");
+        assertEquals(
+                0,
+                count("archive", "SELECT COUNT(*) FROM dbo.Trades_Archive WHERE archive_batch_id IS NULL"),
+                "lineage populated cross-DB");
+    }
+
+    @Test
+    void crossServerCopiesVerifiesThenDeletes() {
+        JdbcTemplate control = controlJdbc();
+        control.update(
+                "UPDATE archive_table SET copy_strategy = 'CROSS_SERVER' WHERE job_name = ? AND source_table = 'Trades'",
+                JOB);
+        ArchiverProperties cross = props("dw", "archive");
+        WorklistProvider worklist = new WorklistProvider(control);
+        ChunkProcessor processor =
+                new ChunkProcessor(
+                        List.<CopyStrategy>of(new CrossServerBulkCopyStrategy(control)),
+                        new ConnectionFactory(cross),
+                        cross,
+                        new StopController(control, cross),
+                        control);
+
+        long copied = runOnce(worklist, processor, control);
+        assertEquals(3, copied, "3 trades bulk-copied to the archive server");
+        assertEquals(3, count("archive", "SELECT COUNT(*) FROM dbo.Trades_Archive"), "rows streamed to archive");
+        assertEquals(1, count("dw", "SELECT COUNT(*) FROM dbo.Trades"), "source deleted only after verify");
+        assertEquals(
+                0,
+                count(
+                        "archive_control",
+                        "SELECT COUNT(*) FROM archive_chunk_log WHERE state = 'DONE'"
+                                + " AND (source_checksum IS NULL OR target_checksum IS NULL)"),
+                "checksums recorded for cross-server copy");
+        assertEquals(
+                0,
+                count(
+                        "archive_control",
+                        "SELECT COUNT(*) FROM archive_chunk_log WHERE source_checksum <> target_checksum"),
+                "cross-server source/target checksums match");
+    }
+
+    @Test
+    void crossServerResumesFromCopiedWithoutDuplicating() {
+        JdbcTemplate control = controlJdbc();
+        control.update(
+                "UPDATE archive_table SET copy_strategy = 'CROSS_SERVER' WHERE job_name = ? AND source_table = 'Trades'",
+                JOB);
+        ArchiverProperties cross = props("dw", "archive");
+        WorklistProvider worklist = new WorklistProvider(control);
+        ChunkProcessor processor =
+                new ChunkProcessor(
+                        List.<CopyStrategy>of(new CrossServerBulkCopyStrategy(control)),
+                        new ConnectionFactory(cross),
+                        cross,
+                        new StopController(control, cross),
+                        control);
+
+        long runId = worklist.openRun(JOB, "ARCHIVE", LocalDate.now());
+        worklist.buildWorklist(runId, JOB, LocalDate.now());
+        WorklistProvider.Chunk chunk = worklist.nextChunk(runId, 1000);
+
+        // Simulate a crash after copy+verify but before the source delete: the target already holds
+        // the verified rows (with this run's batch id) and the checkpoint is COPIED.
+        exec(
+                "archive",
+                "INSERT INTO dbo.Trades_Archive (trade_id, basket_key, amount, archive_batch_id)"
+                        + " SELECT trade_id, basket_key, amount, " + runId
+                        + " FROM dw.dbo.Trades WHERE basket_key IN (100, 101)");
+        control.update(
+                "INSERT INTO archive_chunk_log (run_id, chunk_no, source_table, state, rows_copied)"
+                        + " VALUES (?, ?, 'dbo.Trades', 'COPIED', 3)",
+                runId,
+                chunk.chunkNo());
+
+        ChunkProcessor.ChunkResult result = processor.process(JOB, chunk);
+
+        assertEquals(3, result.rowsDeleted(), "resume deletes the source rows");
+        assertEquals(1, count("dw", "SELECT COUNT(*) FROM dbo.Trades"), "source emptied of eligible baskets");
+        assertEquals(
+                3,
+                count("archive", "SELECT COUNT(*) FROM dbo.Trades_Archive"),
+                "target untouched on resume — no duplicate rows");
+        assertEquals(
+                1,
+                count(
+                        "archive_control",
+                        "SELECT COUNT(*) FROM archive_chunk_log WHERE state = 'DONE' AND source_table = 'dbo.Trades'"),
+                "chunk completes after delete-only resume");
+    }
+
+    @Test
     void monitorSampleReadsDmvs() {
         LogAndAgMonitor monitor = new LogAndAgMonitor(connectionFactory(), props());
         LogAndAgMonitor.Reading reading = monitor.sample();
@@ -296,7 +416,12 @@ class ChunkProcessorDockerTest {
 
     private static ArchiverProperties props() {
         // SAME_DB: source and archive table both live in dw; target endpoint unused by the strategy.
-        return new ArchiverProperties(JOB, "ARCHIVE", null, null, sqlEndpoint("dw"), sqlEndpoint("dw"), null, null);
+        return props("dw", "dw");
+    }
+
+    private static ArchiverProperties props(String srcDb, String tgtDb) {
+        return new ArchiverProperties(
+                JOB, "ARCHIVE", null, null, sqlEndpoint(srcDb), sqlEndpoint(tgtDb), null, null);
     }
 
     private static long count(String db, String sql) {

@@ -28,6 +28,10 @@ public interface CopyStrategy {
      * Everything a strategy needs to move one table's slice of one chunk. The eligible basket keys
      * for the chunk are passed in {@code basketKeys}; the strategy stages them into an indexed temp
      * table so the (possibly 1 TB) source joins on {@code table.keyColumn} via a seek, never a scan.
+     *
+     * <p>{@code priorState} is this table+chunk's last {@code archive_chunk_log} state (or {@code
+     * null} if never started). The cross-server state machine uses it to resume: {@code COPIED}
+     * means the target is already verified and only the source delete remains.
      */
     record MoveContext(
             ConnectionFactory connections,
@@ -37,7 +41,8 @@ public interface CopyStrategy {
             long runId,
             int chunkNo,
             int archivedPeriodKey,
-            List<Long> basketKeys) {}
+            List<Long> basketKeys,
+            String priorState) {}
 
     /** Per-table archival configuration resolved from {@code archive_table}. */
     record TableConfig(
