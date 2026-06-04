@@ -26,6 +26,7 @@ moving ~3–5 billion rows across ~20 tables in small, BAU-safe iterations.
 | Reactivation | Upstream reactivation mints a **new surrogate** → archived baskets are **immutable** |
 | Missing termination date | **Quarantine** for manual review — never auto-archive |
 | Removal unit | **All** rows for an eligible basket leave source |
+| Selection keys | **Per-table configurable join** (`join_columns`): DIRECT basket key, or BRIDGE via a mapping table (e.g. `swap_key`). A supporting index on `join_columns` is required (pre-flight enforced) |
 | Schema evolution (target) | **Mixed**: auto-additive by default, **strict** per-table flag for sensitive tables |
 | Archive storage | Per-table choice (rowstore+PAGE vs clustered columnstore) — recommended later |
 | Archive partitioning | By **`archived_period_key`** (`YYYYMM` of archived date) |
@@ -233,6 +234,26 @@ pipeline has headroom — usually it does not in this topology.
 
 **Rule:** start single-stream, push `AdaptiveController` to the safe log/AG ceiling, measure on the
 1 TB table; only then consider 2–4 basket-sharded workers.
+
+### 6.10 Generic per-table selection (configurable join keys)
+Eligibility is always basket-based (the worklist is a set of eligible basket keys), but **how each
+table finds its rows is configurable per table** (`archive_table.join_columns` + `key_resolution`):
+
+- **DIRECT** — the table carries the basket key (any column name). Join straight to the worklist.
+  `join_columns` may be a single column (`basket_key`) or composite (`basket_key,business_date_key`).
+- **BRIDGE** — the table is keyed by something else (e.g. `swap_key`) with no basket key. Resolve
+  eligible baskets → this table's keys through a mapping (`bridge_table`,`bridge_basket_column`,
+  `bridge_join_columns`, e.g. `DimSwap(basket_key, swap_key)`), then join the big table on its own
+  key. Resolution uses `DISTINCT`; the bridge must be indexed on its basket column.
+
+**Efficiency safeguards (so a 1 TB join never scans):**
+1. **Stage keys per chunk** into an indexed temp table (`#keys`, clustered on `join_columns`), then
+   `INSERT…SELECT` / `DELETE` **join the source to `#keys`** — accurate cardinality, index seek, no
+   giant `IN (...)` lists.
+2. **Pre-flight `source.index(...)` check**: every configured table must have an index whose
+   **leading key columns are exactly its `join_columns`**. If the table exists but lacks one, this is
+   a **FAIL** (a scan on a billion-row table is fatal), not a warning.
+3. Composite join keys are seekable only if an index leads with that exact column set.
 
 ---
 

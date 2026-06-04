@@ -20,14 +20,19 @@ public interface CopyStrategy {
     /** Copy the chunk's rows for one table into the archive target. */
     CopyResult copy(CopyRequest request);
 
-    /** Everything needed to copy one table's slice of one chunk. */
+    /**
+     * Everything needed to copy one table's slice of one chunk. The chunk's eligible keys for this
+     * table have already been resolved (DIRECT or via BRIDGE) and staged into {@code keyStagingTable}
+     * — an indexed temp table — so copy/delete join the (possibly 1 TB) source to it on
+     * {@code joinColumns} via an index seek, never a scan or a giant IN-list.
+     */
     record CopyRequest(
             long runId,
             int chunkNo,
             String sourceTable,
             String targetTable,
-            String basketKeyColumn,
-            List<Long> basketKeys,
+            List<String> joinColumns,
+            String keyStagingTable,
             boolean checksumVerify) {}
 
     /** Outcome of a copy, used to drive verification before deletion. */

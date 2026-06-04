@@ -5,7 +5,11 @@ import com.pb.swap.archiver.config.ArchiverProperties;
 import com.pb.swap.archiver.config.ArchiverProperties.Endpoint;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +52,7 @@ public class PreflightValidator {
         try {
             checkTablePermissions(report, source, target, tables);
             checkSchemaConsistency(report, source, target, tables);
+            checkSupportingIndexes(report, source, tables);
         } finally {
             close(source);
             close(target);
@@ -69,7 +74,7 @@ public class PreflightValidator {
         try {
             List<Map<String, Object>> rows =
                     controlJdbc.queryForList(
-                            "SELECT source_schema, source_table, target_schema, target_table "
+                            "SELECT source_schema, source_table, target_schema, target_table, join_columns "
                                     + "FROM archive_table WHERE job_name = ? AND enabled = 1",
                             props.jobName());
             report.pass("control.config", rows.size() + " table(s) configured for job " + props.jobName());
@@ -198,6 +203,83 @@ public class PreflightValidator {
                 report.warn(name, err(e));
             }
         }
+    }
+
+    /**
+     * Efficiency safeguard: every configured table must have an index whose leading key columns are
+     * exactly its {@code join_columns}, so the per-chunk join to the staged key set seeks instead of
+     * scanning. On a 1 TB table a missing index is fatal, so this fails (not warns) when the table
+     * exists but lacks support.
+     */
+    private void checkSupportingIndexes(
+            PreflightReport report, Connection source, List<Map<String, Object>> tables) {
+        if (source == null) {
+            return;
+        }
+        for (Map<String, Object> t : tables) {
+            String schema = String.valueOf(t.get("source_schema"));
+            String table = String.valueOf(t.get("source_table"));
+            List<String> joinCols =
+                    Arrays.stream(String.valueOf(t.get("join_columns")).split(","))
+                            .map(s -> s.trim().toLowerCase())
+                            .filter(s -> !s.isEmpty())
+                            .toList();
+            String name = "source.index(" + schema + "." + table + ")";
+            if (joinCols.isEmpty()) {
+                report.fail(name, "join_columns not configured");
+                continue;
+            }
+            try {
+                if (connections.scalar(source, "SELECT OBJECT_ID('" + schema + "." + table + "')") == null) {
+                    report.warn(name, "table missing; index check deferred");
+                    continue;
+                }
+                boolean supported =
+                        leadingKeyColumns(source, schema, table).values().stream()
+                                .anyMatch(keys -> leadingCovers(keys, joinCols));
+                if (supported) {
+                    report.pass(name, "index leads with join_columns " + joinCols);
+                } else {
+                    report.fail(name, "no index leads with " + joinCols + "; join would scan");
+                }
+            } catch (SQLException e) {
+                report.warn(name, err(e));
+            }
+        }
+    }
+
+    private boolean leadingCovers(List<String> indexKeys, List<String> joinCols) {
+        if (indexKeys.size() < joinCols.size()) {
+            return false;
+        }
+        Set<String> leading = new HashSet<>(indexKeys.subList(0, joinCols.size()));
+        return leading.size() == joinCols.size() && leading.containsAll(joinCols);
+    }
+
+    private Map<String, List<String>> leadingKeyColumns(Connection conn, String schema, String table)
+            throws SQLException {
+        String sql =
+                "SELECT i.name AS idx, c.name AS col FROM sys.indexes i "
+                        + "JOIN sys.index_columns ic ON i.object_id=ic.object_id AND i.index_id=ic.index_id "
+                        + "JOIN sys.columns c ON ic.object_id=c.object_id AND ic.column_id=c.column_id "
+                        + "WHERE i.object_id = OBJECT_ID('"
+                        + schema
+                        + "."
+                        + table
+                        + "') AND ic.is_included_column = 0 "
+                        + "ORDER BY i.index_id, ic.key_ordinal";
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        try (var st = conn.createStatement();
+                var rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                String idx = rs.getString("idx");
+                if (idx == null) {
+                    continue; // heap
+                }
+                result.computeIfAbsent(idx, k -> new ArrayList<>()).add(rs.getString("col").toLowerCase());
+            }
+        }
+        return result;
     }
 
     private Set<String> columns(Connection conn, String schema, String table) throws SQLException {

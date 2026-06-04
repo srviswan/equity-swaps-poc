@@ -21,8 +21,8 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
 
     @Override
     public CopyResult copy(CopyRequest request) {
-        // TODO(phase 5): open source ResultSet (WHERE basketKey IN chunk); SQLServerBulkCopy into
-        // target with batch size + bulkCopyTimeout; return rows + checksums for verification.
+        // TODO(phase 5): open source ResultSet (source JOIN keyStagingTable on joinColumns);
+        // SQLServerBulkCopy into target with batch size + bulkCopyTimeout; return rows + checksums.
         throw new UnsupportedOperationException("scaffold: CROSS_SERVER bulk copy not yet implemented");
     }
 }

@@ -21,9 +21,9 @@ public class SameDbCopyStrategy implements CopyStrategy {
 
     @Override
     public CopyResult copy(CopyRequest request) {
-        // TODO(phase 2): INSERT INTO target (cols, lineage) SELECT cols, lineage FROM source
-        // WHERE basketKey IN (chunk keys); optionally CHECKSUM_AGG for verify. Caller wraps the
-        // matching DELETE in the same transaction.
+        // TODO(phase 2): INSERT INTO target (cols, lineage) SELECT cols, lineage FROM source s
+        // JOIN <keyStagingTable> k ON s.<joinColumns> = k.<joinColumns>; optionally CHECKSUM_AGG
+        // for verify. Caller wraps the matching DELETE in the same transaction.
         throw new UnsupportedOperationException("scaffold: SAME_DB copy not yet implemented");
     }
 }

@@ -36,8 +36,16 @@ CREATE TABLE archive_table (
     target_schema         VARCHAR(128)  NOT NULL,
     target_table          VARCHAR(128)  NOT NULL,
     dependency_level      INT           NOT NULL,  -- 0 = parent, larger = child
-    basket_key_column     VARCHAR(128)  NOT NULL,
-    business_date_column  VARCHAR(128)  NULL,      -- real date column on the fact row
+    -- Generic, per-table selection. join_columns are the source columns matched against the
+    -- per-chunk key set (e.g. 'basket_key', 'swap_key', or composite 'basket_key,business_date_key').
+    join_columns          VARCHAR(256)  NOT NULL,
+    -- DIRECT  = table carries the basket key; join straight to the eligible-basket worklist.
+    -- BRIDGE  = resolve eligible baskets -> this table's keys via a mapping table, then join.
+    key_resolution        VARCHAR(10)   NOT NULL DEFAULT 'DIRECT',
+    bridge_table          VARCHAR(256)  NULL,      -- BRIDGE: e.g. dbo.DimSwap (must be indexed on basket col)
+    bridge_basket_column  VARCHAR(128)  NULL,      -- BRIDGE: basket key column on the bridge
+    bridge_join_columns   VARCHAR(256)  NULL,      -- BRIDGE: key columns on the bridge (match join_columns)
+    business_date_column  VARCHAR(128)  NULL,      -- real date column on the fact row (partition derivation)
     copy_strategy         VARCHAR(20)   NOT NULL,  -- SAME_DB | CROSS_DB | CROSS_SERVER
     disable_target_indexes BIT          NOT NULL DEFAULT 0,
     checksum_verify       BIT           NOT NULL DEFAULT 1,

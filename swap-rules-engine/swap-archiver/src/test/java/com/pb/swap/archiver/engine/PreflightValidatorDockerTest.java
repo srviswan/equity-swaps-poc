@@ -8,6 +8,7 @@ import com.pb.swap.archiver.config.ArchiverProperties;
 import com.pb.swap.archiver.config.ArchiverProperties.Credential;
 import com.pb.swap.archiver.config.ArchiverProperties.Endpoint;
 import com.pb.swap.archiver.config.ArchiverProperties.Env;
+import com.pb.swap.archiver.engine.PreflightReport.Status;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -21,8 +22,9 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 /**
- * End-to-end pre-flight against a real SQL Server (Testcontainers). Also proves the Flyway control
- * migration applies cleanly on SQL Server. Skipped automatically when Docker is unavailable.
+ * End-to-end pre-flight against a real SQL Server (Testcontainers). Proves the Flyway control
+ * migration applies, pre-flight passes, and the generic-join supporting-index safeguard works.
+ * Skipped automatically when Docker is unavailable.
  */
 class PreflightValidatorDockerTest {
 
@@ -36,6 +38,12 @@ class PreflightValidatorDockerTest {
                 new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense();
         mssql.start();
         createDatabases();
+        Flyway.configure()
+                .dataSource(url("archive_control"), mssql.getUsername(), mssql.getPassword())
+                .schemas("dbo")
+                .locations("classpath:db/archive")
+                .load()
+                .migrate();
     }
 
     @AfterAll
@@ -47,65 +55,85 @@ class PreflightValidatorDockerTest {
 
     @Test
     void migrationAppliesAndPreflightPasses() {
-        // Flyway creates the archive.* control tables in archive_control on real SQL Server.
-        Flyway.configure()
-                .dataSource(url("archive_control"), mssql.getUsername(), mssql.getPassword())
-                .schemas("dbo")
-                .locations("classpath:db/archive")
-                .load()
-                .migrate();
+        PreflightReport report = newValidator().validate();
+        assertTrue(report.ok(), () -> "pre-flight should pass:\n" + report.render());
+        assertTrue(hasStatus(report, "source.connectivity", Status.PASS), report::render);
+        assertTrue(hasStatus(report, "control.config", Status.PASS), report::render);
+    }
 
+    @Test
+    void supportingIndexCheckPassesWithIndexAndFailsWithout() {
+        exec("dw", "IF OBJECT_ID('dbo.Positions') IS NULL CREATE TABLE dbo.Positions"
+                + " (swap_key INT NOT NULL, basket_key INT NULL, val INT NULL)");
+        exec("dw", "IF INDEXPROPERTY(OBJECT_ID('dbo.Positions'),'ix_pos_swap','IndexID') IS NULL"
+                + " CREATE INDEX ix_pos_swap ON dbo.Positions (swap_key)");
+        exec("dw", "IF OBJECT_ID('dbo.PositionsNoIdx') IS NULL CREATE TABLE dbo.PositionsNoIdx"
+                + " (swap_key INT NOT NULL, val INT NULL)");
+
+        JdbcTemplate control = controlJdbc();
+        control.update(
+                "IF NOT EXISTS (SELECT 1 FROM archive_job WHERE job_name='basket-archive')"
+                        + " INSERT INTO archive_job (job_name, topology) VALUES ('basket-archive','SAME_DB')");
+        control.update("DELETE FROM archive_table WHERE job_name='basket-archive'");
+        insertTableConfig(control, "Positions", "swap_key");
+        insertTableConfig(control, "PositionsNoIdx", "swap_key");
+
+        try {
+            PreflightReport report = newValidator().validate();
+            assertTrue(
+                    hasStatus(report, "source.index(dbo.Positions)", Status.PASS),
+                    () -> "indexed table should pass:\n" + report.render());
+            assertTrue(
+                    hasStatus(report, "source.index(dbo.PositionsNoIdx)", Status.FAIL),
+                    () -> "heap table should fail the index safeguard:\n" + report.render());
+        } finally {
+            control.update("DELETE FROM archive_table WHERE job_name='basket-archive'");
+            exec("dw", "DROP TABLE IF EXISTS dbo.Positions");
+            exec("dw", "DROP TABLE IF EXISTS dbo.PositionsNoIdx");
+        }
+    }
+
+    private static void insertTableConfig(JdbcTemplate control, String table, String joinColumns) {
+        control.update(
+                "INSERT INTO archive_table"
+                    + " (job_name, source_schema, source_table, target_schema, target_table,"
+                    + " dependency_level, join_columns, copy_strategy)"
+                    + " VALUES ('basket-archive','dbo',?,'dbo',?,0,?, 'SAME_DB')",
+                table,
+                table,
+                joinColumns);
+    }
+
+    private static PreflightValidator newValidator() {
         ArchiverProperties props =
                 new ArchiverProperties(
-                        "basket-archive",
-                        "DRY_RUN",
-                        null,
-                        null,
-                        sqlEndpoint("dw"),
-                        sqlEndpoint("archive"),
-                        null,
-                        null);
+                        "basket-archive", "DRY_RUN", null, null, sqlEndpoint("dw"), sqlEndpoint("archive"), null, null);
+        return new PreflightValidator(new ConnectionFactory(props), props, controlJdbc());
+    }
 
-        JdbcTemplate controlJdbc =
-                new JdbcTemplate(
-                        new DriverManagerDataSource(
-                                url("archive_control"), mssql.getUsername(), mssql.getPassword()));
+    private static boolean hasStatus(PreflightReport report, String name, Status status) {
+        return report.checks().stream()
+                .anyMatch(c -> c.name().equals(name) && c.status() == status);
+    }
 
-        PreflightValidator validator =
-                new PreflightValidator(new ConnectionFactory(props), props, controlJdbc);
-
-        PreflightReport report = validator.validate();
-
-        assertTrue(report.ok(), () -> "pre-flight should pass:\n" + report.render());
-        assertTrue(
-                report.checks().stream()
-                        .anyMatch(
-                                c ->
-                                        c.name().equals("source.connectivity")
-                                                && c.status() == PreflightReport.Status.PASS),
-                () -> report.render());
-        assertTrue(
-                report.checks().stream().anyMatch(c -> c.name().equals("source.recovery_model")),
-                () -> report.render());
-        assertTrue(
-                report.checks().stream()
-                        .anyMatch(
-                                c ->
-                                        c.name().equals("control.config")
-                                                && c.status() == PreflightReport.Status.PASS),
-                () -> report.render());
+    private static JdbcTemplate controlJdbc() {
+        return new JdbcTemplate(
+                new DriverManagerDataSource(
+                        url("archive_control"), mssql.getUsername(), mssql.getPassword()));
     }
 
     private static void createDatabases() {
-        try (Connection c =
-                        DriverManager.getConnection(
-                                url("master"), mssql.getUsername(), mssql.getPassword());
+        for (String db : new String[] {"archive_control", "dw", "archive"}) {
+            exec("master", "IF DB_ID('" + db + "') IS NULL CREATE DATABASE [" + db + "]");
+        }
+    }
+
+    private static void exec(String db, String sql) {
+        try (Connection c = DriverManager.getConnection(url(db), mssql.getUsername(), mssql.getPassword());
                 Statement st = c.createStatement()) {
-            for (String db : new String[] {"archive_control", "dw", "archive"}) {
-                st.execute("IF DB_ID('" + db + "') IS NULL CREATE DATABASE [" + db + "]");
-            }
+            st.execute(sql);
         } catch (Exception e) {
-            throw new IllegalStateException("failed to create test databases", e);
+            throw new IllegalStateException("failed on " + db + ": " + sql, e);
         }
     }
 
