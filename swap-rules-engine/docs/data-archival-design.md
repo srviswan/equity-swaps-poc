@@ -33,6 +33,9 @@ moving ~3–5 billion rows across ~20 tables in small, BAU-safe iterations.
 | Archive retention | **N years from archived date** (configurable / regulatory) → purge by partition switch |
 | Archive access | **Restore** supported — into a **separate investigation DB**, not live source |
 
+**Quick comparison** (source partition `SWITCH` vs this basket-driven approach, and where we
+*do* use `SWITCH` on the archive): [`data-archival-partition-switch-vs-basket-driven.md`](./data-archival-partition-switch-vs-basket-driven.md).
+
 ---
 
 ## 2. Technology choice
@@ -461,7 +464,10 @@ no new deployable):
 
 > **Worth evaluating later**: if the largest tables could be partitioned on a date-derived
 > key, `ALTER TABLE … SWITCH` would make source removal a metadata op. Out of scope now
-> (source is not partitioned), but the highest-leverage future optimization.
+> (source is not partitioned), but the highest-leverage future optimization. See
+> [`data-archival-partition-switch-vs-basket-driven.md`](./data-archival-partition-switch-vs-basket-driven.md)
+> for why basket lifecycle does not align with naive source `SWITCH`, and how archive-side
+> `SWITCH` (retention purge) still fits the current design.
 
 ---
 

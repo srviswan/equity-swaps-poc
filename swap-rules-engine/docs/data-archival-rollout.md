@@ -2,7 +2,9 @@
 
 Operational guide to take the archiver from "all features built + green tests" to "running safely
 in production across the 20 tables / 3–5 B rows". It complements the architecture in
-[`data-archival-design.md`](./data-archival-design.md); read that first.
+[`data-archival-design.md`](./data-archival-design.md); read that first. For **partition `SWITCH` vs
+basket-driven** archival (and where `SWITCH` is still used on the archive for retention purge), see
+[`data-archival-partition-switch-vs-basket-driven.md`](./data-archival-partition-switch-vs-basket-driven.md).
 
 Phase 8 is **execution + validation against real infrastructure**, not new engine code. Work
 through it in order; each stage has explicit **go / no-go gates** and is fully restartable, so a

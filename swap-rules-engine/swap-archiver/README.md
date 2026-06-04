@@ -1,7 +1,9 @@
 # swap-archiver
 
 Restartable, self-healing data-archival engine for SQL Server. See the full design in
-[`../docs/data-archival-design.md`](../docs/data-archival-design.md).
+[`../docs/data-archival-design.md`](../docs/data-archival-design.md). Quick comparison of
+**partition `SWITCH` vs basket-driven** archival:
+[`../docs/data-archival-partition-switch-vs-basket-driven.md`](../docs/data-archival-partition-switch-vs-basket-driven.md).
 
 A single config-driven fat jar. *What* is archived lives in the `archive.*` control tables (data,
 not code), so criteria/table changes need no redeploy.
