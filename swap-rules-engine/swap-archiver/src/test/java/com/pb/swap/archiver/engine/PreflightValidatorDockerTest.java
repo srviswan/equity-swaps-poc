@@ -1,5 +1,6 @@
 package com.pb.swap.archiver.engine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -104,11 +105,33 @@ class PreflightValidatorDockerTest {
                 joinColumns);
     }
 
+    @Test
+    void breakGlassSignalIsReadFromControlTable() {
+        JdbcTemplate control = controlJdbc();
+        control.update(
+                "IF NOT EXISTS (SELECT 1 FROM archive_job WHERE job_name='basket-archive')"
+                        + " INSERT INTO archive_job (job_name, topology) VALUES ('basket-archive','SAME_DB')");
+        StopController stop = new StopController(control, props());
+        try {
+            control.update(
+                    "UPDATE archive_job SET run_signal='STOP' WHERE job_name='basket-archive'");
+            assertEquals(StopController.Signal.STOP, stop.current());
+            assertTrue(stop.shouldHalt());
+        } finally {
+            control.update(
+                    "UPDATE archive_job SET run_signal='RUN' WHERE job_name='basket-archive'");
+        }
+        assertEquals(StopController.Signal.RUN, stop.current());
+    }
+
     private static PreflightValidator newValidator() {
-        ArchiverProperties props =
-                new ArchiverProperties(
-                        "basket-archive", "DRY_RUN", null, null, sqlEndpoint("dw"), sqlEndpoint("archive"), null, null);
+        ArchiverProperties props = props();
         return new PreflightValidator(new ConnectionFactory(props), props, controlJdbc());
+    }
+
+    private static ArchiverProperties props() {
+        return new ArchiverProperties(
+                "basket-archive", "DRY_RUN", null, null, sqlEndpoint("dw"), sqlEndpoint("archive"), null, null);
     }
 
     private static boolean hasStatus(PreflightReport report, String name, Status status) {

@@ -27,6 +27,7 @@ public class Orchestrator {
     private final LogAndAgMonitor monitor;
     private final AdaptiveController adaptive;
     private final RestoreService restore;
+    private final StopController stop;
 
     public Orchestrator(
             ArchiverProperties props,
@@ -36,7 +37,8 @@ public class Orchestrator {
             WindowScheduler windows,
             LogAndAgMonitor monitor,
             AdaptiveController adaptive,
-            RestoreService restore) {
+            RestoreService restore,
+            StopController stop) {
         this.props = props;
         this.preflight = preflight;
         this.worklist = worklist;
@@ -45,12 +47,21 @@ public class Orchestrator {
         this.monitor = monitor;
         this.adaptive = adaptive;
         this.restore = restore;
+        this.stop = stop;
     }
 
     /** @return process exit code (0 = success). */
     public int run() {
         String mode = props.mode() == null ? "ARCHIVE" : props.mode().toUpperCase();
         log.info("Orchestrator mode={}", mode);
+
+        // Break-glass: requesting a stop never touches data, so it runs before pre-flight.
+        if ("STOP".equals(mode) || "PAUSE".equals(mode)) {
+            stop.writeSignal(StopController.Signal.valueOf(mode), "ad-hoc " + mode + " via CLI");
+            log.warn("Signalled {} for job {}; running engine will halt at the next safe boundary.",
+                    mode, props.jobName());
+            return 0;
+        }
 
         // Phase 1: always run pre-flight first. It gates every mode.
         PreflightReport report = preflight.validate();
@@ -66,7 +77,15 @@ public class Orchestrator {
                 yield 0;
             }
             case "ARCHIVE" -> {
-                // TODO(phase 2+): refresh basket state, build/resume worklist, process chunks.
+                StopController.Signal signal = stop.current();
+                if (signal != StopController.Signal.RUN) {
+                    log.warn(
+                            "Break-glass active (run_signal={}); not starting. Set run_signal=RUN to resume.",
+                            signal);
+                    yield 3;
+                }
+                // TODO(phase 2+): markRunning(true); refresh basket state; for each chunk, before work
+                // check stop.shouldHalt() and register the active Statement so a STOP cancels it.
                 log.info("ARCHIVE: pre-flight passed; archival loop not yet implemented (phase 2+).");
                 yield 0;
             }

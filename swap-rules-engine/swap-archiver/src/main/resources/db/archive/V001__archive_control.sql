@@ -19,6 +19,12 @@ CREATE TABLE archive_job (
     ag_redo_queue_pause   BIGINT        NOT NULL DEFAULT 5000000, -- pause when secondary behind (KB)
     may_issue_log_backup  BIT           NOT NULL DEFAULT 0,
     max_parallel_workers  INT           NOT NULL DEFAULT 1,      -- 1 = single stream; >1 = basket-sharded
+    -- Break-glass: flip run_signal to PAUSE/STOP from any SQL client to halt the engine cleanly at
+    -- the next safe (committed) boundary. RUN = normal.
+    run_signal            VARCHAR(10)   NOT NULL DEFAULT 'RUN',  -- RUN | PAUSE | STOP
+    signal_reason         NVARCHAR(400) NULL,
+    signal_by             VARCHAR(128)  NULL,
+    signal_at             DATETIME2     NULL,
     enabled               BIT           NOT NULL DEFAULT 1,
     created_at            DATETIME2     NOT NULL DEFAULT SYSUTCDATETIME(),
     CONSTRAINT pk_archive_job PRIMARY KEY (job_name)

@@ -32,6 +32,25 @@ mvn -pl swap-archiver -am spring-boot:run
 On first run Flyway creates the `archive.*` control tables in `archive_control`, then the
 pre-flight report is printed. With no `archive_table` rows yet, table-level checks warn (expected).
 
+## Emergency stop (break-glass)
+
+The engine is crash-safe (every chunk is transactional), so stopping is always safe and
+restartable. Fastest → safest:
+
+```sql
+-- From any SQL client: halt at the next committed boundary.
+UPDATE archive.archive_job
+SET run_signal = 'STOP', signal_reason = '<why>', signal_by = SUSER_SNAME(), signal_at = SYSUTCDATETIME()
+WHERE job_name = 'basket-archive';
+-- Resume later:
+UPDATE archive.archive_job SET run_signal = 'RUN' WHERE job_name = 'basket-archive';
+```
+
+- `STOP` stays down until reset to `RUN`; `PAUSE` resumes next window.
+- Or run the jar: `ARCHIVER_MODE=STOP mvn -pl swap-archiver spring-boot:run`.
+- Last resort: SIGTERM/Ctrl-C (graceful), or `kill -9` / SQL Server `KILL <spid>` — still safe;
+  the in-flight transaction rolls back and restart resumes from the last committed chunk.
+
 ## Auth modes
 
 | Mode | Config | Notes |

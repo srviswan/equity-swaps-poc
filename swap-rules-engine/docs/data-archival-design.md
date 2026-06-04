@@ -246,6 +246,31 @@ table finds its rows is configurable per table** (`archive_table.join_columns` +
   `bridge_join_columns`, e.g. `DimSwap(basket_key, swap_key)`), then join the big table on its own
   key. Resolution uses `DISTINCT`; the bridge must be indexed on its basket column.
 
+### 6.11 Break-glass / emergency stop
+Because every chunk is transactional, halting is always safe and restartable. Three layers
+(fastest → safest), surfaced via `StopController`:
+
+1. **DB flag (primary break-glass)** — flip `archive_job.run_signal` from any SQL client; the engine
+   checks it at every committed boundary and halts cleanly:
+
+```sql
+UPDATE archive.archive_job
+SET run_signal = 'STOP', signal_reason = '<why>', signal_by = SUSER_SNAME(), signal_at = SYSUTCDATETIME()
+WHERE job_name = 'basket-archive';
+```
+
+   - `STOP` halts and **stays down** (engine refuses to start until reset to `RUN`). `PAUSE` halts now
+     and resumes next window. Reset with `run_signal='RUN'`.
+   - Also available as `ARCHIVER_MODE=STOP` (runs the jar to flip the flag) for ops without SQL access.
+2. **In-process cancel** — the active `Statement` is registered; a stop cancels in-flight SQL, rolling
+   back the current chunk (re-run on restart).
+3. **OS signal / KILL** — SIGTERM/Ctrl-C trigger a graceful stop via a JVM shutdown hook; a hard
+   `kill -9` or SQL Server `KILL <spid>` is still safe — the in-flight transaction rolls back and
+   restart resumes from the last committed chunk.
+
+The flag **fails open** (unreadable control DB ⇒ RUN), so a control-DB blip never silently stalls a
+run; the in-process and OS layers remain available regardless.
+
 **Efficiency safeguards (so a 1 TB join never scans):**
 1. **Stage keys per chunk** into an indexed temp table (`#keys`, clustered on `join_columns`), then
    `INSERT…SELECT` / `DELETE` **join the source to `#keys`** — accurate cardinality, index seek, no

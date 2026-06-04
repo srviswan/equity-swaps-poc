@@ -19,7 +19,7 @@ spring:
 
 archiver:
   job-name: ${ARCHIVER_JOB:basket-archive}
-  mode: ${ARCHIVER_MODE:DRY_RUN}      # ARCHIVE | RESTORE | DRY_RUN
+  mode: ${ARCHIVER_MODE:DRY_RUN}      # ARCHIVE | RESTORE | DRY_RUN | STOP | PAUSE (break-glass)
   as-of-date: ${ARCHIVER_AS_OF:}      # defaults to today when blank
 
   # --- Source DW (prod: FULL recovery, Availability Group, Kerberos) ---
