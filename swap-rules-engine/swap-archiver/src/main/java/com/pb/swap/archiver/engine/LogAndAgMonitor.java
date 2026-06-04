@@ -60,11 +60,17 @@ public class LogAndAgMonitor {
         }
     }
 
-    /** @return true when log/AG pressure requires pausing before the next chunk. */
-    public boolean shouldPause(Reading reading, int logUsedPctPause, long agRedoQueuePause) {
+    /**
+     * @return true when log/AG pressure requires pausing before the next chunk. The same KB
+     *     threshold gates <em>both</em> AG queues: the <b>redo</b> queue (secondary behind applying →
+     *     stale readable secondary) and the <b>send</b> queue (primary log not yet shipped → direct
+     *     RPO exposure). Either breaching the threshold pauses the engine.
+     */
+    public boolean shouldPause(Reading reading, int logUsedPctPause, long agQueuePauseKb) {
         return (reading.logUsedPct() >= 0 && reading.logUsedPct() >= logUsedPctPause)
                 || "LOG_BACKUP".equalsIgnoreCase(reading.logReuseWait())
-                || reading.agRedoQueueKb() >= agRedoQueuePause;
+                || reading.agRedoQueueKb() >= agQueuePauseKb
+                || reading.agSendQueueKb() >= agQueuePauseKb;
     }
 
     private static String agQueueSql(String column) {

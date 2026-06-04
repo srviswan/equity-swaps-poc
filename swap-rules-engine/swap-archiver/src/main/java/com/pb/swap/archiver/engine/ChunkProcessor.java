@@ -33,6 +33,7 @@ public class ChunkProcessor {
     private final ConnectionFactory connections;
     private final ArchiverProperties props;
     private final StopController stop;
+    private final LogAndAgMonitor monitor;
     private final JdbcTemplate controlJdbc;
 
     public ChunkProcessor(
@@ -40,12 +41,14 @@ public class ChunkProcessor {
             ConnectionFactory connections,
             ArchiverProperties props,
             StopController stop,
+            LogAndAgMonitor monitor,
             JdbcTemplate controlJdbc) {
         this.strategiesByTopology =
                 strategies.stream().collect(Collectors.toMap(CopyStrategy::topology, Function.identity()));
         this.connections = connections;
         this.props = props;
         this.stop = stop;
+        this.monitor = monitor;
         this.controlJdbc = controlJdbc;
     }
 
@@ -54,6 +57,9 @@ public class ChunkProcessor {
 
     public ChunkResult process(String jobName, WorklistProvider.Chunk chunk) {
         int periodKey = archivedPeriodKey();
+        // One pressure reading per chunk (cheap relative to the data move), persisted on each table's
+        // checkpoint so the perf dashboards / runbook queries on archive_chunk_log have real values.
+        LogAndAgMonitor.Reading pressure = monitor.sample();
         long copied = 0;
         long deleted = 0;
         for (TableConfig table : loadTables(jobName)) {
@@ -84,7 +90,8 @@ public class ChunkProcessor {
                         chunk.chunkNo(),
                         tableName,
                         result,
-                        System.currentTimeMillis() - started);
+                        System.currentTimeMillis() - started,
+                        pressure);
                 copied += result.rowsCopied();
                 deleted += result.rowsDeleted();
             } catch (Exception e) {
@@ -187,16 +194,26 @@ public class ChunkProcessor {
         }
     }
 
-    private void checkpointDone(long runId, int chunkNo, String table, MoveResult result, long durationMs) {
+    private void checkpointDone(
+            long runId,
+            int chunkNo,
+            String table,
+            MoveResult result,
+            long durationMs,
+            LogAndAgMonitor.Reading pressure) {
+        Integer logPct = pressure.logUsedPct() >= 0 ? pressure.logUsedPct() : null;
         controlJdbc.update(
                 "UPDATE archive_chunk_log SET state = 'DONE', rows_copied = ?, rows_deleted = ?,"
-                        + " source_checksum = ?, target_checksum = ?, duration_ms = ?, updated_at_utc = SYSUTCDATETIME()"
+                        + " source_checksum = ?, target_checksum = ?, duration_ms = ?, log_used_pct = ?,"
+                        + " ag_redo_queue_kb = ?, updated_at_utc = SYSUTCDATETIME()"
                         + " WHERE run_id = ? AND chunk_no = ? AND source_table = ?",
                 result.rowsCopied(),
                 result.rowsDeleted(),
                 result.sourceChecksum(),
                 result.targetChecksum(),
                 durationMs,
+                logPct,
+                pressure.agRedoQueueKb(),
                 runId,
                 chunkNo,
                 table);

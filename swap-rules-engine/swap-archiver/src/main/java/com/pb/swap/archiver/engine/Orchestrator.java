@@ -83,12 +83,19 @@ public class Orchestrator {
             return 0;
         }
 
-        // Phase 1: always run pre-flight first. It gates every mode.
+        // Phase 1: always run pre-flight first. Its checks (source DELETE, target ALTER, schema
+        // alignment) are ARCHIVE-oriented, so a FAIL only *aborts* the data-mutating ARCHIVE/DRY_RUN
+        // paths. RESTORE runs with least privilege (read archive + write investigation) and enforces
+        // its own guards, so it logs the report but is not blocked by archive-grade findings.
         PreflightReport report = preflight.validate();
         log.info("\n{}", report.render());
+        boolean gatesOnPreflight = !"RESTORE".equals(mode);
         if (!report.ok()) {
-            log.error("Pre-flight failed; aborting before any data operation.");
-            return 2;
+            if (gatesOnPreflight) {
+                log.error("Pre-flight failed; aborting before any data operation.");
+                return 2;
+            }
+            log.warn("Pre-flight reported issues; RESTORE proceeds (archive-grade checks are N/A for restore).");
         }
 
         return switch (mode) {

@@ -192,7 +192,12 @@ class ChunkProcessorDockerTest {
         StopController stop = new StopController(control, props());
         ChunkProcessor processor =
                 new ChunkProcessor(
-                        List.<CopyStrategy>of(new SameDbCopyStrategy()), connectionFactory(), props(), stop, control);
+                        List.<CopyStrategy>of(new SameDbCopyStrategy()),
+                        connectionFactory(),
+                        props(),
+                        stop,
+                        new LogAndAgMonitor(connectionFactory(), props()),
+                        control);
 
         long runId = worklist.openRun(JOB, "ARCHIVE", LocalDate.now());
         worklist.buildWorklist(runId, JOB, LocalDate.now());
@@ -238,6 +243,63 @@ class ChunkProcessorDockerTest {
         assertFalse(
                 scheduler.canStartChunk(LocalDateTime.of(2026, 6, 6, 4, 59, 30), 60_000).allowed(),
                 "estimated chunk exceeds remaining window");
+    }
+
+    @Test
+    void schedulingWindowHandlesOvernightWindow() {
+        JdbcTemplate control = controlJdbc();
+        WindowScheduler scheduler = new WindowScheduler(control, props());
+        // Saturday 22:00 → 04:00 (crosses midnight): the after-midnight segment belongs to Saturday.
+        control.update(
+                "INSERT INTO archive_window (job_name, day_of_week, start_time, end_time) VALUES (?, 7, '22:00', '04:00')",
+                JOB);
+        assertTrue(
+                scheduler.canStartChunk(LocalDateTime.of(2026, 6, 6, 23, 0), 1000).allowed(),
+                "Saturday night, before midnight");
+        assertTrue(
+                scheduler.canStartChunk(LocalDateTime.of(2026, 6, 7, 2, 0), 1000).allowed(),
+                "spills into Sunday morning via Saturday's overnight window");
+        assertFalse(
+                scheduler.canStartChunk(LocalDateTime.of(2026, 6, 7, 5, 0), 1000).allowed(),
+                "after the overnight window closes");
+        assertFalse(
+                scheduler.canStartChunk(LocalDateTime.of(2026, 6, 6, 21, 0), 1000).allowed(),
+                "before the window opens");
+    }
+
+    @Test
+    void schedulingWindowHonorsMaxDuration() {
+        JdbcTemplate control = controlJdbc();
+        WindowScheduler scheduler = new WindowScheduler(control, props());
+        // Sunday 01:00–08:00 but capped to 120 minutes → effective close 03:00.
+        control.update(
+                "INSERT INTO archive_window (job_name, day_of_week, start_time, end_time, max_duration_mins)"
+                        + " VALUES (?, 1, '01:00', '08:00', 120)",
+                JOB);
+        assertTrue(
+                scheduler.canStartChunk(LocalDateTime.of(2026, 6, 7, 2, 0), 1000).allowed(),
+                "within the capped window");
+        assertFalse(
+                scheduler.canStartChunk(LocalDateTime.of(2026, 6, 7, 4, 0), 1000).allowed(),
+                "past max_duration_mins cap (01:00 + 120m = 03:00) even though before end_time");
+    }
+
+    @Test
+    void chunkLogRecordsPressureReadings() {
+        JdbcTemplate control = controlJdbc();
+        runOnce(new WorklistProvider(control), newProcessor(control), control);
+        assertEquals(
+                0,
+                count(
+                        "archive_control",
+                        "SELECT COUNT(*) FROM archive_chunk_log WHERE state = 'DONE' AND log_used_pct IS NULL"),
+                "per-chunk log-space reading recorded on the source (sa can read the DMV)");
+        assertEquals(
+                0,
+                count(
+                        "archive_control",
+                        "SELECT COUNT(*) FROM archive_chunk_log WHERE state = 'DONE' AND ag_redo_queue_kb IS NULL"),
+                "per-chunk AG redo-queue reading recorded (0 on a non-AG instance)");
     }
 
     @Test
@@ -290,6 +352,7 @@ class ChunkProcessorDockerTest {
                         new ConnectionFactory(cross),
                         cross,
                         new StopController(control, cross),
+                        new LogAndAgMonitor(new ConnectionFactory(cross), cross),
                         control);
 
         long copied = runOnce(worklist, processor, control);
@@ -316,6 +379,7 @@ class ChunkProcessorDockerTest {
                         new ConnectionFactory(cross),
                         cross,
                         new StopController(control, cross),
+                        new LogAndAgMonitor(new ConnectionFactory(cross), cross),
                         control);
 
         long copied = runOnce(worklist, processor, control);
@@ -351,6 +415,7 @@ class ChunkProcessorDockerTest {
                         new ConnectionFactory(cross),
                         cross,
                         new StopController(control, cross),
+                        new LogAndAgMonitor(new ConnectionFactory(cross), cross),
                         control);
 
         long runId = worklist.openRun(JOB, "ARCHIVE", LocalDate.now());
@@ -568,6 +633,7 @@ class ChunkProcessorDockerTest {
                 connectionFactory(),
                 props(),
                 new StopController(control, props()),
+                new LogAndAgMonitor(connectionFactory(), props()),
                 control);
     }
 
