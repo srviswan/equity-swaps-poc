@@ -11,7 +11,13 @@ not code), so criteria/table changes need no redeploy.
 - **Phase 1 (done):** connectivity, three auth modes (Kerberos / Integrated / SQL via CyberArk or
   env), and pre-flight checks (connectivity, identity, recovery model, log-space visibility, key
   permissions, source↔target schema consistency). `DRY_RUN` runs pre-flight only.
-- Phases 2+ (worklist, copy→verify→delete, windows, throttling, restore) per the design doc.
+- **Phase 2 (done):** single-table SAME_DB archive. `ARCHIVE` opens (or resumes) a run, selects
+  eligible baskets into a chunked worklist, and per chunk moves the table's rows
+  (`INSERT…SELECT` + `DELETE` in one transaction, keys staged in an indexed temp table, lineage
+  columns populated), checkpointing each table to `archive_chunk_log`. Restart skips `DONE` work;
+  break-glass halts cleanly at the next chunk boundary. See the demo below.
+- Phases 3+ (adaptive batch + log/AG throttling + windows, index mgmt + checksums, cross-DB /
+  cross-server, multi-table FK ordering + `DimBasket` refresh, restore) per the design doc.
 
 ## Local dev with Docker SQL Server
 
@@ -31,6 +37,25 @@ mvn -pl swap-archiver -am spring-boot:run
 
 On first run Flyway creates the `archive.*` control tables in `archive_control`, then the
 pre-flight report is printed. With no `archive_table` rows yet, table-level checks warn (expected).
+
+### Phase 2 demo (SAME_DB archive)
+
+```bash
+# Seed a sample source/archive table + eligible baskets (creates dw.Trades + config)
+docker exec -i swap-rules-mssql /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P 'Swap_rules_1!' -C -No -i - < swap-archiver/dev/seed-phase2.sql
+
+# Run the archive: copies eligible baskets (100,101) to dw.Trades_Archive and deletes them from dw.Trades.
+# SAME_DB ⇒ the archive table lives in the source DB, so point the target endpoint at dw too.
+TGT_DB=dw ARCHIVER_MODE=ARCHIVE mvn -pl swap-archiver spring-boot:run
+
+# Verify: Trades_Archive has the 3 moved rows; Trades keeps only basket 200; baskets flagged archived
+docker exec swap-rules-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Swap_rules_1!' -C -No -d dw \
+  -Q "SELECT 'archived'=COUNT(*) FROM dbo.Trades_Archive; SELECT 'remaining'=COUNT(*) FROM dbo.Trades"
+```
+
+Re-running `ARCHIVE` is idempotent — the archived baskets are no longer eligible, so a second run
+moves nothing.
 
 ## Emergency stop (break-glass)
 

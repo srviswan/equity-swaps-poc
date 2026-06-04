@@ -523,9 +523,12 @@ One fat jar. Criteria/table changes are data, not deploys.
 
 ## 16. Implementation phases
 
-0. **Sign-off + control schema** (this doc + the migration).
-1. **Connectivity, 3 auth modes, pre-flight** (read-only, safe).
-2. **Single table, same-DB copy→delete with checkpoint + restart**.
+0. **Sign-off + control schema** (this doc + the migration). ✅
+1. **Connectivity, 3 auth modes, pre-flight** (read-only, safe). ✅
+2. **Single table, same-DB copy→delete with checkpoint + restart**. ✅ — run/worklist build+resume,
+   eligibility from `basket_archive_state`, per-chunk staged-key `INSERT…SELECT`+`DELETE` in one
+   transaction with lineage columns, `archive_chunk_log` checkpointing (idempotent restart), basket
+   archived-marking, and break-glass halt at chunk boundaries.
 3. **Adaptive batch sizing + log/AG monitor + scheduling windows**.
 4. **Index management + verification/checksums**.
 5. **Cross-DB + cross-server (`SQLServerBulkCopy`)**.

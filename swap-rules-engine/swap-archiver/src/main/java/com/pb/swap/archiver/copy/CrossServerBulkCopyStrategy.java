@@ -20,9 +20,10 @@ public class CrossServerBulkCopyStrategy implements CopyStrategy {
     }
 
     @Override
-    public CopyResult copy(CopyRequest request) {
-        // TODO(phase 5): open source ResultSet (source JOIN keyStagingTable on joinColumns);
-        // SQLServerBulkCopy into target with batch size + bulkCopyTimeout; return rows + checksums.
-        throw new UnsupportedOperationException("scaffold: CROSS_SERVER bulk copy not yet implemented");
+    public MoveResult move(MoveContext ctx) {
+        // TODO(phase 5): copy → verify → delete state machine. Open source ResultSet
+        // (source JOIN #archive_keys on keyColumn); SQLServerBulkCopy into target with batch size +
+        // bulkCopyTimeout; verify counts/checksums; only then DELETE source. Each step checkpointed.
+        throw new UnsupportedOperationException("scaffold: CROSS_SERVER move not yet implemented (phase 5)");
     }
 }

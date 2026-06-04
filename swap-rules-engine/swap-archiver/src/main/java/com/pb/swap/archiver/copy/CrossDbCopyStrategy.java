@@ -16,8 +16,9 @@ public class CrossDbCopyStrategy implements CopyStrategy {
     }
 
     @Override
-    public CopyResult copy(CopyRequest request) {
+    public MoveResult move(MoveContext ctx) {
         // TODO(phase 5): INSERT INTO archiveDb.schema.target SELECT ... FROM sourceDb.schema.source
-        throw new UnsupportedOperationException("scaffold: CROSS_DB copy not yet implemented");
+        // (3-part names, single local transaction), then DELETE — same shape as SAME_DB.
+        throw new UnsupportedOperationException("scaffold: CROSS_DB move not yet implemented (phase 5)");
     }
 }
