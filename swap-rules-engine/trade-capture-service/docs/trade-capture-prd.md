@@ -7,14 +7,15 @@
 > numbered, testable requirements. The companion documents define HOW:
 >
 > 1. [trade-capture-architecture.md](trade-capture-architecture.md) — target
->    architecture, decision register D1–D24, pipeline semantics, diagrams.
+>    architecture, decision register D1–D25, pipeline semantics, diagrams,
+>    REST API inventory (§10), provisional integration contracts (§15).
 > 2. [f0-f1-component-spec.md](f0-f1-component-spec.md) — build-level spec for
 >    phases F0/F1: proto, DDL, Solace topology, ACK/NACK matrix, configs.
 > 3. UI mocks: [assets/trade-entry-ui-mock.png](assets/trade-entry-ui-mock.png),
 >    [assets/rules-management-ui-mock.png](assets/rules-management-ui-mock.png).
 >
 > Rules of engagement for the implementing agent:
-> - The decision register (D1–D24) is **binding**. Do not re-litigate decisions;
+> - The decision register (D1–D25) is **binding**. Do not re-litigate decisions;
 >   if a requirement appears to conflict with a decision, raise it — do not
 >   silently pick one.
 > - Reuse this repository's existing libraries: `swap-rules-core` /
@@ -22,12 +23,14 @@
 >   authoring), `swap-rules-shadow` (diff harness), `swap-archiver` (archive
 >   patterns). Do NOT introduce Drools, SpEL-first rule engines, or a second
 >   rules implementation.
-> - Build in phase order F0 → F11 (§9). Each phase has exit criteria; do not
+> - Build in phase order F0 → F12 (§10). Each phase has exit criteria; do not
 >   start a phase until the previous phase's exit criteria are demonstrably met.
 > - Tech stack is fixed: Java 21+, Spring Boot, MS SQL Server, Solace
 >   (partitioned queues), protobuf ingress, Micrometer metrics.
-> - Three external prerequisites are tracked in §10 and block specific phases;
->   stub them behind interfaces and proceed where noted.
+> - External prerequisites E1–E10 are tracked in §11 and block specific
+>   phases; stub them behind interfaces and proceed where noted. Integration
+>   contracts marked *provisional* in architecture §15 are the working
+>   assumption until the owning team confirms.
 
 ---
 
@@ -162,7 +165,7 @@ booking systems (System A, System B, extensible).
 | FR-605 | Shadow mode (full pipeline, no downstream publish) and **dual-publish** feature flag per book/target | Cutover per book demonstrated in staging | D20 |
 | FR-606 | Test harness can synthesize proto messages onto the ingress queue from legacy trade extracts and from golden fixtures | Used by parity + soak + spike suites | arch §12 |
 
-## 7.5 Functional requirements — reconciliation
+## 8. Functional requirements — reconciliation
 
 Design reference: architecture §7.1 (D25). TCS is the system of record for
 what was **instructed**; Systems A/B for what was **booked**.
@@ -179,7 +182,7 @@ what was **instructed**; Systems A/B for what was **booked**.
 | FR-707 | Scheduling & operability: EOD full runs (R1–R3) + intraday incremental (R2/R3, hourly, T-day trades) + on-demand per trade/book/date; runs restartable and idempotent per `(type, scope, as-of)`; break UI with aging escalation (24h/48h) | Re-running a completed run is a no-op; aging alert fires on stale break | D25 |
 | FR-708 | Recon persistence (`recon_run`, `recon_break`) follows the standard hot-partition + archive policy; recon metrics per architecture §11 emitted | Dashboards show breaks by type/class, auto-heal rate, age histogram | D19, D25 |
 
-## 8. Non-functional requirements
+## 9. Non-functional requirements
 
 | ID | Requirement | Target |
 |----|-------------|--------|
@@ -195,7 +198,7 @@ what was **instructed**; Systems A/B for what was **booked**.
 | NFR-10 | Maintainability | Modular monolith with ArchUnit-enforced module boundaries (pattern exists in `swap-rules-archtest`) |
 | NFR-11 | Tech stack | Java 21+, MS SQL Server, Solace, protobuf — fixed |
 
-## 9. Delivery phases & definition of done
+## 10. Delivery phases & definition of done
 
 Build strictly in order. A phase is done when its exit criteria pass in CI
 and a demo against the listed scenario succeeds.
@@ -216,7 +219,7 @@ and a demo against the listed scenario succeeds.
 | **F11** | Rules admin bulk ops (FR-507/508) | Changeset bulk edit + atomic publish + batch simulation demo |
 | **F12** | Reconciliation (FR-700–708) — build order R3 → R2 → R1 (R3 first: custom-lot unwind sync is the highest operational risk) | Seeded break fixtures per type detected, classified, healed/escalated; idempotent re-run; aging alerts |
 
-## 10. External dependencies & open items (blocking specific work)
+## 11. External dependencies & open items (blocking specific work)
 
 | # | Item | Owner | Blocks | Interim |
 |---|------|-------|--------|---------|
@@ -227,8 +230,11 @@ and a demo against the listed scenario succeeds.
 | E5 | PositionService lookup contract (open qty, swapRef, lotRefs, peer refs) | Position team | F5 | Stub interface per FR-305 |
 | E6 | System A/B reconciliation snapshot interfaces (API or EOD extract, with as-of watermark) | System A/B teams | F12 | Define `ReconRecord` normalization contract; build engine against fixtures |
 | E7 | GCAM EOD counts/extract for ingestion completeness recon | GCAM team | F12 (R1 only) | R2/R3 proceed without it |
+| E8 | **Full `AllocationMessage` field transcription** from the GCAM mapping workbook (proto in spec §F0.1 carries a representative subset) | GCAM team + TCS BA | F0 proto completeness; F3 rule criteria coverage | `extended_attributes` map carries unmapped fields; transcribe before F3 exit |
+| E9 | **SwapBlotter / `swapDataProduct` field dictionary** (canonical egress schema: contract, legs, schedule, lot, business-event fields) | TCS architecture + Ops | F3 (blotter build), F9 (parity manifest) | Derive draft from legacy blotter table schema + rules action targets; freeze before F3 exit |
+| E10 | **System A/B outbound envelope + business-ACK message formats** | System A/B teams | F6/F7 | Provisional contracts in architecture §15 are the working assumption |
 
-## 11. Out of scope (v1)
+## 12. Out of scope (v1)
 
 - Real-time/streaming reconciliation (batch EOD + hourly incremental only —
   FR-700–708 cover the in-scope recon engine, phase F12).

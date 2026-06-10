@@ -31,7 +31,7 @@ downstream booking/position systems with cross-reference tracking.
 | D15 | Cross-ref | **Bidirectional** push (A refs → B incl. unwind lot IDs; B refs → A) on each business ACK + poll API for recovery; required only for multi-target trades |
 | D16 | Cache | **Per-entity policy** (`cache-policy.yml`): static attributes cached, status/eligibility fields read-through or short-TTL |
 | D17 | Manual trades & approval | Same Solace topic, **dual publish mode** (Raw Allocation or SwapBlotter); approval is a **post-enrichment pipeline gate (stage 5.5)** routed on the enriched SwapBlotter + initiator STP status — NOT a pre-queue gate; non-STP initiators park until Approved; resume re-enters via same topic/key; 15-min timeout → escalation (see §8) |
-| D18 | Version-gap timeout | Book-specific config (`reorder-buffer.yml`) |
+| D18 | Version-gap timeout | Book-specific config (`version-gap.yml`) |
 | D19 | State store | SQL Server everywhere; monthly partitions on trade_date; `swap-archiver`-pattern archive at 90 days post-lifecycle-complete; lookup fallback to System A |
 | D20 | Cutover | Shadow mode default; dual publish per book/target feature flag |
 | D21 | Manual blotter governance | **Accept** (option 1): licensed-trader approval covers non-economic overrides; edited-fields diff audited; dual approval can be bolted on later if metrics show abuse |
@@ -579,7 +579,12 @@ allocation attributes), never sent by GCAM.
 
 `ingestion_record` · `enriched_allocation` · `swap_blotter` · `rule_explain` ·
 `routing_decision` · `dispatch_record` · `business_ack` · `cross_ref` ·
-`manual_trade` · `repair_quarantine` · `audit_reject` · `version_gap_hold`
+`manual_trade` · `repair_quarantine` · `audit_reject` · `version_gap_hold` ·
+`recon_run` · `recon_break`
+
+`manual_trade` holds **UI drafts only** (pre-submit). Once published to the
+queue, the trade lives in `ingestion_record` like any other; the draft row
+links to it via `ingestion_id` for the UI.
 
 ### Archive
 
@@ -589,15 +594,30 @@ allocation attributes), never sent by GCAM.
   the `swap-archiver` engine patterns (preflight, chunked, checkpointed,
   adaptive).
 
-### Lookup & ops APIs
+### REST API inventory
 
-- Lookup by allocationId / blockId / swapRef / lotRef / client+date /
-  book+date.
-- Fall-through: hot → archive → **System A API** (source of truth for aged
-  trades).
-- Resend / cross-ref sync trigger endpoints.
-- Cross-ref poll API (both directions, serves Systems A and B).
-- Repair queue: list / edit / reprocess / discard.
+All endpoints under `/api/v1`; OpenAPI YAML to be checked in per phase as
+endpoints land. Lookup fall-through: hot → archive → System A API.
+
+| Area | Endpoint | Purpose | Phase |
+|------|----------|---------|-------|
+| Lookup | `GET /trades/{ingestionId}` | Full trade journey: ingress, enrichment, blotter, rule explains, routing, envelopes, ACKs, cross-refs, approvals (FR-603) | F10 |
+| Lookup | `GET /trades?allocationId=&blockId=&swapRef=&lotRef=&clientAccount=&book=&tradeDate=` | Dimensional search with hot → archive → System A fall-through (FR-600) | F10 |
+| Resend | `POST /trades/{ingestionId}/resend?target={systemId}` | Idempotent re-dispatch (FR-601) | F10 |
+| Cross-ref | `GET /cross-refs?allocationId=&swapRef=&direction=` | Poll API for Systems A/B, both directions (FR-404) | F7 |
+| Cross-ref | `POST /cross-refs/{ingestionId}/sync` | Re-push both directions (FR-601) | F7 |
+| Manual | `POST /manual-trades/preview` | Dry-run pipeline: blotter + rule explains + gate outcome, no persist/publish | F8 |
+| Manual | `POST /manual-trades` | Submit; body carries publish mode (RAW_ALLOCATION / SWAP_BLOTTER) | F8 |
+| Manual | `POST /manual-trades/bulk` (multipart) | Bulk upload; returns per-row validation report + batchId (FR-504) | F8 |
+| Manual | `GET /manual-trades/bulk/{batchId}` | Batch status rollup (FR-506) | F8 |
+| Approval | `POST /approvals/callback` | Approval Service webhook: Approved/Denied per approvalId or batchId | F8 |
+| Repair | `GET /repair?category=&status=` · `PUT /repair/{id}` (edit fields) · `POST /repair/{id}/reprocess` · `POST /repair/{id}/discard` | Quarantine workflow (FR-209/300) | F4 |
+| Recon | `POST /recon/runs` (type, scope, asOf) · `GET /recon/runs/{runId}` · `GET /recon/runs/{runId}/breaks` | Trigger + inspect runs (FR-707) | F12 |
+| Recon | `POST /recon/breaks/{breakId}/{ack\|heal\|resolve\|write-off}` | Break workflow (FR-704/705) | F12 |
+| Rules (existing `swap-rules-admin`, extended) | `POST /rules` · `POST /snapshots/publish` · `POST /rules/simulate` + bulk changeset endpoints | Authoring + D24 bulk ops | F11 |
+
+Authentication/entitlements: firm-standard SSO; entitlement checks per
+persona (§6.1 rules entitlements; repair/recon = Ops; resend = Ops/SRE).
 
 ---
 
@@ -690,7 +710,7 @@ trade-capture-service/
 ├── tc-api/              Lookup, resend, sync, archive fallback to System A
 ├── tc-repair/           Quarantine + override UI backend
 ├── tc-observability/    Micrometer metrics → ESaaS/Observe
-└── tc-config/           reorder-buffer.yml, cache-policy.yml, routing-rules.yml,
+└── tc-config/           version-gap.yml, cache-policy.yml, routing-rules.yml,
                          position-match-key.yml, ingress.yml
 
 Libraries (this repo):
@@ -719,3 +739,104 @@ Libraries (this repo):
 | F10 | Dual publish flags + archive + System A fallback API |
 | F11 | Rules admin evolution: bulk edit, changeset import/export, batch simulation (D24) |
 | F12 | Reconciliation: R3 cross-system sync first (highest risk — custom-lot unwinds), then R2 instruction-vs-booking, then R1 ingestion completeness; break UI + auto-heal (D25) |
+
+---
+
+## 15. Integration contracts (provisional)
+
+Working-assumption payload shapes until the owning teams confirm (PRD
+§11: E4, E5, E10). Implement behind interfaces; treat field names as
+negotiable, **semantics as fixed**. All payloads carry the correlation id
+`(blockId, allocationId, version)`.
+
+### 15.1 Approval Service (E4) — F8
+
+```jsonc
+// TCS → Approval Service: request (single trade or batch)
+{
+  "approvalId": "APR-...",            // TCS-minted
+  "kind": "TRADE | BATCH",
+  "ingestionId": "…",                  // TRADE kind
+  "batchId": "…",                      // BATCH kind
+  "initiatedBy": "ta_jsmith",
+  "publishMode": "RAW_ALLOCATION | SWAP_BLOTTER",
+  "blotter": { /* full enriched SwapBlotter JSON */ },
+  "editedFieldsDiff": [                // SWAP_BLOTTER mode only
+    { "field": "spread", "ruleDefault": "300bps", "edited": "275bps" }
+  ],
+  "batchSummary": {                    // BATCH kind only
+    "rowCount": 9500, "books": ["EQ_US_HY"], "grossNotional": "…"
+  },
+  "respondBy": "2026-06-09T21:15:00Z"  // 15-min SLA hint
+}
+
+// Approval Service → TCS: POST /api/v1/approvals/callback
+{
+  "approvalId": "APR-...",
+  "outcome": "APPROVED | DENIED",
+  "scope": "ALL | ROWS",               // batch carve-out support
+  "rowCarveOut": ["rowNo", "..."],     // denied rows when scope=ROWS
+  "decidedBy": "trader_licensed_1",
+  "decidedAt": "2026-06-09T21:07:31Z"
+}
+```
+
+On `APPROVED`, `tc-approval` publishes `ApprovalResume` to the ingress topic
+(same partition key). On `DENIED`, terminal `APPROVAL_DENIED` + audit.
+
+### 15.2 PositionService lookup (E5) — F5
+
+```jsonc
+// GET /positions/lookup?book=&clientAccount=&security=&direction=[&swapStructure=]
+// (fields per position-match-key.yml template for the target system)
+{
+  "matchKey": { "book": "…", "clientAccount": "…", "security": "…", "direction": "LONG" },
+  "openQuantity": 125000,
+  "positionStatus": "OPEN | CLOSED | SETTLED",
+  "swapRefs":  { "SYSTEM_A": "A-SWP-991", "SYSTEM_B": "B-77231" },
+  "lotRefs": [
+    { "systemId": "SYSTEM_A", "lotId": "A-LOT-1", "openQty": 50000, "openDate": "2026-05-12" }
+  ],
+  "asOf": "2026-06-09T21:00:02Z"
+}
+```
+
+TCS derives NEW / TOP_UP / UNWIND from `openQuantity`, `positionStatus`, and
+the signed allocation quantity. Timeout/circuit-breaker: fail the trade to
+repair (`BUSINESS_VALIDATION` category), never guess the event type.
+
+### 15.3 Business ACK (E10) — consumed from `Q.TCS.BUSINESSACK.{SYSTEM}` — F6/F7
+
+```jsonc
+{
+  "correlation": { "blockId": "…", "allocationId": "…", "version": 3 },
+  "systemId": "SYSTEM_A",
+  "status": "BOOKED | REJECTED",
+  "swapRef": "A-SWP-991",
+  "lotRefs": [                          // exact lots; A includes unwind closures
+    { "lotId": "A-LOT-1", "action": "OPENED | CLOSED", "qty": 25000 }
+  ],
+  "rejectReason": null,
+  "ackAt": "2026-06-09T21:04:40Z"
+}
+```
+
+`REJECTED` → dispatch record `FAILED` + repair queue entry (not retried
+blindly). `BOOKED` → `business_ack` row; triggers cross-ref push (§7).
+
+### 15.4 Cross-ref push (E10) — published to `tcs/crossref/out/{system}/v1` — F7
+
+```jsonc
+{
+  "correlation": { "blockId": "…", "allocationId": "…", "version": 3 },
+  "fromSystem": "SYSTEM_A",            // whose refs these are
+  "swapRef": "A-SWP-991",
+  "lotRefs": [ { "lotId": "A-LOT-1", "action": "CLOSED", "qty": 25000 } ],
+  "eventType": "NEW | TOP_UP | UNWIND",
+  "sentAt": "2026-06-09T21:04:45Z"
+}
+```
+
+Receiver ACKs at transport level; `cross_ref.status → DELIVERED`. Recovery =
+poll API (`GET /api/v1/cross-refs`). For UNWIND, the `lotRefs[action=CLOSED]`
+entries are System B's authoritative custom-lot close instructions.

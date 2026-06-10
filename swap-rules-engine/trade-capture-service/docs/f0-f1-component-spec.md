@@ -3,8 +3,9 @@
 Detailed build spec for **F0** (contracts, schema, topology, config) and
 **F1** (ingress pipeline through enriched persist + GCAM ACK/NACK).
 
-Parent document: [trade-capture-architecture.md](trade-capture-architecture.md).
-Decision references (D1–D22) resolve against the decision register there.
+Parent documents: [trade-capture-prd.md](trade-capture-prd.md) (requirements)
+and [trade-capture-architecture.md](trade-capture-architecture.md) (design).
+Decision references (D1–D25) resolve against the decision register there.
 
 ---
 
@@ -197,7 +198,7 @@ CREATE TABLE dbo.repair_quarantine (
   quarantine_id   BIGINT IDENTITY PRIMARY KEY,
   ingestion_id    UNIQUEIDENTIFIER NULL,     -- null if quarantined pre-persist
   gcam_message_id VARCHAR(128) NOT NULL,
-  category        VARCHAR(32)  NOT NULL,     -- REFDATA_EXHAUSTED | VERSION_GAP | BUSINESS_VALIDATION | STALE_APPROVAL
+  category        VARCHAR(32)  NOT NULL,     -- REFDATA_EXHAUSTED | VERSION_GAP | BUSINESS_VALIDATION
   detail          NVARCHAR(MAX) NOT NULL,
   raw_proto       VARBINARY(MAX) NULL,
   status          VARCHAR(16)  NOT NULL DEFAULT 'OPEN', -- OPEN | REPROCESSED | DISCARDED
@@ -218,6 +219,39 @@ CREATE TABLE dbo.version_gap_hold (    -- DB-backed buffer: survives restart
   CONSTRAINT uq_hold UNIQUE (block_id, allocation_id, held_version)
 );
 
+-- F6 (DDL fixed now as part of the F0 contract): per-target dispatch state
+CREATE TABLE dbo.dispatch_record (
+  dispatch_id      BIGINT IDENTITY PRIMARY KEY,
+  ingestion_id     UNIQUEIDENTIFIER NOT NULL,
+  destination_id   VARCHAR(32)  NOT NULL,    -- SYSTEM_A | SYSTEM_B | CONTRACT_SVC | ...
+  status           VARCHAR(16)  NOT NULL DEFAULT 'PENDING',
+                   -- PENDING | CLAIMED | SENT | FAILED  (claim-batch executor, arch §7)
+  attempt_count    INT          NOT NULL DEFAULT 0,
+  next_attempt_at  DATETIME2(3) NOT NULL DEFAULT SYSUTCDATETIME(),
+  last_error       NVARCHAR(1000) NULL,
+  envelope_hash    VARCHAR(64)  NULL,        -- payload integrity / resend dedup
+  sent_at          DATETIME2(3) NULL,
+  created_at       DATETIME2(3) NOT NULL DEFAULT SYSUTCDATETIME(),
+  CONSTRAINT uq_dispatch UNIQUE (ingestion_id, destination_id)
+);
+CREATE INDEX ix_disp_claim ON dbo.dispatch_record (status, next_attempt_at)
+  INCLUDE (destination_id);
+
+-- F6/F7 (fixed now): business ACK is a separate table, never a dispatch status (D14)
+CREATE TABLE dbo.business_ack (
+  business_ack_id  BIGINT IDENTITY PRIMARY KEY,
+  dispatch_id      BIGINT       NOT NULL,    -- FK dispatch_record
+  system_id        VARCHAR(32)  NOT NULL,
+  status           VARCHAR(16)  NOT NULL,    -- BOOKED | REJECTED
+  swap_ref         VARCHAR(64)  NULL,
+  lot_refs         NVARCHAR(MAX) NULL,       -- JSON [{lotId, action, qty}]
+  reject_reason    NVARCHAR(1000) NULL,
+  ack_payload      NVARCHAR(MAX) NOT NULL,   -- raw, for audit
+  acked_at         DATETIME2(3) NOT NULL,
+  received_at      DATETIME2(3) NOT NULL DEFAULT SYSUTCDATETIME(),
+  CONSTRAINT uq_back UNIQUE (dispatch_id)    -- one business ACK per dispatch
+);
+
 -- F7 (DDL fixed now as part of the F0 contract): bidirectional cross-ref
 CREATE TABLE dbo.cross_ref (
   cross_ref_id     BIGINT IDENTITY PRIMARY KEY,
@@ -231,6 +265,10 @@ CREATE TABLE dbo.cross_ref (
   CONSTRAINT uq_xref UNIQUE (ingestion_id, from_system, to_system)
 );
 ```
+
+Deferred DDL (specified in later phase specs, not part of the F0 contract):
+`swap_blotter`, `rule_explain`, `routing_decision`, `manual_trade` (F3–F5/F8);
+`recon_run`, `recon_break` (F12).
 
 ### `ingestion_record.status` state machine
 
@@ -263,7 +301,7 @@ for a record not in PENDING_APPROVAL → ACK + skip).
 ## F0.4 Configuration files
 
 ```yaml
-# reorder-buffer.yml — version-gap policy ONLY (D2/D18)
+# version-gap.yml — version-gap policy (D2/D18)
 defaults:
   versionGapTimeoutMs: 45000
   maxHeldPerAllocation: 16
@@ -313,6 +351,22 @@ systems:
     positionLookup: BEFORE_ROUTE
     matchKey:
       fields: [book, clientAccount, security, direction, swapStructure]
+```
+
+```yaml
+# routing-rules.yml — consumed in F5/F6; checked in at F0 as a contract (D10)
+rules:                       # first match wins, evaluated top-down
+  - name: us-single-stock
+    criteria: { book: "EQ_US*", assetType: SINGLE_STOCK }
+    targets: [SYSTEM_A, SYSTEM_B]
+  - name: default
+    criteria: {}
+    targets: [SYSTEM_A]
+targets:
+  SYSTEM_A: { queue: "tcs/booking/out/system-a/v1", awaitBusinessAck: true,
+              businessAckTimeoutMs: 480000, maxAttempts: 5 }
+  SYSTEM_B: { queue: "tcs/booking/out/system-b/v1", awaitBusinessAck: true,
+              businessAckTimeoutMs: 480000, maxAttempts: 5, requiresCrossRef: true }
 ```
 
 ---
@@ -438,7 +492,15 @@ between commit and ACK is resolved by the idempotency gate on redelivery.
 
 ## Carried prerequisites (external, before F1 code freeze)
 
-1. GCAM ordering contract (or `key_sequence` field) — blocking.
-2. GCAM envelope decision (`TcsIngressMessage` direct vs consumer-edge wrap).
-3. System A business-ACK latency distribution — shapes T+8/T+10 milestones,
-   not F1 itself.
+Authoritative list with owners and interim measures: PRD §11 (E1–E10).
+F0/F1-relevant subset:
+
+1. **E1** — GCAM ordering contract (or `key_sequence` field) — blocking F1
+   sign-off.
+2. **E2** — GCAM envelope decision (`TcsIngressMessage` direct vs
+   consumer-edge wrap) — blocking F0 proto finalization.
+3. **E8** — Full `AllocationMessage` field transcription from the GCAM
+   mapping workbook — `extended_attributes` overflow carries unmapped fields
+   until transcribed (must complete before F3 exit).
+4. **E3** — System A business-ACK latency distribution — shapes the T+8/T+10
+   SLA milestones, not F1 itself.
