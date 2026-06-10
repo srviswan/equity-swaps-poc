@@ -162,6 +162,23 @@ booking systems (System A, System B, extensible).
 | FR-605 | Shadow mode (full pipeline, no downstream publish) and **dual-publish** feature flag per book/target | Cutover per book demonstrated in staging | D20 |
 | FR-606 | Test harness can synthesize proto messages onto the ingress queue from legacy trade extracts and from golden fixtures | Used by parity + soak + spike suites | arch §12 |
 
+## 7.5 Functional requirements — reconciliation
+
+Design reference: architecture §7.1 (D25). TCS is the system of record for
+what was **instructed**; Systems A/B for what was **booked**.
+
+| ID | Requirement | Acceptance criteria | Ref |
+|----|-------------|---------------------|-----|
+| FR-700 | **R1 — Ingestion completeness recon**: compare GCAM EOD counts/extract vs `ingestion_record`; detect missed allocations and silently-expired version gaps | EOD run flags a withheld test message; on-demand run per book/date | D25 |
+| FR-701 | **R2 — Instruction-vs-booking recon**: compare TCS dispatched + business-ACKed view vs System A/B snapshots; detect orphans both directions and key-economics drift (qty, direction, security) | Seeded orphan and qty-drift fixtures detected and classified | D25 |
+| FR-702 | **R3 — Cross-system sync recon (A ↔ B)**: verify both systems hold each other's swap/lot refs per TCS `cross_ref`; detect lot mismatches after custom-lot unwinds and status divergence | Post-unwind lot mismatch fixture detected; missing peer-ref detected | D25 |
+| FR-703 | Matching by key precedence `allocationId → swapRef → lotRef` with composite fallback for orphan candidates; field comparison driven by the **same configurable manifest mechanism as FR-604** (must-match / tolerance / ignore) | Manifest change requires no deploy; shared implementation with parity harness | D25, FR-604 |
+| FR-704 | Break taxonomy and lifecycle: `MISSING_IN_A/B/TCS, REF_MISMATCH, QTY_MISMATCH, STATUS_MISMATCH, LOT_MISMATCH, DUPLICATE`; lifecycle `DETECTED → HEALING/ACKNOWLEDGED → RESOLVED_AUTO/RESOLVED_MANUAL/WRITTEN_OFF`; write-off requires reason + approver | All transitions audited; no break deletable | D25 |
+| FR-705 | **Auto-heal** restricted to idempotent TCS-side actions: cross-ref re-push (FR-403), poll-API backfill, envelope resend (FR-601); QTY/STATUS breaks never auto-healed; a break is `RESOLVED_AUTO` only when the next incremental run no longer detects it | Auto-heal test: ref break healed and confirmed on re-run; qty break routed to human | D25 |
+| FR-706 | Snapshot discipline: read-only API/extract access to downstream (never direct DB); watermarked as-of comparison excluding the in-flight horizon (default 30 min, configurable) to avoid false breaks | In-flight trade produces no break; watermark recorded per run | D25 |
+| FR-707 | Scheduling & operability: EOD full runs (R1–R3) + intraday incremental (R2/R3, hourly, T-day trades) + on-demand per trade/book/date; runs restartable and idempotent per `(type, scope, as-of)`; break UI with aging escalation (24h/48h) | Re-running a completed run is a no-op; aging alert fires on stale break | D25 |
+| FR-708 | Recon persistence (`recon_run`, `recon_break`) follows the standard hot-partition + archive policy; recon metrics per architecture §11 emitted | Dashboards show breaks by type/class, auto-heal rate, age histogram | D19, D25 |
+
 ## 8. Non-functional requirements
 
 | ID | Requirement | Target |
@@ -197,6 +214,7 @@ and a demo against the listed scenario succeeds.
 | **F9** | Parity harness (FR-604/606) | Legacy comparison run with configurable manifest; mismatch report |
 | **F10** | Cutover tooling + archive + fallback API (FR-600–603, 605) | Shadow → dual-publish flag demo; archival partition switch |
 | **F11** | Rules admin bulk ops (FR-507/508) | Changeset bulk edit + atomic publish + batch simulation demo |
+| **F12** | Reconciliation (FR-700–708) — build order R3 → R2 → R1 (R3 first: custom-lot unwind sync is the highest operational risk) | Seeded break fixtures per type detected, classified, healed/escalated; idempotent re-run; aging alerts |
 
 ## 10. External dependencies & open items (blocking specific work)
 
@@ -207,11 +225,13 @@ and a demo against the listed scenario succeeds.
 | E3 | System A business-ACK latency distribution (P50/P99) | System A team | T+8/T+10 SLA budgets, F7 | Provisional budgets stand |
 | E4 | Approval Service batch-approval API capability | Approval team | FR-505 | Per-row approval fallback with batch summary header |
 | E5 | PositionService lookup contract (open qty, swapRef, lotRefs, peer refs) | Position team | F5 | Stub interface per FR-305 |
+| E6 | System A/B reconciliation snapshot interfaces (API or EOD extract, with as-of watermark) | System A/B teams | F12 | Define `ReconRecord` normalization contract; build engine against fixtures |
+| E7 | GCAM EOD counts/extract for ingestion completeness recon | GCAM team | F12 (R1 only) | R2/R3 proceed without it |
 
 ## 11. Out of scope (v1)
 
-- Reconciliation engine between Systems A/B (cross-ref data model designed to
-  support it later).
+- Real-time/streaming reconciliation (batch EOD + hourly incremental only —
+  FR-700–708 cover the in-scope recon engine, phase F12).
 - Auto-deny on approval timeout (escalation only).
 - Redis shared cache (interface-ready; Caffeine per-instance in v1).
 - Compensating recall of in-flight versions on amend/cancel (D9).

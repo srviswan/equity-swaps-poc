@@ -38,6 +38,7 @@ downstream booking/position systems with cross-reference tracking.
 | D22 | Ref-data retry count | 3 attempts, backoff 1s / 5s / 15s |
 | D23 | Bulk trade upload | CSV/XLSX upload in manual UI; per-row validation report; each valid row published as an individual Raw-Allocation `TcsIngressMessage` with its own partition key; batch-level approval grouping at the stage-5.5 gate (see §8.5) |
 | D24 | Bulk rules operations | Multi-select bulk edit (effective dates, enable/disable, priority, clone), CSV/YAML import/export; all bulk changes flow through draft → conflict detection → batch simulation → single snapshot publish (see §6.1) |
+| D25 | Reconciliation | Three recon types (ingestion completeness, instruction-vs-booking, A↔B sync) in one `tc-recon` engine; snapshot-based (read-only against downstream), watermarked to exclude in-flight trades; auto-heal limited to idempotent TCS-side actions (cross-ref re-push, resend); QTY/STATUS breaks always human-resolved (see §7.1) |
 
 ### External contract prerequisites (raise with owning teams before F1 code freeze)
 
@@ -316,8 +317,8 @@ Each direction is an independent row with its own state:
 | B's business ACK (A was a target) | TCS → **A** | B's swapRef + lotRef |
 
 Cross-ref milestone = both directions DELIVERED. Poll API serves both
-directions for recovery/backfill. Symmetric dataset supports future
-reconciliation (A's view vs B's view vs TCS cross-ref table).
+directions for recovery/backfill. The symmetric dataset (A's view vs B's view
+vs TCS cross-ref table) is the input to R3 reconciliation (§7.1).
 
 Single-target trades: business ACK still tracked; no cross-ref rows.
 
@@ -340,6 +341,93 @@ The reference `FanOutDispatchWorker` performs network I/O inside one
 Business ACKs land in `business_ack` (separate table, FK to dispatch record —
 D14). Timeout scheduler: no ACK within per-target SLA → retry inquiry →
 escalation alert. No GCAM impact (already ACK'd).
+
+### 7.1 Reconciliation architecture (D25)
+
+TCS is the **system of record for what was instructed**; Systems A/B are the
+systems of record for what was booked. Reconciliation closes the loop across
+three boundaries with one engine and one break-management workflow.
+
+```mermaid
+flowchart TB
+    subgraph sources [Snapshot sources]
+        GCAMX[GCAM EOD extract / counts]
+        TCSDB[(TCS tables: ingestion, dispatch,
+        business_ack, cross_ref)]
+        AX[System A snapshot API/extract]
+        BX[System B snapshot API/extract]
+    end
+
+    subgraph engine [tc-recon engine]
+        LOAD[Snapshot loaders normalize to ReconRecord]
+        MATCH[Keyed matcher: allocationId / swapRef / lotRef]
+        CLASS[Break classifier + tolerance rules]
+        HEAL[Auto-heal dispatcher]
+    end
+
+    subgraph breaks [Break management]
+        RUNS[(recon_run / recon_break)]
+        UI[Ops break UI: ack, heal, resolve, age]
+        ESC[Aging escalation alerts]
+    end
+
+    GCAMX --> LOAD
+    TCSDB --> LOAD
+    AX --> LOAD
+    BX --> LOAD
+    LOAD --> MATCH --> CLASS --> RUNS
+    CLASS --> HEAL
+    RUNS --> UI --> ESC
+    HEAL -->|cross-ref re-push| AB[Systems A/B]
+    HEAL -->|envelope resend| AB
+```
+
+**Reconciliation types**
+
+| Type | Compares | Detects | Cadence |
+|------|----------|---------|---------|
+| R1 — Ingestion completeness | GCAM EOD counts/extract vs `ingestion_record` | Missed/unprocessed allocations, version gaps that timed out silently | EOD + on-demand |
+| R2 — Instruction vs booking | TCS dispatched + business-ACKed view vs System A/B snapshots | Orphans (booked downstream but unknown to TCS, or instructed but absent downstream), key-economics drift (qty, direction, security) | EOD full + intraday incremental (T-day trades, hourly) |
+| R3 — Cross-system sync (A ↔ B) | A's swap/lot refs vs B's, via TCS `cross_ref` | Missing peer refs, lot mismatches after custom-lot unwinds, status divergence | Intraday incremental + EOD |
+
+**Matching & classification**
+
+- Match keys in precedence order: `allocationId` → `swapRef` → `lotRef`;
+  composite fallback `(book, account, security, tradeDate, qty)` for orphan
+  candidates.
+- Field comparison driven by a **configurable manifest** (reuses the F9
+  parity-manifest mechanism: must-match / tolerance / ignore per field).
+- Break taxonomy: `MISSING_IN_A` · `MISSING_IN_B` · `MISSING_IN_TCS` ·
+  `REF_MISMATCH` · `QTY_MISMATCH` · `STATUS_MISMATCH` · `LOT_MISMATCH` ·
+  `DUPLICATE`.
+
+**Break lifecycle & auto-heal**
+
+```
+DETECTED → (auto-heal eligible?) → HEALING → RESOLVED_AUTO
+        → ACKNOWLEDGED → RESOLVED_MANUAL | WRITTEN_OFF (with reason + approver)
+        → aging thresholds (24h / 48h) → escalation alerts
+```
+
+Auto-heal is limited to **safe, idempotent TCS-side actions**: cross-ref
+re-push (FR-403), poll-API backfill, envelope resend (FR-601). The engine
+never mutates downstream economics; QTY/STATUS breaks always require human
+resolution. Re-run after heal confirms closure (a break is only
+`RESOLVED_AUTO` when the next incremental run no longer detects it).
+
+**Persistence**: `recon_run` (run id, type, scope, snapshot watermarks,
+totals) and `recon_break` (run id, type, keys, both-side values, status,
+resolution, aging) — monthly partitioned like other hot tables, archived on
+the same policy.
+
+**Design constraints**
+
+- Read-only against downstream: snapshots via API/extract, never direct DB.
+- Snapshot watermarking: each side's extract carries an as-of timestamp;
+  matcher only compares records both sides could know about (avoids false
+  breaks from in-flight trades — anything younger than the in-flight horizon,
+  default 30 min, is excluded).
+- Runs are restartable and idempotent per `(type, scope, as-of)`.
 
 ---
 
@@ -563,6 +651,7 @@ Position Service, Approval Service, Systems A/B.
 | Cross-ref | `tc.crossref.pending{direction}` · `tc.crossref.lot_delivery.latency` · `tc.partial.success` |
 | Manual / approval | `tc.manual.publish{mode}` · `tc.approval.gate{outcome}` (STP_PASS / PARKED / DENIED) · `tc.approval.pending` · `tc.approval.timeout` · `tc.approval.park_to_resume.latency` · `tc.manual.blotter.edited_fields` |
 | Bulk | `tc.bulk.upload.rows{result}` (valid / invalid / submitted) · `tc.bulk.batch.status{status}` · `tc.rules.changeset.published` · `tc.rules.bulk_edit.rules_touched` |
+| Recon | `tc.recon.run.duration{type}` · `tc.recon.breaks.detected{type,break_class}` · `tc.recon.breaks.open{break_class}` · `tc.recon.auto_heal{result}` · `tc.recon.break.age_hours` (histogram) |
 | Ingestion | `tc.ingestion.status{status}` (incl. `PARTIALLY_SENT`) · `tc.quarantine.open{category}` |
 
 ---
@@ -593,7 +682,9 @@ trade-capture-service/
 ├── tc-blotter/          SwapBlotter aggregate + swapDataProduct, lifecycle status
 ├── tc-routing/          Routing rules, position-match-key.yml, PositionService client
 ├── tc-outbound/         Envelope builder, dispatch executor, business ACK tracker
-├── tc-crossref/         Bidirectional push, poll API, reconciliation hooks
+├── tc-crossref/         Bidirectional push, poll API
+├── tc-recon/            Snapshot loaders, keyed matcher, break classifier,
+│                        auto-heal dispatcher, break workflow backend (§7.1)
 ├── tc-approval/         Stage-5.5 gate, park/resume, Approval Service client, 15-min timeout scheduler
 ├── tc-manual/           Manual UI backend: preview, dual-mode publish
 ├── tc-api/              Lookup, resend, sync, archive fallback to System A
@@ -627,3 +718,4 @@ Libraries (this repo):
 | F9 | Shadow harness + legacy blotter diff (configurable field manifest) |
 | F10 | Dual publish flags + archive + System A fallback API |
 | F11 | Rules admin evolution: bulk edit, changeset import/export, batch simulation (D24) |
+| F12 | Reconciliation: R3 cross-system sync first (highest risk — custom-lot unwinds), then R2 instruction-vs-booking, then R1 ingestion completeness; break UI + auto-heal (D25) |
