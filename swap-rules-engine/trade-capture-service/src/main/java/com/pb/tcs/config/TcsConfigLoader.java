@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -126,6 +127,17 @@ public final class TcsConfigLoader {
                                             fields));
                         });
         return new PositionMatchKeyConfig(defaultFields, systems);
+    }
+
+    public static ApprovalWorkflowConfig approvalWorkflow() {
+        JsonNode root = read("tcs-config/approval-workflow.yml");
+        JsonNode stp = root.required("stp");
+        return new ApprovalWorkflowConfig(
+                Duration.ofMinutes(root.required("approvalTimeoutMinutes").asLong()),
+                root.required("bulkMaxRows").asInt(),
+                new ApprovalWorkflowConfig.StpPolicy(
+                        Set.copyOf(stringList(stp.required("sources"))),
+                        Set.copyOf(stringList(stp.required("initiators")))));
     }
 
     public static RoutingRulesConfig routingRules() {

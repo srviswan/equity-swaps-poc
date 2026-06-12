@@ -25,14 +25,17 @@ public record PipelineResult(
         REFDATA_RETRY,
         REFDATA_QUARANTINED,
         PERSIST_FAILED,
-        UNSUPPORTED_PAYLOAD
+        UNSUPPORTED_PAYLOAD,
+        GATE_PARKED,
+        BLOTTER_READY,
+        BUSINESS_QUARANTINED
     }
 
-    static PipelineResult ack(Disposition disposition, String detail) {
+    public static PipelineResult ack(Disposition disposition, String detail) {
         return new PipelineResult(SolaceAction.ACK, disposition, detail, List.of());
     }
 
-    static PipelineResult nack(Disposition disposition, String detail) {
+    public static PipelineResult nack(Disposition disposition, String detail) {
         return new PipelineResult(SolaceAction.NACK, disposition, detail, List.of());
     }
 }

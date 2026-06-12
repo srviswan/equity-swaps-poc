@@ -147,4 +147,15 @@ class TcsConfigLoaderTest {
             }
         }
     }
+
+    @Nested
+    class ApprovalWorkflowConfig {
+        @Test
+        void loadsStpPolicyAndBulkLimits() {
+            var config = TcsConfigLoader.approvalWorkflow();
+            assertThat(config.bulkMaxRows()).isEqualTo(10_000);
+            assertThat(config.isStp("GCAM", "ta_user")).isTrue();
+            assertThat(config.isStp("MANUAL", "ta_user")).isFalse();
+        }
+    }
 }
