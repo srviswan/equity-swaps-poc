@@ -151,6 +151,15 @@ public final class TcsConfigLoader {
         return new ParityManifestConfig(defaultMode, fields);
     }
 
+    public static ReconPolicyConfig reconPolicy() {
+        JsonNode root = read("tcs-config/recon-policy.yml");
+        JsonNode defaults = root.required("defaults");
+        JsonNode aging = root.required("breakAging");
+        List<Integer> escalation = new ArrayList<>();
+        aging.required("escalationHours").forEach(n -> escalation.add(n.asInt()));
+        return new ReconPolicyConfig(defaults.required("inFlightHorizonMinutes").asInt(), escalation);
+    }
+
     public static CutoverPolicyConfig cutoverPolicy() {
         JsonNode root = read("tcs-config/cutover-policy.yml");
         boolean shadowMode = root.required("defaults").required("shadowMode").asBoolean();

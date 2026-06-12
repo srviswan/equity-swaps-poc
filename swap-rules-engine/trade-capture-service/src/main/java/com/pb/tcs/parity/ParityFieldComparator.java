@@ -31,6 +31,11 @@ public final class ParityFieldComparator {
                 BlotterJson.toTree(legacy));
     }
 
+    /** Shared by parity harness (FR-604) and recon field comparison (FR-703). */
+    public ParityMismatchReport compareJson(String tradeKey, JsonNode left, JsonNode right) {
+        return compare(tradeKey, left, right);
+    }
+
     ParityMismatchReport compare(String tradeKey, JsonNode tcs, JsonNode legacy) {
         Set<String> paths = new LinkedHashSet<>();
         collectPaths("", tcs, paths);

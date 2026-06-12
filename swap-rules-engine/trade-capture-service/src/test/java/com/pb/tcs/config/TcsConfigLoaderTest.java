@@ -161,6 +161,16 @@ class TcsConfigLoaderTest {
     }
 
     @Nested
+    class ReconPolicyConfigLoader {
+        @Test
+        void loadsInFlightHorizonAndAgingEscalation() {
+            var config = TcsConfigLoader.reconPolicy();
+            assertThat(config.inFlightHorizonMinutes()).isEqualTo(30);
+            assertThat(config.escalationHours()).containsExactly(24, 48);
+        }
+    }
+
+    @Nested
     class ParityManifest {
         @Test
         void loadsToleranceAndIgnorePolicies() {

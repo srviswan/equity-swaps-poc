@@ -1,0 +1,6 @@
+# FR-706 / D25: reconciliation engine policy.
+defaults:
+  inFlightHorizonMinutes: 30
+
+breakAging:
+  escalationHours: [24, 48]
