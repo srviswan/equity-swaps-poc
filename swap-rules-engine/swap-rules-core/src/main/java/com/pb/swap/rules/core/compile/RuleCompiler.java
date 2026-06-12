@@ -35,6 +35,27 @@ public final class RuleCompiler {
             List<ActionTemplate> templates,
             List<CriteriaFragment> fragments,
             LocalDate asOf) {
+        return compileInternal(rules, templates, fragments, r -> isEffective(r, asOf));
+    }
+
+    /**
+     * FR-205/D7: compiles every enabled+published rule version regardless of effective dates into
+     * one snapshot. Date selection moves to evaluation time — {@code RuleSnapshot.bucketFor}
+     * filters by the trade date, so back-dated trades hit the rule versions effective on their
+     * trade date without recompiling.
+     */
+    public RuleSnapshot compileFullRange(
+            List<RuleDefinition> rules,
+            List<ActionTemplate> templates,
+            List<CriteriaFragment> fragments) {
+        return compileInternal(rules, templates, fragments, r -> true);
+    }
+
+    private RuleSnapshot compileInternal(
+            List<RuleDefinition> rules,
+            List<ActionTemplate> templates,
+            List<CriteriaFragment> fragments,
+            Predicate<RuleDefinition> effectiveFilter) {
         Map<String, ActionTemplate> templateById =
                 templates.stream().collect(Collectors.toMap(ActionTemplate::id, t -> t, (a, b) -> b));
         Map<String, CriteriaFragment> fragmentById =
@@ -42,7 +63,7 @@ public final class RuleCompiler {
 
         List<CompiledRule> compiled = new ArrayList<>();
         for (RuleDefinition rule : rules) {
-            if (!rule.enabled() || !isEffective(rule, asOf)) {
+            if (!rule.enabled() || !effectiveFilter.test(rule)) {
                 continue;
             }
             if (rule.status() != null && rule.status() != RuleStatus.PUBLISHED && rule.status() != RuleStatus.APPROVED) {
