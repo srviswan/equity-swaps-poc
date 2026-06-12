@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-final class InMemoryRoutingDecisionStore implements RoutingDecisionStore {
+public final class InMemoryRoutingDecisionStore implements RoutingDecisionStore {
 
     private final Map<String, List<RoutingDecision>> byCorrelation = new LinkedHashMap<>();
 

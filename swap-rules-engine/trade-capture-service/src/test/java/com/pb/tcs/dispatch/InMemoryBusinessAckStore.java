@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** In-memory {@link BusinessAckStore}. */
-final class InMemoryBusinessAckStore implements BusinessAckStore {
+public final class InMemoryBusinessAckStore implements BusinessAckStore {
 
     private final Map<Long, BusinessAckRecord> rows = new LinkedHashMap<>();
     private final AtomicLong ids = new AtomicLong();

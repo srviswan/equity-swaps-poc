@@ -6,7 +6,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Test double: per-destination failures and optional publish barrier (target-down isolation). */
-final class StubDownstreamPublisher implements DownstreamPublisher {
+public final class StubDownstreamPublisher implements DownstreamPublisher {
 
     private final Set<String> down = ConcurrentHashMap.newKeySet();
     private volatile CountDownLatch blockUntil;

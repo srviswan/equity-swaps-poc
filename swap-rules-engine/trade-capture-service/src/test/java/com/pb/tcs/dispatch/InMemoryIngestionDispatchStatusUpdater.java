@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** In-memory {@link IngestionDispatchStatusUpdater} for dispatch lifecycle tests. */
-final class InMemoryIngestionDispatchStatusUpdater implements IngestionDispatchStatusUpdater {
+public final class InMemoryIngestionDispatchStatusUpdater implements IngestionDispatchStatusUpdater {
 
     private final Map<String, IngestionDispatchStatus> statuses = new ConcurrentHashMap<>();
 

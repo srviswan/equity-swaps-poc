@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** In-memory {@link DispatchRecordStore} with claim-batch semantics. */
-final class InMemoryDispatchRecordStore implements DispatchRecordStore {
+public final class InMemoryDispatchRecordStore implements DispatchRecordStore {
 
     private final Map<Long, DispatchRecord> rows = new LinkedHashMap<>();
     private final AtomicLong ids = new AtomicLong();

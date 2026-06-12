@@ -3,6 +3,7 @@ package com.pb.tcs.dispatch;
 import com.pb.tcs.repair.RepairStore;
 import com.pb.tcs.rules.BlotterJson;
 import com.pb.tcs.rules.BlotterStore;
+import com.pb.tcs.crossref.CrossRefPlanner;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
@@ -19,6 +20,7 @@ public final class BusinessAckHandler {
     private final BlotterStore blotterStore;
     private final RepairStore repairStore;
     private final BusinessAckMetrics metrics;
+    private final CrossRefPlanner crossRefPlanner;
 
     public BusinessAckHandler(
             DispatchRecordStore dispatchStore,
@@ -26,11 +28,22 @@ public final class BusinessAckHandler {
             BlotterStore blotterStore,
             RepairStore repairStore,
             BusinessAckMetrics metrics) {
+        this(dispatchStore, ackStore, blotterStore, repairStore, metrics, null);
+    }
+
+    public BusinessAckHandler(
+            DispatchRecordStore dispatchStore,
+            BusinessAckStore ackStore,
+            BlotterStore blotterStore,
+            RepairStore repairStore,
+            BusinessAckMetrics metrics,
+            CrossRefPlanner crossRefPlanner) {
         this.dispatchStore = dispatchStore;
         this.ackStore = ackStore;
         this.blotterStore = blotterStore;
         this.repairStore = repairStore;
         this.metrics = metrics;
+        this.crossRefPlanner = crossRefPlanner;
     }
 
     public void handle(BusinessAckMessage message) {
@@ -86,6 +99,10 @@ public final class BusinessAckHandler {
                         message.rejectReason(),
                         message.rawPayload(),
                         message.ackedAt()));
+
+        if (crossRefPlanner != null) {
+            crossRefPlanner.onBusinessAck(dispatch, message);
+        }
     }
 
     private static String lotRefsJson(BusinessAckMessage message) {

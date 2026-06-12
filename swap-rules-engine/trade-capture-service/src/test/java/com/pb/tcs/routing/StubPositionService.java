@@ -17,7 +17,7 @@ public final class StubPositionService implements PositionServiceClient {
     private final List<Map<String, String>> lookups = new ArrayList<>();
     private boolean down;
 
-    void openPosition(String security, long openQty, String status) {
+    public void openPosition(String security, long openQty, String status) {
         positions.put(
                 security,
                 new PositionSnapshot(
