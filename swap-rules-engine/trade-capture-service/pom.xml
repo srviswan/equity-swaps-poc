@@ -19,6 +19,8 @@
 
     <properties>
         <protobuf.version>4.28.3</protobuf.version>
+        <!-- F1.6 load/crash suites are excluded from the fast loop; run with -Pperf -->
+        <tcs.excluded.groups>perf</tcs.excluded.groups>
     </properties>
 
     <dependencies>
@@ -34,6 +36,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
@@ -77,6 +83,12 @@
             <artifactId>mssql-jdbc</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -103,6 +115,24 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludedGroups>${tcs.excluded.groups}</excludedGroups>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- F1.6 exit-criteria runs: soak/spike/crash/outage (Docker required).
+                 Full soak certification: mvn test -Pperf -Dtcs.soak.messages=2000000 -->
+            <id>perf</id>
+            <properties>
+                <tcs.excluded.groups>no-such-tag</tcs.excluded.groups>
+            </properties>
+        </profile>
+    </profiles>
 </project>

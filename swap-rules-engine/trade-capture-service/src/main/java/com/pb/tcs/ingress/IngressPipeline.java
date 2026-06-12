@@ -87,10 +87,8 @@ public final class IngressPipeline implements MessageProcessor {
         String allocationId = allocation.getAllocationId();
         int version = allocation.getVersion();
 
-        if (store.isEnriched(blockId, allocationId, version)) {
-            return PipelineResult.ack(Disposition.DUPLICATE, "idempotency key already enriched");
-        }
-
+        // Idempotency (FR-102/D4) rides on lastEnrichedVersion alone: any version <= last is a
+        // duplicate/stale ACK — an exact-version isEnriched probe would be a redundant query.
         int lastProcessed = store.lastEnrichedVersion(blockId, allocationId).orElse(0);
         VersionGapEvaluator.Decision decision =
                 VersionGapEvaluator.onArrival(lastProcessed, version);
@@ -98,9 +96,16 @@ public final class IngressPipeline implements MessageProcessor {
         if (decision instanceof VersionGapEvaluator.Duplicate) {
             return PipelineResult.ack(
                     Disposition.DUPLICATE,
-                    "stale version %d (last processed %d)".formatted(version, lastProcessed));
+                    "duplicate/stale version %d (last processed %d)"
+                            .formatted(version, lastProcessed));
         }
         if (decision instanceof VersionGapEvaluator.Hold hold) {
+            if (holds.heldVersions(blockId, allocationId).contains(version)) {
+                // redelivery after a crash between hold-commit and ACK (NFR-6): the hold row
+                // is already durable — ACK idempotently instead of tripping uq_hold
+                return PipelineResult.ack(
+                        Disposition.HELD, "version %d already held".formatted(version));
+            }
             long timeoutMs = versionGapConfig.timeoutMsFor(allocation.getBook());
             holds.hold(
                     new VersionGapHoldStore.HoldRow(

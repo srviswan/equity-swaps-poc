@@ -169,6 +169,20 @@ class IngressPipelineTest {
     }
 
     @Test
+    void redeliveredWhileAlreadyHeld_ackIdempotently() {
+        // crash between hold-commit and Solace ACK: the broker redelivers a version that is
+        // already in version_gap_hold — must ACK as already-held, never hit uq_hold and NACK-loop
+        pipeline.process(swap("BLK-1", "ALL-1", 1).toByteArray(), 1);
+        pipeline.process(swap("BLK-1", "ALL-1", 3).toByteArray(), 1); // held
+
+        PipelineResult redelivered = pipeline.process(swap("BLK-1", "ALL-1", 3).toByteArray(), 2);
+
+        assertThat(redelivered.solace()).isEqualTo(SolaceAction.ACK);
+        assertThat(redelivered.disposition()).isEqualTo(Disposition.HELD);
+        assertThat(holds.heldVersions("BLK-1", "ALL-1")).containsExactly(3);
+    }
+
+    @Test
     void gapFilled_drainsHeldVersionsInOrder() {
         pipeline.process(swap("BLK-1", "ALL-1", 1).toByteArray(), 1);
         pipeline.process(swap("BLK-1", "ALL-1", 3).toByteArray(), 1); // held
