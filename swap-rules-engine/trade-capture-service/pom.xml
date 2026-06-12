@@ -40,6 +40,11 @@
             <artifactId>micrometer-core</artifactId>
             <version>1.13.6</version>
         </dependency>
+        <dependency>
+            <groupId>com.solacesystems</groupId>
+            <artifactId>sol-jcsmp</artifactId>
+            <version>10.25.2</version>
+        </dependency>
 
         <!-- test -->
         <dependency>
@@ -60,6 +65,11 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>solace</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
