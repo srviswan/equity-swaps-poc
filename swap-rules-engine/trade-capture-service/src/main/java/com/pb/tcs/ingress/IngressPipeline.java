@@ -25,7 +25,7 @@ import java.util.SortedSet;
  * <p>The returned {@link PipelineResult#solace()} is applied verbatim by the consumer — this class
  * is the single owner of ACK/NACK decisions.
  */
-public final class IngressPipeline {
+public final class IngressPipeline implements MessageProcessor {
 
     private static final int SUPPORTED_SCHEMA_VERSION = 1;
 

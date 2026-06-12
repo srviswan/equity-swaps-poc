@@ -2,6 +2,7 @@ package com.pb.tcs.ingress;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -17,6 +18,8 @@ class GapTimeoutSweeperTest {
 
     private final InMemoryIngestionStore store = new InMemoryIngestionStore();
     private final InMemoryHoldStore holds = new InMemoryHoldStore();
+    private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
+    private final IngressMetrics metrics = new IngressMetrics(registry);
 
     private static VersionGapHoldStore.HoldRow holdDueAt(int version, Instant deadline) {
         return new VersionGapHoldStore.HoldRow(
@@ -29,7 +32,7 @@ class GapTimeoutSweeperTest {
         holds.hold(holdDueAt(4, NOW.plusSeconds(60)));   // still waiting
 
         GapTimeoutSweeper sweeper =
-                new GapTimeoutSweeper(holds, store, Clock.fixed(NOW, ZoneOffset.UTC));
+                new GapTimeoutSweeper(holds, store, metrics, Clock.fixed(NOW, ZoneOffset.UTC));
         int swept = sweeper.sweep();
 
         assertThat(swept).isEqualTo(1);
@@ -38,6 +41,10 @@ class GapTimeoutSweeperTest {
             assertThat(q.detail()).contains("BLK-1").contains("3");
         });
         assertThat(holds.heldVersions("BLK-1", "ALL-1")).containsExactly(4);
+        assertThat(
+                        registry.counter("tc.version_gap.quarantined", "book", "EQ_US_HY")
+                                .count())
+                .isEqualTo(1);
     }
 
     @Test
@@ -45,7 +52,7 @@ class GapTimeoutSweeperTest {
         holds.hold(holdDueAt(3, NOW.plusSeconds(30)));
 
         GapTimeoutSweeper sweeper =
-                new GapTimeoutSweeper(holds, store, Clock.fixed(NOW, ZoneOffset.UTC));
+                new GapTimeoutSweeper(holds, store, metrics, Clock.fixed(NOW, ZoneOffset.UTC));
 
         assertThat(sweeper.sweep()).isZero();
         assertThat(store.quarantines()).isEmpty();

@@ -11,11 +11,14 @@ public final class GapTimeoutSweeper {
 
     private final VersionGapHoldStore holds;
     private final IngestionStore store;
+    private final IngressMetrics metrics;
     private final Clock clock;
 
-    public GapTimeoutSweeper(VersionGapHoldStore holds, IngestionStore store, Clock clock) {
+    public GapTimeoutSweeper(
+            VersionGapHoldStore holds, IngestionStore store, IngressMetrics metrics, Clock clock) {
         this.holds = holds;
         this.store = store;
+        this.metrics = metrics;
         this.clock = clock;
     }
 
@@ -34,6 +37,7 @@ public final class GapTimeoutSweeper {
                                     row.book()),
                     row.rawProto());
             holds.remove(row.blockId(), row.allocationId(), row.heldVersion());
+            metrics.versionGapQuarantined(row.book());
         }
         return expired.size();
     }
