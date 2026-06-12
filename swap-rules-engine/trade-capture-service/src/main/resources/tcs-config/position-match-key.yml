@@ -1,0 +1,13 @@
+# position-match-key.yml — consumed in F5; checked in at F0 as a contract (D10)
+default:
+  fields: [book, clientAccount, security, direction]
+systems:
+  SYSTEM_A:
+    explicitEventType: false
+    positionLookup: NEVER
+    matchKey: default
+  SYSTEM_B:
+    explicitEventType: true
+    positionLookup: BEFORE_ROUTE
+    matchKey:
+      fields: [book, clientAccount, security, direction, swapStructure]

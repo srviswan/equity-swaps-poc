@@ -1,0 +1,10 @@
+# cache-policy.yml — consumed in F2; checked in at F0 as a contract (D16)
+entities:
+  security:
+    staticFields:   { mode: CACHE, ttl: 4h,  invalidation: event }
+    statusFields:   { mode: READ_THROUGH }
+  clientAccount:
+    staticFields:   { mode: CACHE, ttl: 1h,  invalidation: event }
+    eligibility:    { mode: CACHE, ttl: 30s }
+  book:             { mode: CACHE, ttl: 4h,  invalidation: event }
+  washBook:         { mode: CACHE, ttl: 1h,  invalidation: event }

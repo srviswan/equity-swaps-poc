@@ -1,0 +1,8 @@
+# version-gap.yml — version-gap policy (D2/D18)
+defaults:
+  versionGapTimeoutMs: 45000
+  maxHeldPerAllocation: 16
+  onTimeout: QUARANTINE
+books:
+  EQ_US_HY: { versionGapTimeoutMs: 90000 }
+  EQ_EU:    { versionGapTimeoutMs: 30000 }
