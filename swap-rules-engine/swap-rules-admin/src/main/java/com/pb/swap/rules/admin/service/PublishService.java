@@ -1,6 +1,5 @@
 package com.pb.swap.rules.admin.service;
 
-import com.pb.swap.rules.core.compile.CompiledRule;
 import com.pb.swap.rules.core.compile.RuleCompiler;
 import com.pb.swap.rules.core.model.ActionTemplate;
 import com.pb.swap.rules.core.model.CriteriaFragment;
@@ -14,9 +13,8 @@ import com.pb.swap.rules.store.repo.RuleDefinitionRepository;
 import com.pb.swap.rules.store.repo.SnapshotPublicationRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -90,23 +88,10 @@ public class PublishService {
             List<ActionTemplate> templates,
             List<CriteriaFragment> fragments,
             LocalDate asOf) {
-        RuleSnapshot snap = compiler.compile(rules, templates, fragments, asOf);
-        Set<String> seen = new HashSet<>();
-        for (var bucket : snap.allBuckets().values()) {
-            for (CompiledRule r : bucket.rules()) {
-                String key =
-                        r.category()
-                                + "|"
-                                + r.target()
-                                + "|"
-                                + r.specificity()
-                                + "|"
-                                + r.fragmentIds();
-                if (!seen.add(key)) {
-                    throw new IllegalStateException(
-                            "Conflict: duplicate specificity and fragments for rule " + r.ruleId());
-                }
-            }
+        Optional<String> conflict =
+                SnapshotConflictDetector.detect(compiler, rules, templates, fragments, asOf);
+        if (conflict.isPresent()) {
+            throw new IllegalStateException(conflict.get());
         }
     }
 }
