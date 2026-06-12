@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** In-memory {@link RepairStore} mirroring the SQL adapter's OPEN-guarded transitions. */
-final class InMemoryRepairStore implements RepairStore {
+public final class InMemoryRepairStore implements RepairStore {
 
     private final Map<Long, RepairItem> items = new LinkedHashMap<>();
     private final AtomicLong ids = new AtomicLong();
