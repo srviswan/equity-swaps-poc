@@ -151,6 +151,25 @@ public final class TcsConfigLoader {
         return new ParityManifestConfig(defaultMode, fields);
     }
 
+    public static CutoverPolicyConfig cutoverPolicy() {
+        JsonNode root = read("tcs-config/cutover-policy.yml");
+        boolean shadowMode = root.required("defaults").required("shadowMode").asBoolean();
+        JsonNode dual = root.required("dualPublish");
+        Map<String, Boolean> dualDefault = readTargetFlags(dual.required("default"));
+        Map<String, Map<String, Boolean>> dualBooks = new LinkedHashMap<>();
+        dual.path("books")
+                .properties()
+                .forEach(e -> dualBooks.put(e.getKey(), readTargetFlags(e.getValue())));
+        JsonNode archive = root.required("archive");
+        return new CutoverPolicyConfig(
+                shadowMode,
+                dualBooks,
+                dualDefault,
+                new CutoverPolicyConfig.ArchivePolicy(
+                        archive.required("hotWindowMonths").asInt(),
+                        archive.required("eligibilityDaysPastLifecycle").asInt()));
+    }
+
     public static ApprovalWorkflowConfig approvalWorkflow() {
         JsonNode root = read("tcs-config/approval-workflow.yml");
         JsonNode stp = root.required("stp");
@@ -222,6 +241,12 @@ public final class TcsConfigLoader {
             case "d" -> Duration.ofDays(amount);
             default -> throw new IllegalArgumentException("Unparseable ttl: " + text);
         };
+    }
+
+    private static Map<String, Boolean> readTargetFlags(JsonNode node) {
+        Map<String, Boolean> flags = new LinkedHashMap<>();
+        node.properties().forEach(e -> flags.put(e.getKey(), e.getValue().asBoolean()));
+        return flags;
     }
 
     private static List<String> stringList(JsonNode array) {

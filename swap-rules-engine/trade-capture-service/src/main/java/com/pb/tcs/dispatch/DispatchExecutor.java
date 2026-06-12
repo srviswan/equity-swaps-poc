@@ -1,6 +1,7 @@
 package com.pb.tcs.dispatch;
 
 import com.pb.tcs.config.RoutingRulesConfig;
+import com.pb.tcs.cutover.CutoverPolicy;
 import com.pb.tcs.routing.RoutingDecision;
 import com.pb.tcs.routing.RoutingDecisionStore;
 import com.pb.tcs.rules.BlotterStore;
@@ -30,6 +31,7 @@ public final class DispatchExecutor {
     private final RoutingRulesConfig routingConfig;
     private final IngestionDispatchStatusUpdater ingestionStatus;
     private final DispatchMetrics metrics;
+    private final CutoverPolicy cutoverPolicy;
     private final Clock clock;
     private final Map<String, ExecutorService> destinationPools = new HashMap<>();
     private volatile CountDownLatch completionLatch = new CountDownLatch(0);
@@ -43,6 +45,28 @@ public final class DispatchExecutor {
             IngestionDispatchStatusUpdater ingestionStatus,
             DispatchMetrics metrics,
             Clock clock) {
+        this(
+                dispatchStore,
+                blotterStore,
+                routingStore,
+                publisher,
+                routingConfig,
+                ingestionStatus,
+                metrics,
+                clock,
+                CutoverPolicy.liveAll());
+    }
+
+    public DispatchExecutor(
+            DispatchRecordStore dispatchStore,
+            BlotterStore blotterStore,
+            RoutingDecisionStore routingStore,
+            DownstreamPublisher publisher,
+            RoutingRulesConfig routingConfig,
+            IngestionDispatchStatusUpdater ingestionStatus,
+            DispatchMetrics metrics,
+            Clock clock,
+            CutoverPolicy cutoverPolicy) {
         this.dispatchStore = dispatchStore;
         this.blotterStore = blotterStore;
         this.routingStore = routingStore;
@@ -51,6 +75,7 @@ public final class DispatchExecutor {
         this.ingestionStatus = ingestionStatus;
         this.metrics = metrics;
         this.clock = clock;
+        this.cutoverPolicy = cutoverPolicy;
     }
 
     /** One poll cycle: claim, fan out concurrently by destination, aggregate status. */
@@ -111,6 +136,11 @@ public final class DispatchExecutor {
                                                     "missing routing for "
                                                             + record.destinationId()));
             DispatchEnvelope envelope = DispatchEnvelopeBuilder.build(blotter, decision);
+            if (!cutoverPolicy.shouldPublish(blotter.book(), record.destinationId())) {
+                dispatchStore.markShadowSkipped(record.dispatchId(), clock.instant());
+                metrics.shadowSkipped(record.destinationId());
+                return;
+            }
             publisher.publish(envelope);
             String hash = DispatchEnvelopeBuilder.hash(envelope);
             Instant sentAt = clock.instant();
@@ -141,6 +171,8 @@ public final class DispatchExecutor {
     private void recomputeStatus(String correlationId) {
         List<DispatchRecord> records = dispatchStore.findByCorrelationId(correlationId);
         long sent = records.stream().filter(r -> r.status() == DispatchStatus.SENT).count();
+        long shadow =
+                records.stream().filter(r -> r.status() == DispatchStatus.SHADOW_SKIPPED).count();
         long failed = records.stream().filter(r -> r.status() == DispatchStatus.FAILED).count();
         long pending =
                 records.stream()
@@ -149,10 +181,11 @@ public final class DispatchExecutor {
                                         r.status() == DispatchStatus.PENDING
                                                 || r.status() == DispatchStatus.CLAIMED)
                         .count();
+        long completed = sent + shadow;
 
         IngestionDispatchStatus status;
-        if (sent == records.size()) {
-            status = IngestionDispatchStatus.SENT;
+        if (completed == records.size()) {
+            status = sent == records.size() ? IngestionDispatchStatus.SENT : IngestionDispatchStatus.SHADOW_COMPLETE;
         } else if (failed == records.size()) {
             status = IngestionDispatchStatus.FAILED;
         } else if (sent > 0 && (failed > 0 || pending > 0)) {

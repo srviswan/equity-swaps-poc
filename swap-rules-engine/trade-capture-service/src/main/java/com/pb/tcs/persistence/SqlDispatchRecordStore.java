@@ -3,7 +3,6 @@ package com.pb.tcs.persistence;
 import com.pb.tcs.dispatch.DispatchRecord;
 import com.pb.tcs.dispatch.DispatchRecordStore;
 import com.pb.tcs.dispatch.DispatchStatus;
-import com.pb.tcs.dispatch.DispatchStatus;
 import com.pb.tcs.ingress.IngestionStoreException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -118,6 +117,38 @@ public final class SqlDispatchRecordStore implements DispatchRecordStore {
             ps.setString(1, lastError);
             ps.setLong(2, dispatchId);
         }, dispatchId);
+    }
+
+    @Override
+    public void markShadowSkipped(long dispatchId, Instant skippedAt) {
+        String sql =
+                "UPDATE dbo.dispatch_record SET status='SHADOW_SKIPPED', envelope_hash='SHADOW',"
+                        + " sent_at=?, last_error='shadow_mode' WHERE dispatch_id=? AND status='CLAIMED'";
+        update(sql, ps -> {
+            ps.setTimestamp(1, Timestamp.from(skippedAt));
+            ps.setLong(2, dispatchId);
+        }, dispatchId);
+    }
+
+    @Override
+    public List<DispatchRecord> findByIngestionId(UUID ingestionId) {
+        String sql =
+                "SELECT dispatch_id, ingestion_id, correlation_id, destination_id, status,"
+                        + " attempt_count, next_attempt_at, last_error, envelope_hash, sent_at"
+                        + " FROM dbo.dispatch_record WHERE ingestion_id=? ORDER BY destination_id";
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, ingestionId.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                List<DispatchRecord> rows = new ArrayList<>();
+                while (rs.next()) {
+                    rows.add(row(rs));
+                }
+                return rows;
+            }
+        } catch (SQLException e) {
+            throw wrap("dispatch lookup by ingestion failed", e);
+        }
     }
 
     @Override

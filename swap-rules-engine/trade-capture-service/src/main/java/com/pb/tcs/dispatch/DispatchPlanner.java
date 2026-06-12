@@ -1,5 +1,6 @@
 package com.pb.tcs.dispatch;
 
+import com.pb.tcs.cutover.CutoverPolicy;
 import com.pb.tcs.routing.RoutingDecision;
 import java.util.List;
 import java.util.UUID;
@@ -9,15 +10,32 @@ public final class DispatchPlanner {
 
     private final DispatchRecordStore dispatchStore;
     private final IngestionDispatchStatusUpdater ingestionStatus;
+    private final CutoverPolicy cutoverPolicy;
 
     public DispatchPlanner(
             DispatchRecordStore dispatchStore, IngestionDispatchStatusUpdater ingestionStatus) {
-        this.dispatchStore = dispatchStore;
-        this.ingestionStatus = ingestionStatus;
+        this(dispatchStore, ingestionStatus, CutoverPolicy.liveAll());
     }
 
-    public void plan(UUID ingestionId, String correlationId, List<RoutingDecision> decisions) {
-        List<String> targets = decisions.stream().map(RoutingDecision::targetId).distinct().toList();
+    public DispatchPlanner(
+            DispatchRecordStore dispatchStore,
+            IngestionDispatchStatusUpdater ingestionStatus,
+            CutoverPolicy cutoverPolicy) {
+        this.dispatchStore = dispatchStore;
+        this.ingestionStatus = ingestionStatus;
+        this.cutoverPolicy = cutoverPolicy;
+    }
+
+    public void plan(UUID ingestionId, String correlationId, String book, List<RoutingDecision> decisions) {
+        List<String> targets =
+                decisions.stream()
+                        .map(RoutingDecision::targetId)
+                        .filter(t -> cutoverPolicy.shouldPlanDispatch(book, t))
+                        .distinct()
+                        .toList();
+        if (targets.isEmpty()) {
+            return;
+        }
         dispatchStore.createPending(ingestionId, correlationId, targets);
         ingestionStatus.update(correlationId, IngestionDispatchStatus.QUEUED);
     }

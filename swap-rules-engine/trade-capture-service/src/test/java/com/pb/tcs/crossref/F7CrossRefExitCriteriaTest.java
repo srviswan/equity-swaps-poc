@@ -208,7 +208,7 @@ class F7CrossRefExitCriteriaTest {
         var routed = (RoutingStage.Outcome.Routed) routingStage.process(allocation, assembly.blotter());
         routingStore.saveAll(routed.decisions());
         new DispatchPlanner(dispatchStore, ingestionStatus)
-                .plan(INGESTION_ID, assembly.blotter().correlationId(), routed.decisions());
+                .plan(INGESTION_ID, assembly.blotter().correlationId(), assembly.blotter().book(), routed.decisions());
         dispatchExecutor.poll(10);
         dispatchExecutor.awaitCompletion();
 
@@ -277,7 +277,7 @@ class F7CrossRefExitCriteriaTest {
         var routed = (RoutingStage.Outcome.Routed) routingStage.process(allocation, assembly.blotter());
         routingStore.saveAll(routed.decisions());
         new DispatchPlanner(dispatchStore, ingestionStatus)
-                .plan(INGESTION_ID, assembly.blotter().correlationId(), routed.decisions());
+                .plan(INGESTION_ID, assembly.blotter().correlationId(), assembly.blotter().book(), routed.decisions());
         dispatchExecutor.poll(10);
         dispatchExecutor.awaitCompletion();
         assertThat(dispatchStore.findByCorrelationId(assembly.blotter().correlationId()))

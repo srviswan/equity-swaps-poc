@@ -149,6 +149,18 @@ class TcsConfigLoaderTest {
     }
 
     @Nested
+    class CutoverPolicyConfigLoader {
+        @Test
+        void loadsShadowDefaultAndDualPublishBookOverrides() {
+            var config = TcsConfigLoader.cutoverPolicy();
+            assertThat(config.shadowMode()).isTrue();
+            assertThat(config.dualPublishEnabled("EQ_US_HY", "SYSTEM_A")).isFalse();
+            assertThat(config.dualPublishEnabled("EQ_APAC", "SYSTEM_B")).isTrue();
+            assertThat(config.archive().hotWindowMonths()).isEqualTo(3);
+        }
+    }
+
+    @Nested
     class ParityManifest {
         @Test
         void loadsToleranceAndIgnorePolicies() {

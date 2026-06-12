@@ -5,6 +5,7 @@ public enum IngestionDispatchStatus {
     QUEUED,
     DISPATCHING,
     SENT,
+    SHADOW_COMPLETE,
     PARTIALLY_SENT,
     FAILED
 }

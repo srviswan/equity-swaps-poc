@@ -23,6 +23,10 @@ public interface DispatchRecordStore {
 
     void markFailed(long dispatchId, String lastError);
 
+    void markShadowSkipped(long dispatchId, Instant skippedAt);
+
+    List<DispatchRecord> findByIngestionId(UUID ingestionId);
+
     List<DispatchRecord> findByCorrelationId(String correlationId);
 
     Optional<DispatchRecord> findByDestination(String correlationId, String destinationId);

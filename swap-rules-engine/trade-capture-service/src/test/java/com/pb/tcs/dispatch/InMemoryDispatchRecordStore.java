@@ -93,6 +93,19 @@ public final class InMemoryDispatchRecordStore implements DispatchRecordStore {
     }
 
     @Override
+    public void markShadowSkipped(long dispatchId, Instant skippedAt) {
+        update(dispatchId, r -> new DispatchRecord(
+                r.dispatchId(), r.ingestionId(), r.correlationId(), r.destinationId(),
+                DispatchStatus.SHADOW_SKIPPED, r.attemptCount(), r.nextAttemptAt(), "shadow_mode",
+                "SHADOW", skippedAt));
+    }
+
+    @Override
+    public List<DispatchRecord> findByIngestionId(UUID ingestionId) {
+        return rows.values().stream().filter(r -> r.ingestionId().equals(ingestionId)).toList();
+    }
+
+    @Override
     public List<DispatchRecord> findByCorrelationId(String correlationId) {
         return rows.values().stream().filter(r -> r.correlationId().equals(correlationId)).toList();
     }

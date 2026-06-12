@@ -22,4 +22,8 @@ public final class DispatchMetrics {
     public void dlq(String destination) {
         registry.counter("trade.dispatch.dlq", "destination", destination).increment();
     }
+
+    public void shadowSkipped(String destination) {
+        registry.counter("trade.dispatch.shadow_skipped", "destination", destination).increment();
+    }
 }

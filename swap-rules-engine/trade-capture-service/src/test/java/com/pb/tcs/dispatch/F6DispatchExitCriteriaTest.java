@@ -105,7 +105,7 @@ class F6DispatchExitCriteriaTest {
         routingStore.saveAll(routed.decisions());
 
         // stage 9: plan dispatch records
-        planner.plan(INGESTION_ID, correlationId, routed.decisions());
+        planner.plan(INGESTION_ID, correlationId, assembly.blotter().book(), routed.decisions());
         assertThat(ingestionStatus.current(correlationId)).isEqualTo(IngestionDispatchStatus.QUEUED);
 
         // stage 10: B is down — A must still dispatch (target-down isolation)
@@ -206,7 +206,7 @@ class F6DispatchExitCriteriaTest {
         blotterStore.save(assembly.blotter(), assembly.explains());
         var routed = (RoutingStage.Outcome.Routed) routingStage.process(allocation, assembly.blotter());
         routingStore.saveAll(routed.decisions());
-        planner.plan(INGESTION_ID, assembly.blotter().correlationId(), routed.decisions());
+        planner.plan(INGESTION_ID, assembly.blotter().correlationId(), assembly.blotter().book(), routed.decisions());
         return assembly.blotter().correlationId();
     }
 }

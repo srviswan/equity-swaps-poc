@@ -20,6 +20,8 @@ public interface ApprovalStore {
 
     List<ApprovalRecord> findExpiredPending(Instant now);
 
+    List<ApprovalRecord> findByIngestionId(UUID ingestionId);
+
     void markEscalated(String approvalId);
 
     record ParkCommand(

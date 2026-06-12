@@ -5,5 +5,6 @@ public enum DispatchStatus {
     PENDING,
     CLAIMED,
     SENT,
+    SHADOW_SKIPPED,
     FAILED
 }

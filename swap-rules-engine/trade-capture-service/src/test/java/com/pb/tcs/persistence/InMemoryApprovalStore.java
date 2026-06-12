@@ -111,6 +111,13 @@ public final class InMemoryApprovalStore implements ApprovalStore {
     }
 
     @Override
+    public List<ApprovalRecord> findByIngestionId(UUID ingestionId) {
+        return byApprovalId.values().stream()
+                .filter(r -> r.ingestionId().equals(ingestionId))
+                .toList();
+    }
+
+    @Override
     public void markEscalated(String approvalId) {
         // status remains PENDING per FR-303 escalation-only semantics
     }
