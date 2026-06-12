@@ -23,8 +23,13 @@ public interface IngestionStore {
      */
     void persistEnriched(EnrichedAllocation allocation);
 
-    /** Insert {@code audit_reject} row; stage = STRUCTURAL | MANDATORY | REFDATA. */
-    void auditReject(String stage, String reason, int attempt, TcsIngressMessage raw);
+    /**
+     * Insert {@code audit_reject} row; stage = STRUCTURAL | MANDATORY | REFDATA.
+     *
+     * @param parsed null when the bytes never parsed (STRUCTURAL failures)
+     */
+    void auditReject(
+            String stage, String reason, int attempt, byte[] rawProto, TcsIngressMessage parsed);
 
     /** Insert {@code repair_quarantine} row (category per spec §F0.3). */
     void quarantine(String category, String detail, byte[] rawProto);

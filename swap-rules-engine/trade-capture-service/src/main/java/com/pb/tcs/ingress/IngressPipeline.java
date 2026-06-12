@@ -62,7 +62,7 @@ public final class IngressPipeline {
     public PipelineResult process(byte[] raw, int deliveryAttempt) {
         ProtoStructuralValidator.Result parse = structuralValidator.parse(raw);
         if (parse instanceof ProtoStructuralValidator.Malformed malformed) {
-            store.auditReject("STRUCTURAL", malformed.reason(), deliveryAttempt, null);
+            store.auditReject("STRUCTURAL", malformed.reason(), deliveryAttempt, raw, null);
             return PipelineResult.nack(Disposition.REJECTED_STRUCTURAL, malformed.reason());
         }
         TcsIngressMessage envelope = ((ProtoStructuralValidator.Parsed) parse).message();
@@ -79,7 +79,7 @@ public final class IngressPipeline {
         List<String> violations = mandatoryValidator.validate(allocation);
         if (!violations.isEmpty()) {
             String reason = String.join("; ", violations);
-            store.auditReject("MANDATORY", reason, deliveryAttempt, envelope);
+            store.auditReject("MANDATORY", reason, deliveryAttempt, raw, envelope);
             return PipelineResult.nack(Disposition.REJECTED_MANDATORY, reason);
         }
 
@@ -119,13 +119,13 @@ public final class IngressPipeline {
         // In order — enrich + persist (stage 2/3).
         EnrichedAllocation enriched;
         try {
-            enriched = enrich(allocation);
+            enriched = enrich(envelope, raw);
         } catch (MissingReferenceData missing) {
             if (deliveryAttempt >= ingressConfig.refdataRetry().maxAttempts()) {
                 store.quarantine("REFDATA_EXHAUSTED", missing.getMessage(), raw);
                 return PipelineResult.ack(Disposition.REFDATA_QUARANTINED, missing.getMessage());
             }
-            store.auditReject("REFDATA", missing.getMessage(), deliveryAttempt, envelope);
+            store.auditReject("REFDATA", missing.getMessage(), deliveryAttempt, raw, envelope);
             return PipelineResult.nack(Disposition.REFDATA_RETRY, missing.getMessage());
         }
 
@@ -157,7 +157,7 @@ public final class IngressPipeline {
             }
             VersionGapHoldStore.HoldRow row = claimed.get();
             try {
-                store.persistEnriched(enrich(parseHeld(row).getAllocation()));
+                store.persistEnriched(enrich(parseHeld(row), row.rawProto()));
                 drained.add(version);
             } catch (MissingReferenceData missing) {
                 store.quarantine("REFDATA_EXHAUSTED", missing.getMessage(), row.rawProto());
@@ -179,7 +179,8 @@ public final class IngressPipeline {
         }
     }
 
-    private EnrichedAllocation enrich(AllocationMessage allocation) {
+    private EnrichedAllocation enrich(TcsIngressMessage envelope, byte[] raw) {
+        AllocationMessage allocation = envelope.getAllocation();
         String securityRef =
                 refData.lookupSecurity(allocation.getSecurityId())
                         .orElseThrow(() -> missing("security", allocation.getSecurityId()));
@@ -203,7 +204,7 @@ public final class IngressPipeline {
             // BLOCK: wash book substitutes the client account in the sequence key (D8)
             washBookRef = lookupWashBook(allocation);
         }
-        return new EnrichedAllocation(allocation, securityRef, clientRef, bookRef, washBookRef);
+        return new EnrichedAllocation(envelope, raw, securityRef, clientRef, bookRef, washBookRef);
     }
 
     private String lookupWashBook(AllocationMessage allocation) {

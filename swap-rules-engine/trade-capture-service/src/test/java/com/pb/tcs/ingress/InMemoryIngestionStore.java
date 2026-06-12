@@ -47,7 +47,8 @@ final class InMemoryIngestionStore implements IngestionStore {
     }
 
     @Override
-    public void auditReject(String stage, String reason, int attempt, TcsIngressMessage raw) {
+    public void auditReject(
+            String stage, String reason, int attempt, byte[] rawProto, TcsIngressMessage parsed) {
         auditRejects.add(new AuditRow(stage, reason, attempt));
     }
 
