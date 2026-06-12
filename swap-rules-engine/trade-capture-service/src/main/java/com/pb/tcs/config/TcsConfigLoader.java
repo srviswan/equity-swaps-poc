@@ -68,6 +68,16 @@ public final class TcsConfigLoader {
                         root.required("gapDetection").required("useKeySequence").asBoolean()));
     }
 
+    public static BusinessValidationConfig businessValidation() {
+        JsonNode root = read("tcs-config/business-validation.yml");
+        JsonNode s = root.required("structural");
+        return new BusinessValidationConfig(
+                stringList(root.required("mandatoryFields")),
+                new BusinessValidationConfig.Structural(
+                        s.path("spreadBpsNonNegative").asBoolean(true),
+                        s.path("divPassthroughPercentRange").asBoolean(true)));
+    }
+
     public static CachePolicyConfig cachePolicy() {
         JsonNode root = read("tcs-config/cache-policy.yml");
         Map<String, Map<String, CachePolicyConfig.FieldPolicy>> entities = new LinkedHashMap<>();

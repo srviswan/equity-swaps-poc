@@ -1,10 +1,7 @@
 package com.pb.tcs.persistence;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pb.tcs.ingress.IngestionStoreException;
+import com.pb.tcs.rules.BlotterJson;
 import com.pb.tcs.rules.BlotterStore;
 import com.pb.tcs.rules.RuleExplain;
 import com.pb.tcs.rules.SwapBlotter;
@@ -40,11 +37,6 @@ public final class SqlBlotterStore implements BlotterStore {
             VALUES (?,?,?,?,?,?,?,?)
             """;
 
-    private static final ObjectMapper JSON =
-            new ObjectMapper()
-                    .registerModule(new JavaTimeModule())
-                    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
     private final DataSource dataSource;
 
     public SqlBlotterStore(DataSource dataSource) {
@@ -68,7 +60,7 @@ public final class SqlBlotterStore implements BlotterStore {
                     ps.setString(8, blotter.securityId());
                     ps.setDate(9, tradeDate);
                     ps.setString(10, blotter.snapshotVersion());
-                    ps.setString(11, toJson(blotter));
+                    ps.setString(11, BlotterJson.toJson(blotter));
                     ps.executeUpdate();
                 }
                 try (PreparedStatement ps = conn.prepareStatement(INSERT_EXPLAIN)) {
@@ -135,14 +127,6 @@ public final class SqlBlotterStore implements BlotterStore {
             }
         } catch (SQLException e) {
             throw wrap("explain lookup failed", e);
-        }
-    }
-
-    static String toJson(SwapBlotter blotter) {
-        try {
-            return JSON.writeValueAsString(blotter);
-        } catch (JsonProcessingException e) {
-            throw new IngestionStoreException("blotter serialization failed", e);
         }
     }
 
