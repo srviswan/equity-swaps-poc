@@ -28,7 +28,7 @@ class F3GoldenFixtureTest {
     @BeforeAll
     void load() {
         assembler =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+                new BlotterAssembler(F3Fixtures.goldenRules());
     }
 
     @Test
@@ -129,7 +129,7 @@ class F3GoldenFixtureTest {
     void reloadSwapsSnapshotAtomically() {
         String before = assembler.snapshotVersion();
 
-        assembler.reload(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+        assembler.reload(F3Fixtures.goldenRules());
 
         assertThat(assembler.snapshotVersion()).isNotEqualTo(before);
         // engine still functional on the new snapshot

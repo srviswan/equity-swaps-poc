@@ -70,9 +70,7 @@ class SqlBlotterStoreTest {
 
     private static com.pb.tcs.rules.BlotterAssembler.Assembly assembly(String blockId) {
         var assembler =
-                new com.pb.tcs.rules.BlotterAssembler(
-                        com.pb.tcs.rules.RuleSetLoader.fromClasspath(
-                                "fixtures/rules/f3-golden-rules.yml"));
+                new com.pb.tcs.rules.BlotterAssembler(com.pb.tcs.rules.F3Fixtures.goldenRules());
         return assembler.assemble(
                 com.pb.tcs.rules.F3Fixtures.usNyseSwap(blockId, 1, "2026-06-10"));
     }

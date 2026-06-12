@@ -72,7 +72,7 @@ class F7CrossRefExitCriteriaTest {
     @BeforeEach
     void setUp() {
         assembler =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+                new BlotterAssembler(F3Fixtures.goldenRules());
         positionService = new StubPositionService();
         routingStore = new InMemoryRoutingDecisionStore();
         blotterStore = new InMemoryBlotterStore();

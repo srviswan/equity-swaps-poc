@@ -34,7 +34,7 @@ class F9ParityExitCriteriaTest {
     @BeforeEach
     void setUp() {
         legacyStore = new InMemoryLegacyBlotterStore();
-        assembler = new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+        assembler = new BlotterAssembler(F3Fixtures.goldenRules());
         harness =
                 new ParityHarnessService(
                         legacyStore,

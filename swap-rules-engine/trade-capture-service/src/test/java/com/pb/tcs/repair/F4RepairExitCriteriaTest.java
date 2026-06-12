@@ -37,7 +37,7 @@ class F4RepairExitCriteriaTest {
     @BeforeEach
     void setUp() {
         assembler =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+                new BlotterAssembler(F3Fixtures.goldenRules());
         validator = new BusinessValidator(TcsConfigLoader.businessValidation());
         repairStore = new InMemoryRepairStore();
         blotterStore = new InMemoryBlotterStore();

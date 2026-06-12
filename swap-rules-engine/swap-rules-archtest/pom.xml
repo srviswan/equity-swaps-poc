@@ -29,6 +29,11 @@
             <artifactId>swap-rules-admin</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.pb.swap.rules</groupId>
+            <artifactId>trade-capture-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit5</artifactId>
         </dependency>

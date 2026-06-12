@@ -232,7 +232,7 @@ class F10CutoverExitCriteriaTest {
         EnrichedAllocation allocation = F3Fixtures.usNyseSwap("BLK-JR", 1, "2026-06-10");
         lifecycle.persistEnrichedAndReturnId(allocation);
         BlotterAssembler assembler =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+                new BlotterAssembler(F3Fixtures.goldenRules());
         var assembly = assembler.assemble(allocation);
         blotterStore.save(assembly.blotter(), assembly.explains());
         RoutingStage routingStage =
@@ -306,7 +306,7 @@ class F10CutoverExitCriteriaTest {
 
     private void routeAndPlan(EnrichedAllocation allocation, UUID ingestionId, CutoverPolicy policy) {
         BlotterAssembler assembler =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+                new BlotterAssembler(F3Fixtures.goldenRules());
         var assembly = assembler.assemble(allocation);
         blotterStore.save(assembly.blotter(), assembly.explains());
         RoutingStage routingStage =

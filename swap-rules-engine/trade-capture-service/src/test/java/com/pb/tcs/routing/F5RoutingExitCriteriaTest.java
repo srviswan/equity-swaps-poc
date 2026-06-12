@@ -40,7 +40,7 @@ class F5RoutingExitCriteriaTest {
     @BeforeEach
     void setUp() {
         assembler =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+                new BlotterAssembler(F3Fixtures.goldenRules());
         positionService = new StubPositionService();
         decisionStore = new InMemoryRoutingDecisionStore();
         repairStore = new InMemoryRepairStore();

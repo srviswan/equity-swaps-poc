@@ -72,7 +72,7 @@ class F8ApprovalExitCriteriaTest {
                         new ApprovalMetrics(new SimpleMeterRegistry()),
                         Clock.fixed(NOW, ZoneOffset.UTC));
         BlotterAssembler assembler =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+                new BlotterAssembler(F3Fixtures.goldenRules());
         BusinessValidationStage businessValidation =
                 new BusinessValidationStage(
                         new BusinessValidator(TcsConfigLoader.businessValidation()),

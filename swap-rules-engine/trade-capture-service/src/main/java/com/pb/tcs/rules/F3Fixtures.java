@@ -9,7 +9,13 @@ import com.pb.tcs.proto.allocation.v1.TcsIngressMessage;
 /** Shared builders for F3 tests: a US single-stock NYSE swap allocation. */
 public final class F3Fixtures {
 
+    public static final String GOLDEN_RULES_YAML = "fixtures/rules/f3-golden-rules.yml";
+
     private F3Fixtures() {}
+
+    public static RuleSet goldenRules() {
+        return RuleSetLoader.fromClasspath(GOLDEN_RULES_YAML);
+    }
 
     public static EnrichedAllocation usNyseSwap(String blockId, int version, String tradeDate) {
         return usNyseSwap(blockId, version, tradeDate, "H12456");

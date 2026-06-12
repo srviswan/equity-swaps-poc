@@ -53,7 +53,7 @@ class F6DispatchExitCriteriaTest {
     @BeforeEach
     void setUp() {
         assembler =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"));
+                new BlotterAssembler(F3Fixtures.goldenRules());
         routingStore = new InMemoryRoutingDecisionStore();
         blotterStore = new InMemoryBlotterStore();
         dispatchStore = new InMemoryDispatchRecordStore();

@@ -23,7 +23,7 @@ class ParityFieldComparatorTest {
     void setUp() {
         comparator = new ParityFieldComparator(TcsConfigLoader.parityManifest());
         baseline =
-                new BlotterAssembler(RuleSetLoader.fromClasspath("fixtures/rules/f3-golden-rules.yml"))
+                new BlotterAssembler(F3Fixtures.goldenRules())
                         .assemble(F3Fixtures.usNyseSwap("BLK-PAR", 1, "2026-06-10"))
                         .blotter();
     }
