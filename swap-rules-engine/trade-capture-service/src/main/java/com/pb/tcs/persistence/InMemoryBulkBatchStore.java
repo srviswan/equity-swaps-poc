@@ -4,7 +4,9 @@ import com.pb.tcs.manual.BulkBatchStore;
 import com.pb.tcs.manual.BulkUploadService;
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** In-memory {@link BulkBatchStore} for F8 tests. */
@@ -66,6 +68,21 @@ public final class InMemoryBulkBatchStore implements BulkBatchStore {
         if (row != null) {
             rows.put(key(batchId, rowNo), new Row(batchId, rowNo, row.blockId(), status, row.error()));
         }
+    }
+
+    @Override
+    public Optional<String> blockIdForRow(String batchId, int rowNo) {
+        Row row = rows.get(key(batchId, rowNo));
+        return row == null ? Optional.empty() : Optional.ofNullable(row.blockId());
+    }
+
+    @Override
+    public List<Integer> submittedRowNumbers(String batchId) {
+        return rows.values().stream()
+                .filter(r -> r.batchId().equals(batchId))
+                .map(Row::rowNo)
+                .sorted()
+                .toList();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.pb.tcs.boot.web;
 
 import com.pb.tcs.boot.DemoTradeOrchestrator;
+import com.pb.tcs.boot.DemoTradeRunSupport;
 import com.pb.tcs.boot.DemoTradeStatusStore;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -18,7 +19,7 @@ class DemoTradeRestController {
 
     private final DemoTradeOrchestrator orchestrator;
     private final DemoTradeStatusStore statusStore;
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     DemoTradeRestController(DemoTradeOrchestrator orchestrator, DemoTradeStatusStore statusStore) {
         this.orchestrator = orchestrator;
@@ -29,8 +30,17 @@ class DemoTradeRestController {
     RunStartResponse startRun(
             @RequestParam(required = false) String blockId,
             @RequestParam(defaultValue = "2026-06-10") String tradeDate) {
+        DemoTradeRunSupport.parseTradeDate(tradeDate);
         String runKey = blockId != null ? blockId : "BLK-" + System.currentTimeMillis();
-        executor.submit(() -> orchestrator.run(runKey, tradeDate));
+        executor.submit(
+                () -> {
+                    try {
+                        orchestrator.run(runKey, tradeDate);
+                    } catch (RuntimeException e) {
+                        statusStore.emitTerminal(
+                                runKey, "FAILED", e.getClass().getSimpleName() + ": " + e.getMessage());
+                    }
+                });
         return new RunStartResponse(runKey, tradeDate, "/api/v1/demo/trades/" + runKey + "/timeline");
     }
 

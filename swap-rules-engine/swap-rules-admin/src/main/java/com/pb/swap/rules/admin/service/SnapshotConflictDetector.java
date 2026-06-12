@@ -21,10 +21,21 @@ public final class SnapshotConflictDetector {
             RuleCompiler compiler,
             List<RuleDefinition> rules,
             List<ActionTemplate> templates,
+            List<CriteriaFragment> fragments) {
+        return detectInternal(compiler.compileFullRange(rules, templates, fragments));
+    }
+
+    public static Optional<String> detect(
+            RuleCompiler compiler,
+            List<RuleDefinition> rules,
+            List<ActionTemplate> templates,
             List<CriteriaFragment> fragments,
             LocalDate asOf) {
+        return detectInternal(compiler.compile(rules, templates, fragments, asOf));
+    }
+
+    private static Optional<String> detectInternal(RuleSnapshot snap) {
         try {
-            RuleSnapshot snap = compiler.compile(rules, templates, fragments, asOf);
             Set<String> seen = new HashSet<>();
             for (var bucket : snap.allBuckets().values()) {
                 for (CompiledRule r : bucket.rules()) {

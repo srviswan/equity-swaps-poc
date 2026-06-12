@@ -67,8 +67,8 @@ public class PublishService {
         for (var entity : fragmentRepo.findPublished()) {
             fragments.add(jsonMapper.toFragment(entity));
         }
-        detectConflicts(rules, templates, fragments, asOf);
-        RuleSnapshot snapshot = compiler.compile(rules, templates, fragments, asOf);
+        detectConflicts(rules, templates, fragments);
+        RuleSnapshot snapshot = compiler.compileFullRange(rules, templates, fragments);
         snapshotHolder.set(snapshot);
         SnapshotPublicationEntity pub = new SnapshotPublicationEntity();
         pub.setSnapshotId(snapshot.snapshotId());
@@ -86,10 +86,9 @@ public class PublishService {
     private void detectConflicts(
             List<RuleDefinition> rules,
             List<ActionTemplate> templates,
-            List<CriteriaFragment> fragments,
-            LocalDate asOf) {
+            List<CriteriaFragment> fragments) {
         Optional<String> conflict =
-                SnapshotConflictDetector.detect(compiler, rules, templates, fragments, asOf);
+                SnapshotConflictDetector.detect(compiler, rules, templates, fragments);
         if (conflict.isPresent()) {
             throw new IllegalStateException(conflict.get());
         }

@@ -33,6 +33,12 @@ mvn -pl trade-capture-service spring-boot:run
 Open **http://localhost:8081/** for the ops console. Rules authoring UI remains on
 **swap-rules-admin** at http://localhost:8080/.
 
+> **Demo mode security:** The default Spring profile is `demo` (in-memory stores, no SSO).
+> All REST endpoints—including resend, archive, recon heal, and manual submit—are
+> unauthenticated. **Bind to localhost only** (`127.0.0.1`) and never expose port 8081
+> beyond your dev machine. Production deployments must use a non-demo profile with real
+> persistence, ingress, and auth (see PRD external dependencies E1–E10).
+
 | Service | Port | Purpose |
 |---------|------|---------|
 | `trade-capture-service` | 8081 | TCS REST + ops UI (demo) |

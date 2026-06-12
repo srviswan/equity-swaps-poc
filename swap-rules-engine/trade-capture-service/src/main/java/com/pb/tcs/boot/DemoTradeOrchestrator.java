@@ -1,6 +1,5 @@
 package com.pb.tcs.boot;
 
-import com.pb.tcs.approval.ApprovalGateStage;
 import com.pb.tcs.crossref.CrossRefExecutor;
 import com.pb.tcs.dispatch.BusinessAckHandler;
 import com.pb.tcs.dispatch.BusinessAckMessage;
@@ -13,12 +12,11 @@ import com.pb.tcs.dispatch.InMemoryIngestionDispatchStatusUpdater;
 import com.pb.tcs.dispatch.InMemoryRoutingDecisionStore;
 import com.pb.tcs.dispatch.StubDownstreamPublisher;
 import com.pb.tcs.ingress.EnrichedAllocation;
-import com.pb.tcs.ingress.IngressPipeline;
+import com.pb.tcs.ingress.IngestionStoreException;
 import com.pb.tcs.ingress.PipelineResult;
 import com.pb.tcs.ingress.TradeCaptureProcessor;
 import com.pb.tcs.lookup.InMemoryHotTradeIndex;
 import com.pb.tcs.lookup.TradeSummary;
-import com.pb.tcs.persistence.InMemoryIngestionLifecycleStore;
 import com.pb.tcs.pipeline.TradeProcessingPipeline;
 import com.pb.tcs.repair.InMemoryBlotterStore;
 import com.pb.tcs.routing.RoutingStage;
@@ -35,9 +33,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class DemoTradeOrchestrator {
 
+    private final Object runLock = new Object();
+
     private final DemoTradeStatusStore statusStore;
-    private final TradeCaptureProcessor.LifecycleIngestionStore lifecycleBridge;
-    private final IngressPipeline ingressPipeline;
+    private final DemoIngressFactory ingressFactory;
     private final TradeProcessingPipeline tradePipeline;
     private final RoutingStage routingStage;
     private final InMemoryBlotterStore blotterStore;
@@ -53,8 +52,7 @@ public class DemoTradeOrchestrator {
 
     DemoTradeOrchestrator(
             DemoTradeStatusStore statusStore,
-            TradeCaptureProcessor.LifecycleIngestionStore lifecycleBridge,
-            IngressPipeline ingressPipeline,
+            DemoIngressFactory ingressFactory,
             TradeProcessingPipeline tradePipeline,
             RoutingStage routingStage,
             InMemoryBlotterStore blotterStore,
@@ -68,8 +66,7 @@ public class DemoTradeOrchestrator {
             CrossRefExecutor crossRefExecutor,
             InMemoryHotTradeIndex hotTradeIndex) {
         this.statusStore = statusStore;
-        this.lifecycleBridge = lifecycleBridge;
-        this.ingressPipeline = ingressPipeline;
+        this.ingressFactory = ingressFactory;
         this.tradePipeline = tradePipeline;
         this.routingStage = routingStage;
         this.blotterStore = blotterStore;
@@ -85,38 +82,69 @@ public class DemoTradeOrchestrator {
     }
 
     public RunResult run(String blockId, String tradeDate) {
+        LocalDate parsedTradeDate = DemoTradeRunSupport.parseTradeDate(tradeDate);
+        synchronized (runLock) {
+            statusStore.reset(blockId);
+            return runLocked(blockId, parsedTradeDate);
+        }
+    }
+
+    private RunResult runLocked(String blockId, LocalDate tradeDate) {
         statusStore.emit(blockId, "INGRESS", "GCAM allocation received — block " + blockId);
 
-        EnrichedAllocation allocation = F3Fixtures.usNyseSwap(blockId, 1, tradeDate);
+        DemoIngressFactory.RunIngress ingressRun = ingressFactory.openRun();
+        EnrichedAllocation allocation = F3Fixtures.usNyseSwap(blockId, 1, tradeDate.toString());
         byte[] raw = allocation.envelope().toByteArray();
         TradeCaptureProcessor processor =
-                new TradeCaptureProcessor(ingressPipeline, tradePipeline, lifecycleBridge);
+                new TradeCaptureProcessor(
+                        ingressRun.pipeline(), tradePipeline, ingressRun.bridge());
 
-        PipelineResult ingress = processor.process(raw, 1);
-        UUID ingestionId = lifecycleBridge.lastId();
+        PipelineResult ingress;
+        try {
+            ingress = processor.process(raw, 1);
+        } catch (IngestionStoreException e) {
+            return terminal(blockId, null, "FAILED", e.getMessage(), false);
+        }
+        UUID ingestionId = ingressRun.bridge().lastId();
         if (ingestionId == null) {
-            statusStore.emit(blockId, "FAILED", ingress.disposition().name() + " — " + ingress.detail());
-            throw new IllegalStateException("ingress failed: " + ingress.disposition());
+            return terminal(
+                    blockId,
+                    null,
+                    "FAILED",
+                    ingress.disposition().name() + " — " + ingress.detail(),
+                    false);
         }
 
         statusStore.emit(
                 blockId, "ENRICH", ingress.disposition().name() + " — ingestionId " + ingestionId);
 
         if (ingress.disposition() != PipelineResult.Disposition.BLOTTER_READY) {
-            return finished(blockId, ingestionId, ingress.disposition().name(), false);
+            return terminal(
+                    blockId,
+                    ingestionId,
+                    "FAILED",
+                    "pipeline stopped at " + ingress.disposition(),
+                    false);
         }
 
         SwapBlotter blotter =
                 blotterStore
                         .findBlotterJson(allocation.correlationId())
                         .map(BlotterJson::fromJson)
-                        .orElseThrow();
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "missing blotter for " + allocation.correlationId()));
         statusStore.emit(blockId, "RULES", "blotter ready — " + blotter.correlationId());
 
         RoutingStage.Outcome outcome = routingStage.process(allocation, blotter);
         if (outcome instanceof RoutingStage.Outcome.Quarantined q) {
-            statusStore.emit(blockId, "FAILED", "routing quarantine " + q.quarantineId() + ": " + q.reason());
-            return finished(blockId, ingestionId, "QUARANTINED", false);
+            return terminal(
+                    blockId,
+                    ingestionId,
+                    "QUARANTINED",
+                    q.quarantineId() + ": " + q.reason(),
+                    false);
         }
         var routed = (RoutingStage.Outcome.Routed) outcome;
         routingStore.saveAll(routed.decisions());
@@ -130,21 +158,21 @@ public class DemoTradeOrchestrator {
 
         dispatchPlanner.plan(ingestionId, blotter.correlationId(), blotter.book(), routed.decisions());
         statusStore.emit(
-                blockId, "DISPATCH", "planned — queue status " + ingestionStatus.current(blotter.correlationId()).name());
+                blockId,
+                "DISPATCH",
+                "planned — queue status " + ingestionStatus.current(blotter.correlationId()).name());
 
         try {
             dispatchExecutor.poll(20);
             dispatchExecutor.awaitCompletion();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("dispatch interrupted", e);
+            return terminal(blockId, ingestionId, "FAILED", "dispatch interrupted", false);
         }
 
         for (DispatchRecord record : dispatchStore.findByIngestionId(ingestionId)) {
             statusStore.emit(
-                    blockId,
-                    "DISPATCH",
-                    record.destinationId() + " → " + record.status());
+                    blockId, "DISPATCH", record.destinationId() + " → " + record.status());
             if (record.status() == DispatchStatus.SENT) {
                 ackHandler.handle(
                         new BusinessAckMessage(
@@ -176,12 +204,18 @@ public class DemoTradeOrchestrator {
                         blotter.book(),
                         blotter.accountId(),
                         null,
-                        LocalDate.parse(tradeDate),
+                        tradeDate,
                         dispatchStatus,
                         TradeSummary.LookupTier.HOT));
 
-        statusStore.emit(blockId, "COMPLETE", "final status " + dispatchStatus);
+        statusStore.emitTerminal(blockId, "COMPLETE", "final status " + dispatchStatus);
         return finished(blockId, ingestionId, dispatchStatus, !publisher.published().isEmpty());
+    }
+
+    private RunResult terminal(
+            String blockId, UUID ingestionId, String stage, String detail, boolean published) {
+        statusStore.emitTerminal(blockId, stage, detail);
+        return finished(blockId, ingestionId, stage, published);
     }
 
     private RunResult finished(

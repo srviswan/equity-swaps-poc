@@ -1,5 +1,7 @@
 package com.pb.swap.rules.admin.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pb.swap.rules.admin.changeset.BulkEditService;
 import com.pb.swap.rules.admin.changeset.ChangesetPublishService;
 import com.pb.swap.rules.admin.changeset.ChangesetService;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/changesets")
 public class ChangesetController {
+
+    private static final ObjectMapper JSON = new ObjectMapper().registerModule(new JavaTimeModule());
 
     private final ChangesetService changesetService;
 
@@ -50,9 +54,7 @@ public class ChangesetController {
                 ((List<?>) body.getOrDefault("trades", List.of()))
                         .stream()
                         .map(
-                                t ->
-                                        new com.fasterxml.jackson.databind.ObjectMapper()
-                                                .convertValue(t, RawHedgeTrade.class))
+                                t -> JSON.convertValue(t, RawHedgeTrade.class))
                         .toList();
         ChangesetSimulationService.SimulationReport report = changesetService.simulate(id, trades);
         if (!report.allowed()) {

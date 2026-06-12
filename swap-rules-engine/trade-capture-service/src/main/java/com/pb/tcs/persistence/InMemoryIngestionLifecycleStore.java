@@ -21,6 +21,7 @@ public final class InMemoryIngestionLifecycleStore implements IngestionLifecycle
 
     private final Map<UUID, IngestionLifecycleStore.IngestionSnapshot> byId = new LinkedHashMap<>();
     private final Map<String, IngestionLifecycleStore.IngestionSnapshot> byCorrelation = new LinkedHashMap<>();
+    private final Map<String, Integer> maxEnrichedVersion = new LinkedHashMap<>();
     private final AtomicLong versions = new AtomicLong();
     private EnrichedAllocation lastEnriched;
     private UUID lastId;
@@ -54,6 +55,7 @@ public final class InMemoryIngestionLifecycleStore implements IngestionLifecycle
                         "ALLOCATION",
                         null);
         index(snap);
+        maxEnrichedVersion.merge(versionKey(msg.getBlockId(), msg.getAllocationId()), msg.getVersion(), Math::max);
         return id;
     }
 
@@ -127,17 +129,8 @@ public final class InMemoryIngestionLifecycleStore implements IngestionLifecycle
 
     @Override
     public java.util.OptionalInt lastEnrichedVersion(String blockId, String allocationId) {
-        int max =
-                byCorrelation.values().stream()
-                        .filter(
-                                s ->
-                                        s.blockId().equals(blockId)
-                                                && s.allocationId().equals(allocationId)
-                                                && "ENRICHED_ACKED".equals(s.status()))
-                        .mapToInt(IngestionLifecycleStore.IngestionSnapshot::version)
-                        .max()
-                        .orElse(0);
-        return max == 0 ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(max);
+        Integer max = maxEnrichedVersion.get(versionKey(blockId, allocationId));
+        return max == null ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(max);
     }
 
     @Override
@@ -155,5 +148,9 @@ public final class InMemoryIngestionLifecycleStore implements IngestionLifecycle
     private void index(IngestionLifecycleStore.IngestionSnapshot snap) {
         byId.put(snap.ingestionId(), snap);
         byCorrelation.put(snap.correlationId(), snap);
+    }
+
+    private static String versionKey(String blockId, String allocationId) {
+        return blockId + "|" + allocationId;
     }
 }

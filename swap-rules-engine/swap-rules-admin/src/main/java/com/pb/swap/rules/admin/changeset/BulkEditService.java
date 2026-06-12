@@ -2,6 +2,7 @@ package com.pb.swap.rules.admin.changeset;
 
 import com.pb.swap.rules.core.model.RuleDefinition;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ public final class BulkEditService {
                     baseRules.stream()
                             .filter(r -> r.id().equals(ruleId))
                             .filter(r -> request.version() == null || r.version() == request.version())
-                            .findFirst()
+                            .max(Comparator.comparingInt(RuleDefinition::version))
                             .orElseThrow(() -> new IllegalArgumentException("unknown rule " + ruleId));
             switch (request.operation()) {
                 case DISABLE ->

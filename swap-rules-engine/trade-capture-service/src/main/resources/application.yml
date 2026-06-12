@@ -6,6 +6,7 @@ spring:
 
 server:
   port: ${TCS_PORT:8081}
+  address: ${TCS_BIND:127.0.0.1}
 
 management:
   endpoints:

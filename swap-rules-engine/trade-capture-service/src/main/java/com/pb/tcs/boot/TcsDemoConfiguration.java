@@ -35,11 +35,9 @@ import com.pb.tcs.dispatch.InMemoryIngestionDispatchStatusUpdater;
 import com.pb.tcs.dispatch.InMemoryRoutingDecisionStore;
 import com.pb.tcs.dispatch.StubDownstreamPublisher;
 import com.pb.tcs.ingress.IngestionLifecycleStore;
-import com.pb.tcs.ingress.IngressPipeline;
 import com.pb.tcs.ingress.IngressPublisher;
 import com.pb.tcs.ingress.InMemoryHoldStore;
 import com.pb.tcs.ingress.RecordingIngressPublisher;
-import com.pb.tcs.ingress.TradeCaptureProcessor;
 import com.pb.tcs.lookup.InMemoryArchivedTradeIndex;
 import com.pb.tcs.lookup.InMemoryHotTradeIndex;
 import com.pb.tcs.lookup.StubSystemAFallbackClient;
@@ -131,12 +129,6 @@ class TcsDemoConfiguration {
     }
 
     @Bean
-    TradeCaptureProcessor.LifecycleIngestionStore lifecycleBridge(
-            InMemoryIngestionLifecycleStore lifecycleStore) {
-        return new TradeCaptureProcessor.LifecycleIngestionStore(lifecycleStore, lifecycleStore);
-    }
-
-    @Bean
     InMemoryApprovalStore approvalStore(InMemoryIngestionLifecycleStore lifecycleStore) {
         InMemoryApprovalStore store = new InMemoryApprovalStore();
         store.bindLifecycle(lifecycleStore);
@@ -210,7 +202,7 @@ class TcsDemoConfiguration {
 
     @Bean
     CutoverPolicy cutoverPolicy() {
-        return new CutoverPolicy(TcsConfigLoader.cutoverPolicy());
+        return CutoverPolicy.liveAll();
     }
 
     @Bean
@@ -331,9 +323,14 @@ class TcsDemoConfiguration {
             ApprovalStore approvalStore,
             IngestionLifecycleStore lifecycleStore,
             IngressPublisher ingressPublisher,
+            InMemoryBulkBatchStore bulkBatchStore,
             MeterRegistry meterRegistry) {
         return new ApprovalCallbackHandler(
-                approvalStore, lifecycleStore, ingressPublisher, new ApprovalMetrics(meterRegistry));
+                approvalStore,
+                lifecycleStore,
+                ingressPublisher,
+                new ApprovalMetrics(meterRegistry),
+                bulkBatchStore);
     }
 
     @Bean
@@ -425,21 +422,6 @@ class TcsDemoConfiguration {
     @Bean
     InMemoryHoldStore versionGapHoldStore() {
         return new InMemoryHoldStore();
-    }
-
-    @Bean
-    IngressPipeline ingressPipeline(
-            TradeCaptureProcessor.LifecycleIngestionStore lifecycleBridge,
-            InMemoryHoldStore holdStore,
-            DemoReferenceData referenceData,
-            Clock clock) {
-        return new IngressPipeline(
-                lifecycleBridge,
-                holdStore,
-                referenceData,
-                TcsConfigLoader.versionGap(),
-                TcsConfigLoader.ingress(),
-                clock);
     }
 
     @Bean

@@ -43,9 +43,10 @@ public class ChangesetPublishService {
             List<CriteriaFragment> fragments,
             LocalDate asOf)
             throws Exception {
-        List<RuleDefinition> projected = ChangesetMerger.merge(baseRules, changeset);
+        List<RuleDefinition> projected =
+                ChangesetRuleSupport.promoteToPublished(ChangesetMerger.merge(baseRules, changeset));
         Optional<String> conflict =
-                SnapshotConflictDetector.detect(compiler, projected, templates, fragments, asOf);
+                SnapshotConflictDetector.detect(compiler, projected, templates, fragments);
         if (conflict.isPresent()) {
             changeset.markRejected();
             return PublishResult.blocked(conflict.get());
@@ -82,25 +83,7 @@ public class ChangesetPublishService {
     }
 
     private static RuleDefinition asPublished(RuleDefinition rule) {
-        return new RuleDefinition(
-                rule.id(),
-                rule.version(),
-                rule.name(),
-                rule.category(),
-                rule.target(),
-                rule.priority(),
-                rule.enabled(),
-                rule.effectiveFrom(),
-                rule.effectiveTo(),
-                rule.evaluationMode(),
-                rule.specificityBoost(),
-                RuleStatus.PUBLISHED,
-                rule.criteria(),
-                rule.includes(),
-                rule.apply(),
-                rule.actions(),
-                rule.overrides(),
-                rule.metadata());
+        return ChangesetRuleSupport.asPublished(rule);
     }
 
     private static boolean isTouched(RuleChangeset changeset, RuleDefinition rule) {
