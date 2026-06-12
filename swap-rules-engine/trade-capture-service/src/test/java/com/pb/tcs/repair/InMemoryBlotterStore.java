@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /** In-memory {@link BlotterStore} with the SQL adapter's duplicate-correlation semantics. */
-final class InMemoryBlotterStore implements BlotterStore {
+public final class InMemoryBlotterStore implements BlotterStore {
 
     private final Map<String, String> blotters = new LinkedHashMap<>();
     private final Map<String, List<RuleExplain>> explains = new LinkedHashMap<>();

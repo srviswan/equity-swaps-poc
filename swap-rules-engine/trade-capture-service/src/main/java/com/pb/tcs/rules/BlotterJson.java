@@ -42,6 +42,15 @@ public final class BlotterJson {
         return MAPPER.valueToTree(blotter);
     }
 
+    /** Generic JSON serialization sharing the blotter mapper config (dispatch envelopes). */
+    public static String toJsonMap(Object value) {
+        try {
+            return MAPPER.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("json serialization failed", e);
+        }
+    }
+
     /**
      * Applies dotted-path field edits (e.g. {@code swap.interestLeg.rateType}) to a serialized
      * blotter, creating intermediate objects where the source omitted null fields. Used by the

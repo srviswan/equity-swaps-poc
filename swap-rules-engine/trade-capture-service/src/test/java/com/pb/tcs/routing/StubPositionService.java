@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /** PositionService stub (E5): keyed positions, outage simulation, lookup capture. */
-final class StubPositionService implements PositionServiceClient {
+public final class StubPositionService implements PositionServiceClient {
 
     static final Instant AS_OF = Instant.parse("2026-06-10T20:00:00Z");
 
