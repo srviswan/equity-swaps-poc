@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -127,6 +128,27 @@ public final class TcsConfigLoader {
                                             fields));
                         });
         return new PositionMatchKeyConfig(defaultFields, systems);
+    }
+
+    public static ParityManifestConfig parityManifest() {
+        JsonNode root = read("tcs-config/parity-manifest.yml");
+        ParityManifestConfig.Mode defaultMode =
+                ParityManifestConfig.Mode.valueOf(root.required("defaults").required("mode").asText());
+        Map<String, ParityManifestConfig.FieldPolicy> fields = new LinkedHashMap<>();
+        root.path("fields")
+                .properties()
+                .forEach(
+                        e -> {
+                            JsonNode node = e.getValue();
+                            ParityManifestConfig.Mode mode =
+                                    ParityManifestConfig.Mode.valueOf(node.required("mode").asText());
+                            BigDecimal absolute =
+                                    node.hasNonNull("absolute")
+                                            ? new BigDecimal(node.get("absolute").asText())
+                                            : null;
+                            fields.put(e.getKey(), new ParityManifestConfig.FieldPolicy(mode, absolute));
+                        });
+        return new ParityManifestConfig(defaultMode, fields);
     }
 
     public static ApprovalWorkflowConfig approvalWorkflow() {

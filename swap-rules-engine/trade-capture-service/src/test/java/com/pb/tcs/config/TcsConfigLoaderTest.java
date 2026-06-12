@@ -149,6 +149,21 @@ class TcsConfigLoaderTest {
     }
 
     @Nested
+    class ParityManifest {
+        @Test
+        void loadsToleranceAndIgnorePolicies() {
+            var config = TcsConfigLoader.parityManifest();
+            assertThat(config.defaultMode()).isEqualTo(ParityManifestConfig.Mode.MUST_MATCH);
+            assertThat(config.policyFor("snapshotVersion").mode())
+                    .isEqualTo(ParityManifestConfig.Mode.IGNORE);
+            assertThat(config.policyFor("swap.interestLeg.spreadBps").mode())
+                    .isEqualTo(ParityManifestConfig.Mode.TOLERANCE);
+            assertThat(config.policyFor("swap.interestLeg.spreadBps").absoluteTolerance())
+                    .isEqualByComparingTo("0.01");
+        }
+    }
+
+    @Nested
     class ApprovalWorkflowConfig {
         @Test
         void loadsStpPolicyAndBulkLimits() {

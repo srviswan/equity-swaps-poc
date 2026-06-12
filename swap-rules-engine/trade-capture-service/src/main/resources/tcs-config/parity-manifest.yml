@@ -1,0 +1,19 @@
+# FR-604 / FR-703: user-editable SwapBlotter compare profile (must-match / tolerance / ignore).
+# Unlisted dotted paths inherit defaults.mode.
+defaults:
+  mode: MUST_MATCH
+
+fields:
+  snapshotVersion:
+    mode: IGNORE
+  swap.tradeId:
+    mode: IGNORE
+  swap.interestLeg.spreadBps:
+    mode: TOLERANCE
+    absolute: 0.01
+  swap.schedule.paymentFrequency:
+    mode: MUST_MATCH
+  swap.legalEntity:
+    mode: MUST_MATCH
+  swap.workflowStatus:
+    mode: IGNORE
