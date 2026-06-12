@@ -18,8 +18,25 @@ UI mocks: [docs/assets/trade-entry-ui-mock.png](docs/assets/trade-entry-ui-mock.
 
 ## Status
 
-Design approved; implementation not started. Build strictly in phase order
-F0 → F12 per the PRD. Reuses sibling modules in this repository:
-`swap-rules-core` / `swap-rules-runtime` (enrichment engine),
-`swap-rules-admin` (rule authoring), `swap-rules-shadow` (parity diff),
-`swap-archiver` (archival patterns).
+Phases F0–F12 implemented as a library with exit-criteria tests. A **demo Spring Boot
+shell** exposes REST APIs and an ops console for local development (in-memory stores,
+no Docker).
+
+### Run locally (demo mode)
+
+```bash
+cd swap-rules-engine
+mvn -pl swap-rules-core,swap-rules-runtime install -DskipTests
+mvn -pl trade-capture-service spring-boot:run
+```
+
+Open **http://localhost:8081/** for the ops console. Rules authoring UI remains on
+**swap-rules-admin** at http://localhost:8080/.
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| `trade-capture-service` | 8081 | TCS REST + ops UI (demo) |
+| `swap-rules-admin` | 8080 | Rule studio + enrichment console |
+
+Design approved; production wiring (SQL Server JDBC, Solace ingress, SSO) deferred per PRD
+external dependencies E1–E10.

@@ -10,7 +10,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /** Test fake for the {@code version_gap_hold}-backed store (restart-safe in production). */
-final class InMemoryHoldStore implements VersionGapHoldStore {
+public final class InMemoryHoldStore implements VersionGapHoldStore {
 
     private final Map<String, Map<Integer, HoldRow>> holds = new LinkedHashMap<>();
 

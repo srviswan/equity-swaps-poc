@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trade Capture Service — Ops Console</title>
+  <link rel="stylesheet" href="/ops.css" />
+</head>
+<body>
+  <header>
+    <h1>Trade Capture Service</h1>
+    <p class="tag">Demo mode · in-memory · port 8081</p>
+    <div id="health" class="pill">checking…</div>
+  </header>
+
+  <main class="grid">
+    <section class="card">
+      <h2>Trade lookup</h2>
+      <label>Allocation ID <input id="allocationId" value="ALL-1" /></label>
+      <button id="searchBtn">Search</button>
+      <pre id="searchOut" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Trade journey</h2>
+      <label>Ingestion ID <input id="ingestionId" placeholder="from search result" /></label>
+      <button id="journeyBtn">Load journey</button>
+      <pre id="journeyOut" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Reconciliation</h2>
+      <label>Type
+        <select id="reconType">
+          <option value="R1">R1 — ingestion completeness</option>
+          <option value="R2">R2 — instruction vs booking</option>
+          <option value="R3" selected>R3 — cross-system sync</option>
+        </select>
+      </label>
+      <label>Book <input id="reconBook" value="EQ_US_HY" /></label>
+      <label>Trade date <input id="reconDate" type="date" value="2026-06-10" /></label>
+      <button id="reconBtn">Start run</button>
+      <pre id="reconOut" class="out"></pre>
+    </section>
+
+    <section class="card links">
+      <h2>API links</h2>
+      <ul>
+        <li><a href="/swagger-ui.html" target="_blank">Swagger UI</a></li>
+        <li><a href="/v3/api-docs" target="_blank">OpenAPI JSON</a></li>
+        <li><a href="/actuator/health" target="_blank">Health</a></li>
+        <li><a href="/actuator/prometheus" target="_blank">Prometheus metrics</a></li>
+      </ul>
+      <p class="hint">Rules authoring UI runs separately on <a href="http://localhost:8080/" target="_blank">swap-rules-admin :8080</a>.</p>
+    </section>
+  </main>
+
+  <script src="/ops.js"></script>
+</body>
+</html>
