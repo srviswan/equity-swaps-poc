@@ -1,0 +1,10 @@
+# ingress.yml
+solace:
+  queue: Q.TCS.ALLOCATION.IN
+  partitions: 128
+  prefetch: 50
+refdataRetry:
+  maxAttempts: 3            # D6/D22
+  backoffMs: [1000, 5000, 15000]
+gapDetection:
+  useKeySequence: false      # flip when GCAM delivers key_sequence

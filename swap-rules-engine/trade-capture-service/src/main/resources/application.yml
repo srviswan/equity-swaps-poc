@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: trade-capture-service
+  profiles:
+    default: demo
+
+server:
+  port: ${TCS_PORT:8081}
+  address: ${TCS_BIND:127.0.0.1}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+tcs:
+  demo:
+    seed-sample-trade: true
+    rules-fixture: fixtures/rules/f3-golden-rules.yml
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

@@ -68,10 +68,14 @@ public final class RuleSnapshot {
         if (bucket == null) {
             return List.of();
         }
+        // FR-205/D7: full-range snapshots carry all rule versions; the trade date picks the
+        // effective ones at evaluation time (back-dated trades hit historical rules).
+        java.time.LocalDate tradeDate =
+                ctx.rawTrade() != null ? ctx.rawTrade().tradeDate() : null;
         List<CompiledRule> candidates = resolveCandidates(ctx, bucket.rules());
         List<CompiledRule> matched = new ArrayList<>();
         for (CompiledRule rule : candidates) {
-            if (rule.matches(ctx)) {
+            if (rule.effectiveOn(tradeDate) && rule.matches(ctx)) {
                 matched.add(rule);
             }
         }

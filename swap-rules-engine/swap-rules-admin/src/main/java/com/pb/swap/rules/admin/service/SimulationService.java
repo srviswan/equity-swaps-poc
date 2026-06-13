@@ -87,15 +87,27 @@ public class SimulationService {
                         draft.overrides(),
                         draft.metadata());
         rules.add(draftForSim);
-        List<ActionTemplate> templates = new ArrayList<>();
-        for (ActionTemplateEntity e : templateRepo.findAll()) {
-            try { templates.add(mapper.toTemplate(e)); } catch (Exception ex) { /* skip */ }
-        }
-        List<CriteriaFragment> fragments = new ArrayList<>();
-        for (CriteriaFragmentEntity e : fragmentRepo.findAll()) {
-            try { fragments.add(mapper.toFragment(e)); } catch (Exception ex) { /* skip */ }
-        }
-        RuleSnapshot simSnap = compiler.compile(rules, templates, fragments, LocalDate.now());
+        List<ActionTemplate> templates = loadTemplates();
+        List<CriteriaFragment> fragments = loadFragments();
+        RuleSnapshot simSnap = compiler.compileFullRange(rules, templates, fragments);
+        return compareSnapshots(base, simSnap, samples, draft.id());
+    }
+
+    /** Simulates the fully merged projected rule set in one pass (FR-508). */
+    public List<SimulationDiff> simulateProjectedRules(
+            List<RuleDefinition> projectedPublishedRules, List<RawHedgeTrade> samples) {
+        RuleSnapshot base = snapshotHolder.get();
+        RuleSnapshot simSnap =
+                compiler.compileFullRange(
+                        projectedPublishedRules, loadTemplates(), loadFragments());
+        return compareSnapshots(base, simSnap, samples, null);
+    }
+
+    private List<SimulationDiff> compareSnapshots(
+            RuleSnapshot base,
+            RuleSnapshot simSnap,
+            List<RawHedgeTrade> samples,
+            String touchedRuleId) {
         EnrichmentEngineImpl simEngine =
                 new EnrichmentEngineImpl(
                         new AtomicReference<>(simSnap),
@@ -113,17 +125,45 @@ public class SimulationService {
             EnrichmentResult before = baseEngine.enrich(trade);
             EnrichmentResult after = simEngine.enrich(trade);
             Map<String, Map<String, Object>> diffs = computePathDiffs(before.trace(), after.trace());
+            long draftApplications =
+                    touchedRuleId == null
+                            ? 0
+                            : after.trace().decisions().stream()
+                                    .filter(d -> d.ruleId().equals(touchedRuleId))
+                                    .count();
             out.add(
                     new SimulationDiff(
                             trade.tradeId(),
                             json.convertValue(after.swap(), Map.class),
                             after.trace().traceId(),
                             diffs,
-                            after.trace().decisions().stream()
-                                    .filter(d -> d.ruleId().equals(draft.id()))
-                                    .count()));
+                            draftApplications));
         }
         return out;
+    }
+
+    private List<ActionTemplate> loadTemplates() {
+        List<ActionTemplate> templates = new ArrayList<>();
+        for (ActionTemplateEntity e : templateRepo.findAll()) {
+            try {
+                templates.add(mapper.toTemplate(e));
+            } catch (Exception ex) {
+                /* skip */
+            }
+        }
+        return templates;
+    }
+
+    private List<CriteriaFragment> loadFragments() {
+        List<CriteriaFragment> fragments = new ArrayList<>();
+        for (CriteriaFragmentEntity e : fragmentRepo.findAll()) {
+            try {
+                fragments.add(mapper.toFragment(e));
+            } catch (Exception ex) {
+                /* skip */
+            }
+        }
+        return fragments;
     }
 
     private Map<String, Map<String, Object>> computePathDiffs(DecisionTrace before, DecisionTrace after) {

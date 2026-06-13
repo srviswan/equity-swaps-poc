@@ -1,0 +1,13 @@
+# routing-rules.yml — consumed in F5/F6; checked in at F0 as a contract (D10)
+rules:                       # first match wins, evaluated top-down
+  - name: us-single-stock
+    criteria: { book: "EQ_US*", assetType: SINGLE_STOCK }
+    targets: [SYSTEM_A, SYSTEM_B]
+  - name: default
+    criteria: {}
+    targets: [SYSTEM_A]
+targets:
+  SYSTEM_A: { queue: "tcs/booking/out/system-a/v1", awaitBusinessAck: true,
+              businessAckTimeoutMs: 480000, maxAttempts: 5 }
+  SYSTEM_B: { queue: "tcs/booking/out/system-b/v1", awaitBusinessAck: true,
+              businessAckTimeoutMs: 480000, maxAttempts: 5, requiresCrossRef: true }

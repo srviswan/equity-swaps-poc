@@ -21,6 +21,7 @@
         <module>swap-rules-loadtest</module>
         <module>swap-rules-archtest</module>
         <module>swap-archiver</module>
+        <module>trade-capture-service</module>
     </modules>
 
     <properties>

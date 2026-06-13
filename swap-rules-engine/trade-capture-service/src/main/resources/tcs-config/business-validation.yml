@@ -1,0 +1,18 @@
+# F4 — business validation contract (FR-300). Stage 6: runs after defaulting,
+# before routing. Failures quarantine (category BUSINESS_VALIDATION, post-ACK,
+# internal) into the repair workflow (FR-209).
+#
+# mandatoryFields are dotted paths into the assembled SwapBlotter. Ops-tunable
+# without deploy; provisional list pending E9 (blotter field dictionary).
+
+mandatoryFields:
+  - swap.swapContract.productType
+  - swap.interestLeg.dayCount
+  - swap.interestLeg.rateType
+  - swap.schedule.paymentFrequency
+  - swap.legalEntity
+  - swap.workflowStatus
+
+structural:
+  spreadBpsNonNegative: true        # interestLeg.spreadBps >= 0 when present
+  divPassthroughPercentRange: true  # divPassthrough.percent in [0, 100] when present

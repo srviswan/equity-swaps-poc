@@ -1,0 +1,19 @@
+# FR-605 / D20: cutover controls — shadow mode default; dual-publish per book/target.
+defaults:
+  shadowMode: true
+
+dualPublish:
+  default:
+    SYSTEM_A: true
+    SYSTEM_B: false
+  books:
+    EQ_US_HY:
+      SYSTEM_A: false
+      SYSTEM_B: false
+    EQ_APAC:
+      SYSTEM_A: true
+      SYSTEM_B: true
+
+archive:
+  hotWindowMonths: 3
+  eligibilityDaysPastLifecycle: 90

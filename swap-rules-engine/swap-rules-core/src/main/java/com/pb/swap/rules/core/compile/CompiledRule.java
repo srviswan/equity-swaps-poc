@@ -61,6 +61,22 @@ public final class CompiledRule {
         return matchPredicate.test(ctx);
     }
 
+    /**
+     * Effective-date check at evaluation time (FR-205/D7): a full-range snapshot carries every
+     * published rule version; the trade date selects which versions apply. Inclusive on both
+     * bounds, matching {@code RuleCompiler}'s compile-time semantics. {@code null} date or an
+     * undated rule always passes.
+     */
+    public boolean effectiveOn(java.time.LocalDate tradeDate) {
+        if (tradeDate == null || source == null) {
+            return true;
+        }
+        if (source.effectiveFrom() != null && tradeDate.isBefore(source.effectiveFrom())) {
+            return false;
+        }
+        return source.effectiveTo() == null || !tradeDate.isAfter(source.effectiveTo());
+    }
+
     public String ruleId() {
         return ruleId;
     }

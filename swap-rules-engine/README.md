@@ -12,7 +12,10 @@ Greenfield equity swap enrichment rules engine: transforms **raw hedge trades** 
 | `swap-rules-admin` | REST API, publish, near-miss, simulate |
 | `swap-rules-shadow` | Shadow diff + trade capture adapter |
 | `swap-rules-jmh` | Micro-benchmarks |
+| `swap-rules-loadtest` | Gatling load tests |
 | `swap-rules-archtest` | ArchUnit module boundaries |
+| `trade-capture-service` | GCAM ingress, enrichment, dispatch, recon (port 8081) |
+| `swap-archiver` | Post-trade archive worker |
 
 ## Quick start
 
@@ -20,6 +23,8 @@ Greenfield equity swap enrichment rules engine: transforms **raw hedge trades** 
 cd swap-rules-engine
 mvn verify -DskipITs=true
 mvn -pl swap-rules-admin spring-boot:run
+# Trade Capture Service demo (in-memory, localhost only):
+mvn -pl trade-capture-service spring-boot:run
 ```
 
 Publish rules then enrich:
@@ -29,7 +34,15 @@ curl -X POST http://localhost:8080/api/v1/snapshots/publish
 curl -X POST http://localhost:8080/api/v1/enrich -H 'Content-Type: application/json' -d @src/test/resources/golden/usd-equity-swap-trade.json
 ```
 
-## Integration with pb-synth-tradecapture-svc
+## Integration with trade-capture-service
+
+The canonical upstream capture path lives in `trade-capture-service` (`com.pb.tcs.*`):
+
+1. GCAM allocations enter via the ingress pipeline; rules run through embedded `swap-rules-runtime`.
+2. `BlotterAssembler` maps enriched allocations to `SwapBlotter` using YAML rule fixtures (see `F3Fixtures.GOLDEN_RULES_YAML`).
+3. For legacy cutover, use `ParityFieldComparator` (FR-604) and the demo ops UI on port **8081**.
+
+For external services embedding only the rules engine:
 
 1. Add dependency on `swap-rules-runtime`.
 2. Use `TradeCaptureAdapter` from `swap-rules-shadow` to map request → `RawHedgeTrade`.

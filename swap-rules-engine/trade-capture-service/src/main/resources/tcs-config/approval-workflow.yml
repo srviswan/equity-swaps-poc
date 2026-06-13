@@ -1,0 +1,8 @@
+# approval-workflow.yml — stage-5.5 gate (FR-301 / D17)
+approvalTimeoutMinutes: 15
+bulkMaxRows: 10000
+
+# Initiators/sources that pass the gate without parking (STP).
+stp:
+  sources: [GCAM, TEST_HARNESS]
+  initiators: [SYSTEM]
